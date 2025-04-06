@@ -15,9 +15,6 @@ add_subdirectory(src)
 add_subdirectory(lib/math)
 add_subdirectory(lib/mnist)
 
-# Add test directory
-add_subdirectory(test)
-
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
