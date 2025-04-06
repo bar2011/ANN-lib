@@ -16,62 +16,61 @@ std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
   return std::array{train, test};
 }
 
-MNist::Loader::DataPair MNist::Loader::loadImages(std::string_view labelsPath,
-                                                  std::string_view imagesPath) {
+MNist::Loader::DataPair
+MNist::Loader::loadImages(const std::string &labelsPath,
+                          const std::string &imagesPath) {
   std::vector<double> labels{loadLabelsFile(labelsPath)};
   std::vector<Math::Matrix<double>> images{loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
 
-std::vector<double> MNist::Loader::loadLabelsFile(std::string_view labelsPath) {
+std::vector<double>
+MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   std::ifstream labelsFile{labelsPath, std::ios::binary | std::ios::in};
 
   // testing number which should always be 2049
-  unsigned int magicNumber{
-      readU32(labelsFile, static_cast<std::string>(labelsPath))};
+  unsigned int magicNumber{readU32(labelsFile, labelsPath)};
   if (magicNumber != 2049)
-    throw MNist::Exception{"MNist::Loader::loadLabelsFile()",
-                           "Invalid file format for image label file: " +
-                               static_cast<std::string>(labelsPath) +
-                               "\n Magic number mismatch (expected 2049)"};
+    throw MNist::Exception{
+        "MNist::Loader::loadLabelsFile()",
+        "Invalid file format for image label file: " + labelsPath +
+            "\n Magic number mismatch (expected 2049)"};
 
   // Number of image labels (each one is a byte, so also length of remaining
   // file)
-  unsigned int size{readU32(labelsFile, static_cast<std::string>(labelsPath))};
+  unsigned int size{readU32(labelsFile, labelsPath)};
 
   // Actual data
-  std::vector<double> labels{
-      readBytes(labelsFile, size, static_cast<std::string>(labelsPath))};
+  std::vector<double> labels{readBytes(labelsFile, size, labelsPath)};
 
   return labels;
 }
 
 std::vector<Math::Matrix<double>>
-MNist::Loader::loadImagesFile(std::string_view imagesPath) {
+MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
   // testing number which should always be 2051
-  unsigned int magicNumber{
-      readU32(imagesFile, static_cast<std::string>(imagesPath))};
+  unsigned int magicNumber{readU32(imagesFile, imagesPath)};
   if (magicNumber != 2051)
-    throw MNist::Exception{"MNist::Loader::loadImagesFile()",
-                           "Invalid file format for images file: " +
-                               static_cast<std::string>(imagesPath) +
-                               "\n Magic number mismatch (expected 2051)"};
+    throw MNist::Exception{
+        "MNist::Loader::loadImagesFile()",
+        "Invalid file format for images file: " + imagesPath +
+            "\n Magic number mismatch (expected 2051)"};
 
   // Number of images
-  unsigned int size{readU32(imagesFile, static_cast<std::string>(imagesPath))};
+  unsigned int size{readU32(imagesFile, imagesPath)};
 
   // Number of rows in each image
-  unsigned int rows{readU32(imagesFile, static_cast<std::string>(imagesPath))};
+  unsigned int rows{readU32(imagesFile, imagesPath)};
 
   // Number of columns in each image
-  unsigned int cols{readU32(imagesFile, static_cast<std::string>(imagesPath))};
+  unsigned int cols{readU32(imagesFile, imagesPath)};
 
   // Plain image data
-  std::vector<double> imageData{readBytes(
-      imagesFile, size * rows * cols, static_cast<std::string>(imagesPath))};
+  std::vector<double> imageData{
+      readBytes(imagesFile, size * rows * cols, imagesPath)};
 
   std::vector<Math::Matrix<double>> images{};
   images.reserve(size);

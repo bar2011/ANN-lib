@@ -32,13 +32,13 @@ private:
   std::string m_testingLabelsPath{};
   std::string m_testingImagesPath{};
 
-  static DataPair loadImages(std::string_view labelsPath,
-                             std::string_view imagesPath);
+  static DataPair loadImages(const std::string &labelsPath,
+                             const std::string &imagesPath);
 
-  static std::vector<double> loadLabelsFile(std::string_view labelsPath);
+  static std::vector<double> loadLabelsFile(const std::string &labelsPath);
 
   static std::vector<Math::Matrix<double>>
-  loadImagesFile(std::string_view imagesPath);
+  loadImagesFile(const std::string &imagesPath);
 
   static std::vector<double> readBytes(std::ifstream &file,
                                        const unsigned int length,
