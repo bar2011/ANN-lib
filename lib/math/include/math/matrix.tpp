@@ -62,11 +62,11 @@ template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
   if (row >= m_rows)
     throw Math::Exception{
-        "T &Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t)",
         "Invalid row number: out of bounds"};
   if (col >= m_cols)
     throw Math::Exception{
-        "T &Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t)",
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
@@ -76,17 +76,51 @@ template <typename T>
 const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
   if (row >= m_rows)
     throw Math::Exception{
-        "T &Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t)",
         "Invalid row number: out of bounds"};
   if (col >= m_cols)
     throw Math::Exception{
-        "T &Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t)",
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
 }
 
-template <typename T> Vector<T> *Matrix<T>::flatten() {
-  return new Vector<T>{m_rows * m_cols, m_data.data()};
+template <typename T>
+Matrix<T> operator+(const Matrix<T> &m, const Vector<T> &v) {
+  if (m.cols() == v.size()) { // row wise addition
+    Matrix<T> result{m.rows(), m.cols()};
+    for (size_t i{}; i < m.rows(); ++i)
+      for (size_t j{}; j < m.cols(); ++j)
+        result[i, j] = m[i, j] + v[j];
+
+    return result;
+  }
+
+  if (m.rows() == v.size()) { // column wise addition
+    Matrix<T> result{m.rows(), m.cols()};
+    for (size_t i{}; i < m.rows(); ++i)
+      for (size_t j{}; j < m.cols(); ++j)
+        result[i, j] = m[i, j] + v[i];
+
+    return result;
+  }
+
+  throw Math::Exception{
+      "Math::operator+(const Matrix<T>&, const Vector<T>&)",
+      "Can't add matrix and vector where their sizes don't match for row or "
+      "column wise addition"};
+}
+
+template <typename T>
+void Matrix<T>::reshape(const size_t rows, const size_t cols) {
+  if (rows * cols != m_rows * m_cols)
+    throw Math::Exception{
+        "Math::Matrix<T>::reshape(const size_t, const size_t)",
+        "Can't reshape a matrix where the given dimensions don't give the same "
+        "number of values as the previous dimensions"};
+
+  m_rows = rows;
+  m_cols = cols;
 };
 }; // namespace Math

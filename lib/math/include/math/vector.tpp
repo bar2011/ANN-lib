@@ -53,7 +53,7 @@ template <typename T> Vector<T> &Vector<T>::operator=(Vector &&other) noexcept {
 template <typename T>
 Vector<T> operator+(const Vector<T> &a, const Vector<T> &b) {
   if (a.size() != b.size())
-    throw Exception{"Vector<T> operator+(Vector<T>, const Vector<T>&)",
+    throw Exception{"Math::operator+(Vector<T>, const Vector<T>&)",
                     "Unable to add two vectors of different sizes"};
 
   Vector<T> result(a.size());

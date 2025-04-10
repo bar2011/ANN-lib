@@ -14,17 +14,17 @@ public:
   // diviasion 1
   Dense();
 
-  // perform forward pass on given inpus
+  // perform forward pass with given batch
   // save inputs and outputs in member variables
-  void forward(const Math::Vector<double> &inputs);
+  void forward(const Math::Matrix<double> &inputs);
 
-  const Math::Vector<double> &output() const { return m_output; }
+  const Math::Matrix<double> &output() const { return m_output; }
 
 private:
-  Math::Vector<double> m_inputs{I};
+  Math::Matrix<double> m_inputs{1, I};
   Math::Matrix<double> m_weights{N, I};
   Math::Vector<double> m_biases{N};
-  Math::Vector<double> m_output{N};
+  Math::Matrix<double> m_output{N, 1};
 };
 } // namespace Layer
 

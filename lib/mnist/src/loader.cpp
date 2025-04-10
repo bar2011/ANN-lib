@@ -33,7 +33,7 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   unsigned int magicNumber{readU32(labelsFile, labelsPath)};
   if (magicNumber != 2049)
     throw MNist::Exception{
-        "MNist::Loader::loadLabelsFile()",
+        "MNist::Loader::loadLabelsFile(const std::string&)",
         "Invalid file format for image label file: " + labelsPath +
             "\n Magic number mismatch (expected 2049)"};
 
@@ -55,7 +55,7 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   unsigned int magicNumber{readU32(imagesFile, imagesPath)};
   if (magicNumber != 2051)
     throw MNist::Exception{
-        "MNist::Loader::loadImagesFile()",
+        "MNist::Loader::loadImagesFile(const std::string&)",
         "Invalid file format for images file: " + imagesPath +
             "\n Magic number mismatch (expected 2051)"};
 
@@ -88,7 +88,8 @@ std::vector<double> MNist::Loader::readBytes(std::ifstream &file,
                                              const std::string &filename) {
   std::vector<char> bytes(length);
   if (!file.read(&bytes[0], length))
-    throw MNist::Exception{"MNist::Loader::readBytes()",
+    throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
+                           "unsigned int, const std::string&)",
                            "Can't read file " + filename +
                                ": file size smaller then needed to read " +
                                std::to_string(length) + " bytes."};
@@ -105,8 +106,9 @@ unsigned int MNist::Loader::readU32(std::ifstream &file,
                                     const std::string &filename) {
   char bytes[4]{};
   if (!file.read(bytes, 4))
-    throw MNist::Exception{"MNist::Loader::readU32()",
-                           "Can't read file " + filename + ": reached end"};
+    throw MNist::Exception{
+        "MNist::Loader::readU32(std::ifstream&, const std::string&)",
+        "Can't read file " + filename + ": reached end"};
   unsigned int value{
       static_cast<unsigned int>(static_cast<unsigned char>(bytes[3]) |
                                 (static_cast<unsigned char>(bytes[2]) << 8) |

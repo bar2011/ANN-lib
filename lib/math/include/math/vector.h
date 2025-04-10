@@ -5,6 +5,7 @@
 
 namespace Math {
 
+// Forward declaration of Matrix class
 template <typename T> class Matrix;
 
 // Forward declaration of Vector class
@@ -12,7 +13,11 @@ template <typename T> class Vector;
 
 // Forward declaration of operator+
 template <typename T>
-Vector<T> operator+(const Vector<T>& a, const Vector<T>& b);
+Vector<T> operator+(const Vector<T> &a, const Vector<T> &b);
+
+// Forward-declaratio of operator+
+template <typename T>
+Matrix<T> operator+(const Matrix<T> &m, const Vector<T> &v);
 
 // Simple vector class with access to mathematical operations
 // T = the data type the vector holds
@@ -43,7 +48,10 @@ public:
   Vector &operator=(Vector &&other) noexcept;
 
   // Element-wise add operation between two vectors of the same type
-  friend Vector<T> operator+<>(const Vector<T> &a, const Vector<T> &b);
+  friend Vector<T> operator+ <>(const Vector<T> &a, const Vector<T> &b);
+  // Column or row vector addition (depends on the given sizes)
+  friend Matrix<T> operator+ <>(const Matrix<T> &m, const Vector<T> &v);
+
   size_t size() const { return m_size; }
 
   T &operator[](int index) { return m_data[index]; }

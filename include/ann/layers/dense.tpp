@@ -4,6 +4,7 @@
 #include "dense.h"
 
 #include "math/linear.h"
+#include "math/matrix.h"
 #include "math/random.h"
 #include "math/vector.h"
 
@@ -14,8 +15,9 @@ Dense<I, N>::Dense()
                 []() -> double { return 0.01 * Math::Random::getNormal(); }){};
 
 template <size_t I, size_t N>
-void Dense<I, N>::forward(const Math::Vector<double> &input) {
-  m_inputs = input; // Store input for later use (e.g., backpropagation)
-  m_output = Math::dot(m_weights, input) + m_biases; // Use input directly here
+void Dense<I, N>::forward(const Math::Matrix<double> &inputs) {
+  m_inputs = inputs; // Store input for later use (e.g., backpropagation)
+  m_output = Math::dotTranspose(inputs, m_weights) +
+             m_biases;
 }
 } // namespace Layer
