@@ -36,10 +36,6 @@ public:
   const Math::Matrix<double> &output() const { return *m_output; }
 
 private:
-  size_t m_inputNum{};
-  size_t m_neuronNum{};
-  size_t m_batchNum{};
-
   Math::Matrix<double> *m_inputs{new Math::Matrix<double>{}};
   Math::Matrix<double> *m_weights{new Math::Matrix<double>{}};
   Math::Vector<double> *m_biases{new Math::Vector<double>{}};

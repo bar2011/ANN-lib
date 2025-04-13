@@ -12,8 +12,7 @@
 
 namespace Layer {
 Dense::Dense(size_t inputNum, size_t neuronNum, size_t batchNum)
-    : m_inputNum{inputNum}, m_neuronNum{neuronNum}, m_batchNum{batchNum},
-      m_inputs{new Math::Matrix<double>{batchNum, inputNum}},
+    : m_inputs{new Math::Matrix<double>{batchNum, inputNum}},
       m_weights{new Math::Matrix<double>{
           neuronNum, inputNum,
           []() -> double { return 0.01 * Math::Random::getNormal(); }}},
