@@ -49,7 +49,7 @@ int main() {
     // Reshape first image to be with a single row instead of 28
     std::get<1>(data[0])[0].reshape(1, rows * cols);
 
-    auto testLayer{new Layer::Dense<rows * cols, 10>()};
+    auto testLayer{new Layer::Dense<rows * cols, 10, 1>()};
     testLayer->forward(std::get<1>(data[0])[0]);
     auto output{testLayer->output()};
 
