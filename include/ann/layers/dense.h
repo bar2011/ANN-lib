@@ -5,27 +5,26 @@
 
 namespace Layer {
 // Basic Dense layer class.
-// I - number of inputs to layer.
-// N - number of neurons in layer.
-// B - number of batches
-template <size_t I, size_t N, size_t B> class Dense {
+class Dense {
 public:
+  Dense() = delete;
+
   // 0-init inputs, biases, and outputs
   // random init weights, in a normal distribution with mean 0 and normal
   // diviasion 1
-  Dense();
+  Dense(size_t inputNum, size_t neuronNum, size_t batchNum);
 
   // Copy constructor deleted
-  Dense(const Dense<I, N, B> &other) = delete;
+  Dense(const Dense &other) = delete;
 
   // Move constructor
-  Dense(Dense<I, N, B> &&other);
+  Dense(Dense &&other);
 
   // Copy assignment deleted
-  Dense &operator=(const Dense<I, N, B> &other) = delete;
+  Dense &operator=(const Dense &other) = delete;
 
   // Move assignment
-  Dense &operator=(Dense<I, N, B> &&other);
+  Dense &operator=(Dense &&other);
 
   // Destructor
   ~Dense();
@@ -37,10 +36,14 @@ public:
   const Math::Matrix<double> &output() const { return *m_output; }
 
 private:
-  Math::Matrix<double> *m_inputs{new Math::Matrix<double>{B, I}};
-  Math::Matrix<double> *m_weights{new Math::Matrix<double>{N, I}};
-  Math::Vector<double> *m_biases{new Math::Vector<double>{N}};
-  Math::Matrix<double> *m_output{new Math::Matrix<double>{B, N}};
+  size_t m_inputNum{};
+  size_t m_neuronNum{};
+  size_t m_batchNum{};
+
+  Math::Matrix<double> *m_inputs{new Math::Matrix<double>{}};
+  Math::Matrix<double> *m_weights{new Math::Matrix<double>{}};
+  Math::Vector<double> *m_biases{new Math::Vector<double>{}};
+  Math::Matrix<double> *m_output{new Math::Matrix<double>{}};
 };
 } // namespace Layer
 
