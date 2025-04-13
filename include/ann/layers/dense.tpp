@@ -8,6 +8,8 @@
 #include "math/random.h"
 #include "math/vector.h"
 
+#include "ann/exception.h"
+
 namespace Layer {
 Dense::Dense(size_t inputNum, size_t neuronNum, size_t batchNum)
     : m_inputNum{inputNum}, m_neuronNum{neuronNum}, m_batchNum{batchNum},
@@ -58,11 +60,10 @@ Dense::~Dense() {
 }
 
 void Dense::forward(const Math::Matrix<double> &inputs) {
-  if (m_inputs && m_output) { // Check if pointers are valid
-    *m_inputs = inputs; // Store input for later use (e.g., backpropagation)
-    *m_output = Math::dotTranspose(inputs, *m_weights) + *m_biases;
-  } else {
-    throw std::runtime_error("Dense layer not properly initialized.");
-  }
+  if (!m_inputs || !m_output) // Check if pointers are valid
+    throw ANN::Exception{"Dense::forward(const Math::Matrix<double>&)",
+                         "Dense layer not properly initialized."};
+  *m_inputs = inputs; // Store input for later use (e.g., backpropagation)
+  *m_output = Math::dotTranspose(inputs, *m_weights) + *m_biases;
 }
 } // namespace Layer
