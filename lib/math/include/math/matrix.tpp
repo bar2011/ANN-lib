@@ -38,6 +38,9 @@ Matrix<T>::Matrix(Matrix &&other) noexcept
 }
 
 template <typename T> Matrix<T> &Matrix<T>::operator=(const Matrix &other) {
+  if (other.rows() != this->rows() || other.cols() != this->cols())
+    throw Math::Exception{"Matrix<T>::operator=(const Matrix&)",
+                          "Matrices dimensions doesn't match."};
   if (&other != this) {
     m_rows = other.m_rows;
     m_cols = other.m_cols;
