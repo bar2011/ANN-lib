@@ -39,6 +39,7 @@ int main() {
         "data/train-labels-idx1-ubyte", "data/train-images-idx3-ubyte",
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
+    delete loader;
     // print first image matrix from data training set
     printMatrixImage(std::get<1>(data[0])[0]);
 
@@ -59,6 +60,7 @@ int main() {
       std::cout << output[0, i] << ' ';
 
     std::cout << "\nFinished\n";
+    delete testLayer;
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
