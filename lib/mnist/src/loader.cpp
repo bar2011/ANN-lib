@@ -5,9 +5,10 @@
 #include <array>
 #include <fstream>
 #include <string>
-#include <string_view>
 #include <tuple>
 #include <vector>
+
+#include <iostream>
 
 std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
   auto train{loadImages(m_trainingLabelsPath, m_trainingImagesPath)};
@@ -19,13 +20,13 @@ std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
 MNist::Loader::DataPair
 MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
-  std::vector<double> labels{loadLabelsFile(labelsPath)};
-  std::vector<Math::Matrix<double>> images{loadImagesFile(imagesPath)};
+  std::vector<unsigned char> labels{loadLabelsFile(labelsPath)};
+  std::vector<Math::Matrix<unsigned char>> images{loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
 
-std::vector<double>
+std::vector<unsigned char>
 MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   std::ifstream labelsFile{labelsPath, std::ios::binary | std::ios::in};
 
@@ -40,14 +41,21 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // Number of image labels (each one is a byte, so also length of remaining
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
+  std::cout << "Label num: " << size << ".\n";
 
   // Actual data
-  std::vector<double> labels{readBytes(labelsFile, size, labelsPath)};
+  unsigned char *labels{readBytes(labelsFile, size, labelsPath)};
 
-  return labels;
+  std::vector<unsigned char> labelsVector(size);
+  std::copy_n(labels, size, labelsVector.begin());
+
+  delete labels;
+  labels = nullptr;
+
+  return labelsVector;
 }
 
-std::vector<Math::Matrix<double>>
+std::vector<Math::Matrix<unsigned char>>
 MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
@@ -68,44 +76,50 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
+  std::cout << "Image num: " << size << ". Byte num: " << size * rows * cols
+            << ".\n";
+
   // Plain image data
-  std::vector<double> imageData{
+  unsigned char *imageData{
       readBytes(imagesFile, size * rows * cols, imagesPath)};
 
-  std::vector<Math::Matrix<double>> images{};
+  std::vector<Math::Matrix<unsigned char>> images{};
   images.reserve(size);
 
   for (unsigned int i{}; i < size; ++i) {
     images.push_back(
-        Math::Matrix<double>(rows, cols, &imageData[i * rows * cols]));
+        Math::Matrix<unsigned char>(rows, cols, &imageData[i * rows * cols]));
   }
+
+  delete imageData;
+  imageData = nullptr;
 
   return images;
 }
 
-std::vector<double> MNist::Loader::readBytes(std::ifstream &file,
-                                             const unsigned int length,
-                                             const std::string &filename) {
-  std::vector<char> bytes(length);
-  if (!file.read(&bytes[0], length))
+unsigned char *MNist::Loader::readBytes(std::ifstream &file,
+                                        const unsigned int length,
+                                        const std::string &filename) {
+  unsigned char *bytes{static_cast<unsigned char *>(malloc(length))};
+  if (!bytes)
+    throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
+                           "unsigned int, const std::string&)",
+                           "Unable to allocate enough memory to store " +
+                               std::to_string(length) + " bytes."};
+
+  if (!file.read(reinterpret_cast<char *>(bytes), length))
     throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
                            "unsigned int, const std::string&)",
                            "Can't read file " + filename +
                                ": file size smaller then needed to read " +
                                std::to_string(length) + " bytes."};
 
-  std::vector<double> doubleBytes(length);
-
-  std::transform(bytes.begin(), bytes.end(), doubleBytes.begin(), [](char c) {
-    return static_cast<double>(static_cast<unsigned char>(c));
-  });
-
-  return doubleBytes;
+  return bytes;
 }
 
 unsigned int MNist::Loader::readU32(std::ifstream &file,
                                     const std::string &filename) {
-  char bytes[4]{};
+  char *bytes{new char[4]};
   if (!file.read(bytes, 4))
     throw MNist::Exception{
         "MNist::Loader::readU32(std::ifstream&, const std::string&)",
@@ -115,5 +129,9 @@ unsigned int MNist::Loader::readU32(std::ifstream &file,
                                 (static_cast<unsigned char>(bytes[2]) << 8) |
                                 (static_cast<unsigned char>(bytes[1]) << 16) |
                                 (static_cast<unsigned char>(bytes[0]) << 24))};
+
+  delete[] bytes;
+  bytes = nullptr;
+
   return value;
 }

@@ -12,8 +12,8 @@ namespace MNist {
 class Loader {
 public:
   // a type which contains a vector of labels and a matching vector of images
-  using DataPair =
-      std::tuple<std::vector<double>, std::vector<Math::Matrix<double>>>;
+  using DataPair = std::tuple<std::vector<unsigned char>,
+                              std::vector<Math::Matrix<unsigned char>>>;
 
   Loader(std::string_view trainingLabelsPath,
          std::string_view trainingImagesPath,
@@ -35,14 +35,15 @@ private:
   static DataPair loadImages(const std::string &labelsPath,
                              const std::string &imagesPath);
 
-  static std::vector<double> loadLabelsFile(const std::string &labelsPath);
+  static std::vector<unsigned char>
+  loadLabelsFile(const std::string &labelsPath);
 
-  static std::vector<Math::Matrix<double>>
+  static std::vector<Math::Matrix<unsigned char>>
   loadImagesFile(const std::string &imagesPath);
 
-  static std::vector<double> readBytes(std::ifstream &file,
-                                       const unsigned int length,
-                                       const std::string &filename = "");
+  static unsigned char *readBytes(std::ifstream &file,
+                                  const unsigned int length,
+                                  const std::string &filename = "");
 
   static unsigned int readU32(std::ifstream &file,
                               const std::string &filename = "");
