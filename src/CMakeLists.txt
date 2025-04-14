@@ -1,5 +1,5 @@
 # Compile main library
-add_library(ANN SHARED ann/ann.cpp)
+add_library(ANN SHARED ann/ann.cpp ann/layers/dense.cpp)
 
 target_include_directories(ANN PUBLIC
           "${CMAKE_CURRENT_SOURCE_DIR}/ann"
