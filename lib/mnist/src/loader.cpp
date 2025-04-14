@@ -96,8 +96,9 @@ std::vector<double> MNist::Loader::readBytes(std::ifstream &file,
 
   std::vector<double> doubleBytes(length);
 
-  std::transform(bytes.begin(), bytes.end(), doubleBytes.begin(),
-                 [](char c) { return static_cast<double>(c); });
+  std::transform(bytes.begin(), bytes.end(), doubleBytes.begin(), [](char c) {
+    return static_cast<double>(static_cast<unsigned char>(c));
+  });
 
   return doubleBytes;
 }
