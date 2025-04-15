@@ -71,17 +71,16 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::vector<Math::Matrix<unsigned char>> images{};
   images.reserve(size);
 
-  for (size_t i{}; i < size; ++i)
-    images.push_back(Math::Matrix<unsigned char>{
-       rows, cols, [&imagesFile, &imagesPath]() -> unsigned char {
-          unsigned char byte{};
-          if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))
-            throw MNist::Exception{
-                "MNist::Loader::loadImagesFile(const std::string&)",
-                "Can't read file " + imagesPath +
-                    ": file size smaller then needed to read all images."};
-          return byte;
-        }});
+  for (size_t i{}; i < size; ++i) {
+    images.push_back(Math::Matrix<unsigned char>{rows, cols});
+    images[i].fill([&imagesFile, &imagesPath](unsigned char *item) {
+      if (!imagesFile.read(reinterpret_cast<char *>(item), 1))
+        throw MNist::Exception{
+            "MNist::Loader::loadImagesFile(const std::string&)",
+            "Can't read file " + imagesPath +
+                ": file size smaller then needed to read all images."};
+    });
+  }
 
   return images;
 }
