@@ -12,7 +12,7 @@ std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
   auto train{loadImages(m_trainingLabelsPath, m_trainingImagesPath)};
   auto test{loadImages(m_testingLabelsPath, m_testingImagesPath)};
 
-  return std::array{train, test};
+  return std::array{std::move(train), std::move(test)};
 }
 
 MNist::Loader::DataPair
