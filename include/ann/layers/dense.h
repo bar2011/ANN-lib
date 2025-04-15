@@ -5,7 +5,8 @@
 
 namespace Layer {
 // Basic Dense layer class.
-class Dense {
+// I = input data type
+template <typename I = double> class Dense {
 public:
   Dense() = delete;
 
@@ -31,14 +32,16 @@ public:
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
-  void forward(const Math::Matrix<double> &inputs);
+  void forward(const Math::Matrix<I> &inputs);
 
   const Math::Matrix<double> &output() const { return *m_output; }
 
 private:
-  Math::Matrix<double> *m_input{new Math::Matrix<double>{}};
+  Math::Matrix<I> *m_input{new Math::Matrix<I>{}};
   Math::Matrix<double> *m_weights{new Math::Matrix<double>{}};
   Math::Vector<double> *m_biases{new Math::Vector<double>{}};
   Math::Matrix<double> *m_output{new Math::Matrix<double>{}};
 };
 } // namespace Layer
+
+#include "dense.tpp"

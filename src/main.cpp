@@ -43,7 +43,6 @@ int main() {
     delete loader;
     // print first image matrix from data training set
     printMatrixImage(std::get<1>(data[0])[0]);
-    /*
 
     // rows and columns in each image
     constexpr int rows{28};
@@ -52,7 +51,7 @@ int main() {
     // Reshape first image to be with a single row instead of 28
     std::get<1>(data[0])[0].reshape(1, rows * cols);
 
-    auto testLayer{new Layer::Dense(rows * cols, 10, 1)};
+    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, 1)};
     testLayer->forward(std::get<1>(data[0])[0]);
     auto output{testLayer->output()};
 
@@ -63,7 +62,6 @@ int main() {
 
     std::cout << "\nFinished\n";
     delete testLayer;
-    */
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
