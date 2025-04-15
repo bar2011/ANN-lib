@@ -37,7 +37,8 @@ public:
   const Math::Matrix<double> &output() const { return *m_output; }
 
 private:
-  Math::Matrix<I> *m_input{new Math::Matrix<I>{}};
+  // No ownership of m_input by the class. Only a view.
+  const Math::Matrix<I> *m_input{nullptr};
   Math::Matrix<double> *m_weights{new Math::Matrix<double>{}};
   Math::Vector<double> *m_biases{new Math::Vector<double>{}};
   Math::Matrix<double> *m_output{new Math::Matrix<double>{}};

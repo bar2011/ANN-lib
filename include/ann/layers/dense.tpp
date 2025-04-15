@@ -33,7 +33,6 @@ Dense<I>::Dense(Dense &&other)
 template <typename I> Dense<I> &Dense<I>::operator=(Dense &&other) {
   if (&other != this) {
     // Free current pointers
-    delete m_input;
     delete m_weights;
     delete m_biases;
     delete m_output;
@@ -54,7 +53,6 @@ template <typename I> Dense<I> &Dense<I>::operator=(Dense &&other) {
 }
 
 template <typename I> Dense<I>::~Dense() {
-  delete m_input;
   delete m_weights;
   delete m_biases;
   delete m_output;
@@ -65,7 +63,7 @@ template <typename I> void Dense<I>::forward(const Math::Matrix<I> &inputs) {
     throw ANN::Exception{
         "template<typename I>Dense<I>::forward(const Math::Matrix<double>&)",
         "template<typename I>Dense<I> layer not properly initialized."};
-  *m_input = inputs; // Store input for later use (e.g., backpropagation)
+  m_input = &inputs; // Store input for later use by backward pass
   *m_output = Math::dotTranspose<double>(inputs, *m_weights) + *m_biases;
 }
 } // namespace Layer
