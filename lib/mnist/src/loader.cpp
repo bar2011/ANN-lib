@@ -8,8 +8,6 @@
 #include <tuple>
 #include <vector>
 
-#include <iostream>
-
 std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
   auto train{loadImages(m_trainingLabelsPath, m_trainingImagesPath)};
   auto test{loadImages(m_testingLabelsPath, m_testingImagesPath)};
