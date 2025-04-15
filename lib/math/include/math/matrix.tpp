@@ -61,6 +61,11 @@ template <typename T> Matrix<T> &Matrix<T>::operator=(Matrix &&other) noexcept {
   return *this;
 }
 
+template <typename T> void Matrix<T>::fill(std::function<void(T *)> gen) {
+  for (size_t i{}; i < m_data.size(); ++i)
+    gen(&m_data[i]);
+}
+
 template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
   if (row >= m_rows)

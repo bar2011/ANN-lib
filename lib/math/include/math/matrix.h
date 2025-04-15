@@ -40,6 +40,10 @@ public:
   // Move assignment
   Matrix &operator=(Matrix &&other) noexcept;
 
+  // Fill the matrix with values from the generator function
+  // gen input - a pointer to the item to be filled
+  void fill(std::function<void(T *)> gen);
+
   // Get specific item from matrix
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;
