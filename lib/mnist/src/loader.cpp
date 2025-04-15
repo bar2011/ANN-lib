@@ -41,18 +41,10 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // Number of image labels (each one is a byte, so also length of remaining
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
-  std::cout << "Label num: " << size << ".\n";
 
-  // Actual data
-  unsigned char *labels{readBytes(labelsFile, size, labelsPath)};
+  std::vector<unsigned char> labels{readBytes(labelsFile, size, labelsPath)};
 
-  std::vector<unsigned char> labelsVector(size);
-  std::copy_n(labels, size, labelsVector.begin());
-
-  delete labels;
-  labels = nullptr;
-
-  return labelsVector;
+  return labels;
 }
 
 std::vector<Math::Matrix<unsigned char>>
@@ -76,38 +68,30 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  std::cout << "Image num: " << size << ". Byte num: " << size * rows * cols
-            << ".\n";
-
-  // Plain image data
-  unsigned char *imageData{
-      readBytes(imagesFile, size * rows * cols, imagesPath)};
-
   std::vector<Math::Matrix<unsigned char>> images{};
   images.reserve(size);
 
-  for (unsigned int i{}; i < size; ++i) {
-    images.push_back(
-        Math::Matrix<unsigned char>(rows, cols, &imageData[i * rows * cols]));
-  }
-
-  delete imageData;
-  imageData = nullptr;
+  for (size_t i{}; i < size; ++i)
+    images.push_back(Math::Matrix<unsigned char>{
+       rows, cols, [&imagesFile, &imagesPath]() -> unsigned char {
+          unsigned char *byte{new unsigned char{}};
+          if (!imagesFile.read(reinterpret_cast<char *>(byte), 1))
+            throw MNist::Exception{
+                "MNist::Loader::loadImagesFile(const std::string&)",
+                "Can't read file " + imagesPath +
+                    ": file size smaller then needed to read all images."};
+          return *byte;
+        }});
 
   return images;
 }
 
-unsigned char *MNist::Loader::readBytes(std::ifstream &file,
-                                        const unsigned int length,
-                                        const std::string &filename) {
-  unsigned char *bytes{static_cast<unsigned char *>(malloc(length))};
-  if (!bytes)
-    throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
-                           "unsigned int, const std::string&)",
-                           "Unable to allocate enough memory to store " +
-                               std::to_string(length) + " bytes."};
+std::vector<unsigned char>
+MNist::Loader::readBytes(std::ifstream &file, const unsigned int length,
+                         const std::string &filename) {
+  std::vector<unsigned char> bytes(length);
 
-  if (!file.read(reinterpret_cast<char *>(bytes), length))
+  if (!file.read(reinterpret_cast<char *>(bytes.begin().base()), length))
     throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
                            "unsigned int, const std::string&)",
                            "Can't read file " + filename +

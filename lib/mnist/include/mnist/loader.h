@@ -41,9 +41,9 @@ private:
   static std::vector<Math::Matrix<unsigned char>>
   loadImagesFile(const std::string &imagesPath);
 
-  static unsigned char *readBytes(std::ifstream &file,
-                                  const unsigned int length,
-                                  const std::string &filename = "");
+  static std::vector<unsigned char> readBytes(std::ifstream &file,
+                                              const unsigned int length,
+                                              const std::string &filename = "");
 
   static unsigned int readU32(std::ifstream &file,
                               const std::string &filename = "");

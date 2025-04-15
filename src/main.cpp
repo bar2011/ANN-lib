@@ -27,8 +27,9 @@ public:
 template <typename T> void printMatrixImage(const Math::Matrix<T> &m) {
   for (size_t row{}; row < m.rows(); ++row) {
     for (size_t col{}; col < m.cols(); ++col)
-      std::cout << "\033[38;2;" << m[row, col] << ';' << m[row, col] << ';'
-                << m[row, col] << "m█\033[0m";
+      std::cout << "\033[38;2;" << static_cast<unsigned int>(m[row, col]) << ';'
+                << static_cast<unsigned int>(m[row, col]) << ';'
+                << static_cast<unsigned int>(m[row, col]) << "m█\033[0m";
     std::cout << '\n';
   }
 }
@@ -42,6 +43,7 @@ int main() {
     delete loader;
     // print first image matrix from data training set
     printMatrixImage(std::get<1>(data[0])[0]);
+    /*
 
     // rows and columns in each image
     constexpr int rows{28};
@@ -61,6 +63,7 @@ int main() {
 
     std::cout << "\nFinished\n";
     delete testLayer;
+    */
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
