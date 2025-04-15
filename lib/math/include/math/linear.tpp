@@ -62,8 +62,8 @@ template <typename T> Matrix<T> dot(const Matrix<T> &ma, const Matrix<T> &mb) {
   return result;
 }
 
-template <typename T>
-Matrix<T> dotTranspose(const Matrix<T> &ma, const Matrix<T> &mb) {
+template <typename T, typename U, typename V>
+Matrix<T> dotTranspose(const Matrix<U> &ma, const Matrix<V> &mb) {
   if (ma.cols() != mb.cols())
     throw Math::Exception{
         "Math::dotTranspose(const Matrix<T>&, const Matrix<T>&)",
@@ -82,7 +82,7 @@ Matrix<T> dotTranspose(const Matrix<T> &ma, const Matrix<T> &mb) {
     }
   }
 
-  return result;
+  return static_cast<Matrix<T>>(result);
 }
 
 }; // namespace Math

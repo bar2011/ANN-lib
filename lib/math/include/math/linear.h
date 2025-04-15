@@ -12,8 +12,8 @@ template <typename T> Vector<T> dot(const Matrix<T> &m, const Vector<T> &v);
 template <typename T> Matrix<T> dot(const Matrix<T> &ma, const Matrix<T> &mb);
 // Matrix with matrix dot product where the second one is transposed
 // (needed for ANN calculations and more efficiently done as one function)
-template <typename T>
-Matrix<T> dotTranspose(const Matrix<T> &ma, const Matrix<T> &mb);
+template <typename T, typename U, typename V>
+Matrix<T> dotTranspose(const Matrix<U> &ma, const Matrix<V> &mb);
 }; // namespace Math
 
 // Include template function implementation file
