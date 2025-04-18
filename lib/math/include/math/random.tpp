@@ -1,4 +1,3 @@
-// DO NOT INCLUDE THIS FILE - include random.h instead
 #pragma once
 
 #include <chrono>

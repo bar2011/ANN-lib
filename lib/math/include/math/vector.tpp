@@ -1,9 +1,7 @@
-// DO NOT INCLUDE THIS FILE - include vector.h instead
 #pragma once
 
 #include "vector.h"
 
-#include "exception.h"
 #include <algorithm>
 
 namespace Math {

@@ -1,4 +1,3 @@
-// DO NOT INCLUDE THIS FILE - include dense.h instead
 #pragma once
 
 #include "dense.h"

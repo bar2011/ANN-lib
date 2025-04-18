@@ -1,4 +1,3 @@
-// DO NOT INCLUDE THIS FILE - include matrixView.h instead
 #pragma once
 
 #include "exception.h"

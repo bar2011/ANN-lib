@@ -1,4 +1,3 @@
-// DO NOT INCLUDE THIS FILE - include matrix.h instead
 #pragma once
 
 #include "exception.h"

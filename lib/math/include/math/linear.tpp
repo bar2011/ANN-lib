@@ -1,4 +1,3 @@
-// DO NOT INCLUDE THIS FILE - include linear.h instead
 #pragma once
 
 #include "linear.h"
