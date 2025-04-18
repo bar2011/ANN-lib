@@ -9,7 +9,6 @@ namespace Math {
 template <typename T> class MatrixBase {
 public:
   // Get specific item from matrix
-  virtual T &operator[](const size_t row, const size_t col) = 0;
   virtual const T &operator[](const size_t row, const size_t col) const = 0;
 
   virtual void reshape(const size_t rows, const size_t cols) = 0;

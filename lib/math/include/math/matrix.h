@@ -1,6 +1,7 @@
 #pragma once
 
 #include "matrixBase.h"
+#include "matrixView.h"
 #include <functional>
 #include <vector>
 
@@ -43,6 +44,15 @@ public:
   const T &operator[](const size_t row, const size_t col) const;
 
   void reshape(const size_t rows, const size_t cols);
+
+  // Get view of the entire matrix.
+  MatrixView<T> view() const;
+
+  // Returns a view of a range of rows from the matrix.
+  // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
+  // endRow is exclusive. The view includes all columns in each row.
+  // Throws if endRow > row count or startRow >= endRow.
+  MatrixView<T> view(size_t startRow, size_t endRow) const;
 
   // Getters
   size_t rows() const { return m_rows; }

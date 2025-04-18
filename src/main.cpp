@@ -1,4 +1,4 @@
-#include "math/matrix.h"
+#include "math/matrixBase.h"
 #include "mnist/loader.h"
 
 #include "ann/layers/dense.h"
@@ -24,7 +24,7 @@ public:
   }
 };
 
-template <typename T> void printMatrixImage(const Math::Matrix<T> &m) {
+template <typename T> void printMatrixImage(const Math::MatrixBase<T> &m) {
   for (size_t row{}; row < m.rows(); ++row) {
     for (size_t col{}; col < m.cols(); ++col)
       std::cout << "\033[38;2;" << static_cast<unsigned int>(m[row, col]) << ';'

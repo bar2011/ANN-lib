@@ -86,11 +86,11 @@ template <typename T>
 const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
   if (row >= m_rows)
     throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t) const",
         "Invalid row number: out of bounds"};
   if (col >= m_cols)
     throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t)",
+        "Math::Matrix<T>::operator[](const size_t, const size_t) const",
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
@@ -107,4 +107,21 @@ void Matrix<T>::reshape(const size_t rows, const size_t cols) {
   m_rows = rows;
   m_cols = cols;
 };
+
+template <typename T> MatrixView<T> Matrix<T>::view() const {
+  return MatrixView<T>{0, m_rows, m_cols, m_data};
+}
+
+template <typename T>
+MatrixView<T> Matrix<T>::view(size_t startRow, size_t endRow) const {
+  if (startRow >= endRow)
+    throw Math::Exception{
+        "Math::Matrix<T>::view(size_t, size_t) const",
+        "Can't create a row view where the start row is ahead of the end row"};
+  if (endRow > m_rows)
+    throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
+                          "Can't create a row view where the end row is "
+                          "outside the matrix's bound"};
+  return MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data};
+}
 }; // namespace Math
