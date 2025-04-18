@@ -6,8 +6,6 @@
 #include "math/linear.h"
 #include "math/random.h"
 
-#include "ann/exception.h"
-
 namespace Layer {
 template <typename I>
 Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum)

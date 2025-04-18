@@ -6,6 +6,12 @@ target_include_directories(ANN PUBLIC
           "${CMAKE_SOURCE_DIR}/include"
 )
 
+# Make .tpp files not exposed to users
+set_source_files_properties(
+  "${CMAKE_SOURCE_DIR}/include/ann/layers/dense.tpp"
+  PROPERTIES HEADER_FILE_ONLY True
+)
+
 target_link_libraries(ANN PRIVATE MathHelpers)
 
 # Add executable
