@@ -1,23 +1,17 @@
 #pragma once
 
-#include "vector.h"
+#include "matrixBase.h"
 #include <functional>
 #include <vector>
 
 namespace Math {
 
-// Forward-declaration of class Matrix
-template <typename T> class Matrix;
-
-// Forward-declaratio of operator+
-template <typename T>
-Matrix<T> operator+(const Matrix<T> &m, const Vector<T> &v);
-
 // Simple matrix class with access to mathematical operations
 // T = the data type the matrix holds
-template <typename T> class Matrix {
+template <typename T> class Matrix : public MatrixBase<T> {
 public:
   Matrix() : m_rows{0}, m_cols{0}, m_data(0) {};
+
   // Create 0-filled matrix of given size
   Matrix(const size_t rows, const size_t cols);
 
@@ -47,9 +41,6 @@ public:
   // Get specific item from matrix
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;
-
-  // Column or row vector addition (depends on the given sizes)
-  friend Matrix<T> operator+ <>(const Matrix<T> &m, const Vector<T> &v);
 
   void reshape(const size_t rows, const size_t cols);
 

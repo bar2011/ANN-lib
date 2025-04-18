@@ -50,17 +50,4 @@ template <typename T> Vector<T> &Vector<T>::operator=(Vector &&other) noexcept {
   return *this;
 }
 
-template <typename T>
-Vector<T> operator+(const Vector<T> &a, const Vector<T> &b) {
-  if (a.size() != b.size())
-    throw Exception{"Math::operator+(Vector<T>, const Vector<T>&)",
-                    "Unable to add two vectors of different sizes"};
-
-  Vector<T> result(a.size());
-  std::transform(a.m_data.begin(), a.m_data.end(), b.m_data.begin(),
-                 result.m_data.begin(), std::plus<T>());
-
-  return result;
-}
-
 } // namespace Math

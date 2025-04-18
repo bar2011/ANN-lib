@@ -1,7 +1,9 @@
 // DO NOT INCLUDE THIS FILE - include matrix.h instead
 #pragma once
 
+#include "exception.h"
 #include "matrix.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -92,32 +94,6 @@ const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
-}
-
-template <typename T>
-Matrix<T> operator+(const Matrix<T> &m, const Vector<T> &v) {
-  if (m.cols() == v.size()) { // row wise addition
-    Matrix<T> result{m.rows(), m.cols()};
-    for (size_t i{}; i < m.rows(); ++i)
-      for (size_t j{}; j < m.cols(); ++j)
-        result[i, j] = m[i, j] + v[j];
-
-    return result;
-  }
-
-  if (m.rows() == v.size()) { // column wise addition
-    Matrix<T> result{m.rows(), m.cols()};
-    for (size_t i{}; i < m.rows(); ++i)
-      for (size_t j{}; j < m.cols(); ++j)
-        result[i, j] = m[i, j] + v[i];
-
-    return result;
-  }
-
-  throw Math::Exception{
-      "Math::operator+(const Matrix<T>&, const Vector<T>&)",
-      "Can't add matrix and vector where their sizes don't match for row or "
-      "column wise addition"};
 }
 
 template <typename T>

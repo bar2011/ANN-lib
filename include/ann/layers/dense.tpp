@@ -4,17 +4,14 @@
 #include "dense.h"
 
 #include "math/linear.h"
-#include "math/matrix.h"
 #include "math/random.h"
-#include "math/vector.h"
 
 #include "ann/exception.h"
 
 namespace Layer {
 template <typename I>
 Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum)
-    : m_input{new Math::Matrix<I>{batchNum, inputNum}},
-      m_weights{new Math::Matrix<double>{
+    : m_weights{new Math::Matrix<double>{
           neuronNum, inputNum,
           []() -> double { return 0.01 * Math::Random::getNormal(); }}},
       m_biases{new Math::Vector<double>{neuronNum}},
@@ -58,11 +55,8 @@ template <typename I> Dense<I>::~Dense() {
   delete m_output;
 }
 
-template <typename I> void Dense<I>::forward(const Math::Matrix<I> &inputs) {
-  if (!m_input || !m_output) // Check if pointers are valid
-    throw ANN::Exception{
-        "template<typename I>Dense<I>::forward(const Math::Matrix<double>&)",
-        "template<typename I>Dense<I> layer not properly initialized."};
+template <typename I>
+void Dense<I>::forward(const Math::MatrixBase<I> &inputs) {
   m_input = &inputs; // Store input for later use by backward pass
   *m_output = Math::dotTranspose<double>(inputs, *m_weights) + *m_biases;
 }
