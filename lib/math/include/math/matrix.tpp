@@ -97,7 +97,7 @@ const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
 }
 
 template <typename T>
-void Matrix<T>::reshape(const size_t rows, const size_t cols) {
+Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
   if (rows * cols != m_rows * m_cols)
     throw Math::Exception{
         "Math::Matrix<T>::reshape(const size_t, const size_t)",
@@ -106,6 +106,8 @@ void Matrix<T>::reshape(const size_t rows, const size_t cols) {
 
   m_rows = rows;
   m_cols = cols;
+
+  return *this;
 };
 
 template <typename T> MatrixView<T> Matrix<T>::view() const {

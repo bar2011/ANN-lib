@@ -43,7 +43,9 @@ public:
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;
 
-  void reshape(const size_t rows, const size_t cols);
+  // Reshapes matrix to given dimensions. Returns *this.
+  // Throws if given (rows * cols) is not equal to current (rows * cols).
+  Matrix &reshape(const size_t rows, const size_t cols);
 
   // Get view of the entire matrix.
   MatrixView<T> view() const;

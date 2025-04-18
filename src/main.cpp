@@ -41,24 +41,27 @@ int main() {
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
     delete loader;
-    // print first image matrix from data training set
-    printMatrixImage(std::get<1>(data[0])[0]);
 
     // rows and columns in each image
     constexpr int rows{28};
     constexpr int cols{28};
+    constexpr int batchSize{2};
 
-    // Reshape first image to be with a single row instead of 28
-    std::get<1>(data[0])[0].reshape(1, rows * cols);
+    // print processed images matrices from data training set
+    printMatrixImage(std::get<1>(data[0]).view(0, batchSize).reshape(28 * batchSize, 28));
 
-    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, 1)};
-    testLayer->forward(std::get<1>(data[0])[0]);
+    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
+    // Forward first row of training images
+    testLayer->forward(std::get<1>(data[0]).view(0, batchSize));
     auto output{testLayer->output()};
 
     std::cout << "Rows: " << output.rows() << ", cols: " << output.cols()
               << ", Output: \n";
-    for (size_t i{}; i < 10; ++i)
-      std::cout << output[0, i] << ' ';
+    for (size_t i{}; i < output.rows(); ++i) {
+      for (size_t j{}; j < output.cols(); ++j)
+        std::cout << output[i, j] << ' ';
+      std::cout << '\n';
+    }
 
     std::cout << "\nFinished\n";
     delete testLayer;

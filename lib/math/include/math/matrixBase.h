@@ -11,7 +11,7 @@ public:
   // Get specific item from matrix
   virtual const T &operator[](const size_t row, const size_t col) const = 0;
 
-  virtual void reshape(const size_t rows, const size_t cols) = 0;
+  virtual MatrixBase &reshape(const size_t rows, const size_t cols) = 0;
 
   // Getters
   virtual size_t rows() const = 0;

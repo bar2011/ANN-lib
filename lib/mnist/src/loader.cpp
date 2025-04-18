@@ -19,7 +19,7 @@ MNist::Loader::DataPair
 MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
   std::vector<unsigned char> labels{loadLabelsFile(labelsPath)};
-  std::vector<Math::Matrix<unsigned char>> images{loadImagesFile(imagesPath)};
+  Math::Matrix<unsigned char> images{loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
@@ -45,7 +45,7 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   return labels;
 }
 
-std::vector<Math::Matrix<unsigned char>>
+Math::Matrix<unsigned char>
 MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
@@ -66,19 +66,15 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  std::vector<Math::Matrix<unsigned char>> images{};
-  images.reserve(size);
+  Math::Matrix<unsigned char> images{size, rows * cols};
 
-  for (size_t i{}; i < size; ++i) {
-    images.push_back(Math::Matrix<unsigned char>{rows, cols});
-    images[i].fill([&imagesFile, &imagesPath](unsigned char *item) {
-      if (!imagesFile.read(reinterpret_cast<char *>(item), 1))
-        throw MNist::Exception{
-            "MNist::Loader::loadImagesFile(const std::string&)",
-            "Can't read file " + imagesPath +
-                ": file size smaller then needed to read all images."};
-    });
-  }
+  images.fill([&imagesFile, &imagesPath](unsigned char *item) {
+    if (!imagesFile.read(reinterpret_cast<char *>(item), 1))
+      throw MNist::Exception{
+          "MNist::Loader::loadImagesFile(const std::string&)",
+          "Can't read file " + imagesPath +
+              ": file size smaller then needed to read all images."};
+  });
 
   return images;
 }

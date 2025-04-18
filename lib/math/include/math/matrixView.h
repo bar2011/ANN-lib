@@ -16,7 +16,9 @@ public:
   // Get specific item from matrix
   const T &operator[](const size_t row, const size_t col) const;
 
-  void reshape(const size_t rows, const size_t cols);
+  // Reshapes matrix view to given dimensions. Returns *this.
+  // Throws if given (rows * cols) is not equal to current (rows * cols).
+  MatrixView &reshape(const size_t rows, const size_t cols);
 
   // Getters
   size_t rows() const { return m_rows; }
