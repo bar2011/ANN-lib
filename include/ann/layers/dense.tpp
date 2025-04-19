@@ -7,12 +7,14 @@
 
 namespace Layer {
 template <typename I>
-Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum)
+Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum,
+                ANN::Activation activation)
     : m_weights{new Math::Matrix<double>{
           neuronNum, inputNum,
           []() -> double { return 0.01 * Math::Random::getNormal(); }}},
       m_biases{new Math::Vector<double>{neuronNum}},
-      m_output{new Math::Matrix<double>{batchNum, neuronNum}} {};
+      m_output{new Math::Matrix<double>{batchNum, neuronNum}},
+      m_activation{new ANN::Activation{std::move(activation)}} {};
 
 template <typename I>
 Dense<I>::Dense(Dense &&other)
@@ -56,5 +58,8 @@ template <typename I>
 void Dense<I>::forward(const Math::MatrixBase<I> &inputs) {
   m_input = &inputs; // Store input for later use by backward pass
   *m_output = Math::dotTranspose<double>(inputs, *m_weights) + *m_biases;
+  auto activationForward{m_activation->getForward()};
+  m_output->fill(
+      [activationForward](double *val) { *val = activationForward(*val); });
 }
 } // namespace Layer
