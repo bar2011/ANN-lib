@@ -45,12 +45,14 @@ int main() {
     // rows and columns in each image
     constexpr int rows{28};
     constexpr int cols{28};
-    constexpr int batchSize{2};
+    constexpr int batchSize{10};
 
     // print processed images matrices from data training set
-    printMatrixImage(std::get<1>(data[0]).view(0, batchSize).reshape(28 * batchSize, 28));
+    printMatrixImage(
+        std::get<1>(data[0]).view(0, batchSize).reshape(28 * batchSize, 28));
 
-    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
+    auto testLayer{new Layer::Dense<unsigned char>(
+        rows * cols, 50, batchSize, {ANN::Activation::ReLU})};
     // Forward first row of training images
     testLayer->forward(std::get<1>(data[0]).view(0, batchSize));
     auto output{testLayer->output()};
