@@ -2,6 +2,7 @@
 #include "mnist/loader.h"
 
 #include "ann/layers/dense.h"
+#include "ann/layers/softmax.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -51,21 +52,35 @@ int main() {
     printMatrixImage(
         std::get<1>(data[0]).view(0, batchSize).reshape(28 * batchSize, 28));
 
-    auto testLayer{new Layer::Dense<unsigned char>(
-        rows * cols, 50, batchSize, {ANN::Activation::ReLU})};
+    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
+
+    auto testSoftmax{new Layer::Softmax(10, batchSize)};
+
     // Forward first row of training images
     testLayer->forward(std::get<1>(data[0]).view(0, batchSize));
-    auto output{testLayer->output()};
+    auto layerOutput{testLayer->output()};
 
-    std::cout << "Rows: " << output.rows() << ", cols: " << output.cols()
-              << ", Output: \n";
-    for (size_t i{}; i < output.rows(); ++i) {
-      for (size_t j{}; j < output.cols(); ++j)
-        std::cout << output[i, j] << ' ';
+    std::cout << "\nRows: " << layerOutput.rows()
+              << ", cols: " << layerOutput.cols() << ", layer output: \n";
+    for (size_t i{}; i < layerOutput.rows(); ++i) {
+      for (size_t j{}; j < layerOutput.cols(); ++j)
+        std::cout << layerOutput[i, j] << ' ';
+      std::cout << '\n';
+    }
+
+    testSoftmax->forward(layerOutput);
+    auto softmaxOutput{testSoftmax->getOutput()};
+
+    std::cout << "\nRows: " << softmaxOutput.rows()
+              << ", cols: " << layerOutput.cols() << ", softmax output: \n";
+    for (size_t i{}; i < softmaxOutput.rows(); ++i) {
+      for (size_t j{}; j < softmaxOutput.cols(); ++j)
+        std::cout << softmaxOutput[i, j] << ' ';
       std::cout << '\n';
     }
 
     std::cout << "\nFinished\n";
+    delete testSoftmax;
     delete testLayer;
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';

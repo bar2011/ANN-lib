@@ -9,6 +9,7 @@ target_include_directories(ANN PUBLIC
 # Make .tpp files not exposed to users
 set_source_files_properties(
   "${CMAKE_SOURCE_DIR}/include/ann/layers/dense.tpp"
+  "${CMAKE_SOURCE_DIR}/include/ann/layers/softmax.tpp"
   PROPERTIES HEADER_FILE_ONLY True
 )
 
