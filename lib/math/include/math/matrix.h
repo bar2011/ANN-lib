@@ -4,6 +4,7 @@
 #include "matrixView.h"
 #include <functional>
 #include <vector>
+#include <memory>
 
 namespace Math {
 
