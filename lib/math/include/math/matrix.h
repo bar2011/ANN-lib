@@ -54,7 +54,7 @@ public:
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
-  MatrixView<T> view(size_t startRow, size_t endRow) const;
+  std::unique_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
 
   // Getters
   size_t rows() const { return m_rows; }

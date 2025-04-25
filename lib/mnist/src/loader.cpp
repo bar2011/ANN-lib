@@ -19,7 +19,8 @@ MNist::Loader::DataPair
 MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
   std::vector<unsigned char> labels{loadLabelsFile(labelsPath)};
-  Math::Matrix<unsigned char> images{loadImagesFile(imagesPath)};
+  std::shared_ptr<Math::Matrix<unsigned char>> images{
+      loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
@@ -45,7 +46,7 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   return labels;
 }
 
-Math::Matrix<unsigned char>
+std::shared_ptr<Math::Matrix<unsigned char>>
 MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
@@ -66,9 +67,10 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  Math::Matrix<unsigned char> images{size, rows * cols};
+  std::shared_ptr<Math::Matrix<unsigned char>> images{
+      new Math::Matrix<unsigned char>(size, rows * cols)};
 
-  images.fill([&imagesFile, &imagesPath](unsigned char *item) {
+  images->fill([&imagesFile, &imagesPath](unsigned char *item) {
     if (!imagesFile.read(reinterpret_cast<char *>(item), 1))
       throw MNist::Exception{
           "MNist::Loader::loadImagesFile(const std::string&)",

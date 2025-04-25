@@ -6,6 +6,8 @@
 #include "math/matrixBase.h"
 #include "math/vector.h"
 
+#include <memory>
+
 namespace Layer {
 // Basic Dense layer class.
 // I = input data type
@@ -32,22 +34,21 @@ public:
   // Move assignment
   Dense &operator=(Dense &&other);
 
-  // Destructor
-  ~Dense();
-
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
-  void forward(const Math::MatrixBase<I> &inputs);
+  void forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
 
-  const Math::Matrix<double> &output() const { return *m_output; }
+  std::shared_ptr<const Math::Matrix<double>> output() const {
+    return m_output;
+  }
 
 private:
   // No ownership of m_input by the class. Only a view.
-  const Math::MatrixBase<I> *m_input{nullptr};
-  Math::Matrix<double> *m_weights{new Math::Matrix<double>{}};
-  Math::Vector<double> *m_biases{new Math::Vector<double>{}};
-  Math::Matrix<double> *m_output{new Math::Matrix<double>{}};
-  ANN::Activation *m_activation{nullptr};
+  std::weak_ptr<const Math::MatrixBase<I>> m_input{};
+  std::unique_ptr<Math::Matrix<double>> m_weights{new Math::Matrix<double>{}};
+  std::unique_ptr<Math::Vector<double>> m_biases{new Math::Vector<double>{}};
+  std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
+  std::unique_ptr<ANN::Activation> m_activation{nullptr};
 };
 } // namespace Layer
 

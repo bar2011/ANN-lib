@@ -50,32 +50,32 @@ int main() {
 
     // print processed images matrices from data training set
     printMatrixImage(
-        std::get<1>(data[0]).view(0, batchSize).reshape(28 * batchSize, 28));
+        std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
     auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
 
     auto testSoftmax{new Layer::Softmax(10, batchSize)};
 
     // Forward first row of training images
-    testLayer->forward(std::get<1>(data[0]).view(0, batchSize));
+    testLayer->forward(std::get<1>(data[0])->view(0, batchSize));
     auto layerOutput{testLayer->output()};
 
-    std::cout << "\nRows: " << layerOutput.rows()
-              << ", cols: " << layerOutput.cols() << ", layer output: \n";
-    for (size_t i{}; i < layerOutput.rows(); ++i) {
-      for (size_t j{}; j < layerOutput.cols(); ++j)
-        std::cout << layerOutput[i, j] << ' ';
+    std::cout << "\nRows: " << layerOutput->rows()
+              << ", cols: " << layerOutput->cols() << ", layer output: \n";
+    for (size_t i{}; i < layerOutput->rows(); ++i) {
+      for (size_t j{}; j < layerOutput->cols(); ++j)
+        std::cout << (*layerOutput)[i, j] << ' ';
       std::cout << '\n';
     }
 
     testSoftmax->forward(layerOutput);
     auto softmaxOutput{testSoftmax->getOutput()};
 
-    std::cout << "\nRows: " << softmaxOutput.rows()
-              << ", cols: " << layerOutput.cols() << ", softmax output: \n";
-    for (size_t i{}; i < softmaxOutput.rows(); ++i) {
-      for (size_t j{}; j < softmaxOutput.cols(); ++j)
-        std::cout << softmaxOutput[i, j] << ' ';
+    std::cout << "\nRows: " << softmaxOutput->rows()
+              << ", cols: " << softmaxOutput->cols() << ", softmax output: \n";
+    for (size_t i{}; i < softmaxOutput->rows(); ++i) {
+      for (size_t j{}; j < softmaxOutput->cols(); ++j)
+        std::cout << (*softmaxOutput)[i, j] << ' ';
       std::cout << '\n';
     }
 

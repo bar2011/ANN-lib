@@ -114,7 +114,8 @@ template <typename T> MatrixView<T> Matrix<T>::view() const {
 }
 
 template <typename T>
-MatrixView<T> Matrix<T>::view(size_t startRow, size_t endRow) const {
+std::unique_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
+                                               size_t endRow) const {
   if (startRow >= endRow)
     throw Math::Exception{
         "Math::Matrix<T>::view(size_t, size_t) const",
@@ -123,6 +124,7 @@ MatrixView<T> Matrix<T>::view(size_t startRow, size_t endRow) const {
     throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
                           "Can't create a row view where the end row is "
                           "outside the matrix's bound"};
-  return MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data};
+  return std::unique_ptr<MatrixView<T>>{
+      new MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data}};
 }
 }; // namespace Math

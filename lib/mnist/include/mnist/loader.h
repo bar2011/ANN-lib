@@ -3,6 +3,7 @@
 #include "math/matrix.h"
 #include <array>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -12,8 +13,8 @@ namespace MNist {
 class Loader {
 public:
   // a type which contains a vector of labels and a matching vector of images
-  using DataPair =
-      std::tuple<std::vector<unsigned char>, Math::Matrix<unsigned char>>;
+  using DataPair = std::tuple<std::vector<unsigned char>,
+                              std::shared_ptr<Math::Matrix<unsigned char>>>;
 
   Loader(std::string_view trainingLabelsPath,
          std::string_view trainingImagesPath,
@@ -44,7 +45,7 @@ private:
   static std::vector<unsigned char>
   loadLabelsFile(const std::string &labelsPath);
 
-  static Math::Matrix<unsigned char>
+  static std::shared_ptr<Math::Matrix<unsigned char>>
   loadImagesFile(const std::string &imagesPath);
 
   static std::vector<unsigned char> readBytes(std::ifstream &file,
