@@ -28,8 +28,8 @@ template <typename I> Softmax<I> &Softmax<I>::operator=(Softmax &&other) {
 }
 
 template <typename I>
-void Softmax<I>::forward(
-    const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
+std::shared_ptr<const Math::Matrix<double>>
+Softmax<I>::forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
 
   for (size_t batch{}; batch < m_output->rows(); ++batch) {
@@ -52,5 +52,7 @@ void Softmax<I>::forward(
     for (size_t i{}; i < inputs->cols(); ++i)
       (*m_output)[batch, i] /= normalBase;
   }
+
+  return m_output;
 }
 } // namespace Layer

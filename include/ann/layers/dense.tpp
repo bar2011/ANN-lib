@@ -36,13 +36,15 @@ template <typename I> Dense<I> &Dense<I>::operator=(Dense &&other) {
 }
 
 template <typename I>
-void Dense<I>::forward(
-    const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
+std::shared_ptr<const Math::Matrix<double>>
+Dense<I>::forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
   m_output = std::shared_ptr<Math::Matrix<double>>{new Math::Matrix<double>(
       Math::dotTranspose<double>(*inputs, *m_weights) + *m_biases)};
   auto activationForward{m_activation->getForward()};
   m_output->fill(
       [activationForward](double *val) { *val = activationForward(*val); });
+
+  return m_output;
 }
 } // namespace Layer

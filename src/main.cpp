@@ -52,27 +52,20 @@ int main() {
     printMatrixImage(
         std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
-    auto testLayer{new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
+    std::unique_ptr<Layer::Dense<unsigned char>> testLayer{
+        new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
 
-    auto testSoftmax{new Layer::Softmax(10, batchSize)};
+    std::unique_ptr<Layer::Softmax<double>> testSoftmax{
+        new Layer::Softmax(10, batchSize)};
 
     // Forward first row of training images
-    testLayer->forward(std::get<1>(data[0])->view(0, batchSize));
-    auto layerOutput{testLayer->output()};
+    auto layerOutput{
+        testLayer->forward(std::get<1>(data[0])->view(0, batchSize))};
 
-    std::cout << "\nRows: " << layerOutput->rows()
-              << ", cols: " << layerOutput->cols() << ", layer output: \n";
-    for (size_t i{}; i < layerOutput->rows(); ++i) {
-      for (size_t j{}; j < layerOutput->cols(); ++j)
-        std::cout << (*layerOutput)[i, j] << ' ';
-      std::cout << '\n';
-    }
-
-    testSoftmax->forward(layerOutput);
-    auto softmaxOutput{testSoftmax->getOutput()};
+    auto softmaxOutput{testSoftmax->forward(layerOutput)};
 
     std::cout << "\nRows: " << softmaxOutput->rows()
-              << ", cols: " << softmaxOutput->cols() << ", softmax output: \n";
+              << ", cols: " << softmaxOutput->cols() << ", model output: \n";
     for (size_t i{}; i < softmaxOutput->rows(); ++i) {
       for (size_t j{}; j < softmaxOutput->cols(); ++j)
         std::cout << (*softmaxOutput)[i, j] << ' ';
@@ -80,8 +73,6 @@ int main() {
     }
 
     std::cout << "\nFinished\n";
-    delete testSoftmax;
-    delete testLayer;
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {

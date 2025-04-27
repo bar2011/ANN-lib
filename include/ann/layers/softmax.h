@@ -25,7 +25,8 @@ public:
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
-  void forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
+  std::shared_ptr<const Math::Matrix<double>>
+  forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
 
   std::shared_ptr<const Math::Matrix<double>> getOutput() const {
     return m_output;
