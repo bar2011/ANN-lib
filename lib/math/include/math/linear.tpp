@@ -89,8 +89,8 @@ Matrix<T> dotTranspose(const MatrixBase<U> &ma, const MatrixBase<V> &mb) {
 template <typename T>
 Vector<T> operator+(const Vector<T> &a, const Vector<T> &b) {
   if (a.size() != b.size())
-    throw Exception{"Math::operator+(Vector<T>, const Vector<T>&)",
-                    "Unable to add two vectors of different sizes"};
+    throw Math::Exception{"Math::operator+(Vector<T>, const Vector<T>&)",
+                          "Unable to add two vectors of different sizes"};
 
   Vector<T> result(a.size());
   std::transform(a.begin(), a.end(), b.begin(), result.begin(), std::plus<T>());

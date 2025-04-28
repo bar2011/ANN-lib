@@ -56,16 +56,16 @@ template <typename T> void Vector<T>::fill(std::function<void(T *)> gen) {
 
 template <typename T> T &Vector<T>::operator[](size_t index) {
   if (index >= m_size)
-    throw Exception{"Vector<T>::operator[](size_t)",
-                    "Given index out of bounds"};
+    throw Math::Exception{"Vector<T>::operator[](size_t)",
+                          "Given index out of bounds"};
 
   return m_data[index];
 }
 
 template <typename T> const T &Vector<T>::operator[](size_t index) const {
   if (index >= m_size)
-    throw Exception{"Vector<T>::operator[](size_t) const",
-                    "Given index out of bounds"};
+    throw Math::Exception{"Vector<T>::operator[](size_t) const",
+                          "Given index out of bounds"};
 
   return m_data[index];
 }
@@ -77,13 +77,15 @@ template <typename T> std::unique_ptr<VectorView<T>> Vector<T>::view() const {
 template <typename T>
 std::unique_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
   if (end > m_size)
-    throw Exception{"Vector<T>::view(size_t, size_t) const",
-                    "Unable to create view of vector.\nGiven end is outside of "
-                    "the vector."};
+    throw Math::Exception{
+        "Vector<T>::view(size_t, size_t) const",
+        "Unable to create view of vector.\nGiven end is outside of "
+        "the vector."};
   if (start >= end)
-    throw Exception{"Vector<T>::view(size_t, size_t) const",
-                    "Unable to create view of vector.\nGiven start is after "
-                    "the given end."};
+    throw Math::Exception{
+        "Vector<T>::view(size_t, size_t) const",
+        "Unable to create view of vector.\nGiven start is after "
+        "the given end."};
 
   return std::unique_ptr<VectorView<T>>{new VectorView<T>{start, end, m_data}};
 }
