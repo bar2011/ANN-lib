@@ -2,6 +2,7 @@
 #pragma once
 
 #include "vectorBase.h"
+
 #include <vector>
 
 namespace Math {

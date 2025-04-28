@@ -2,6 +2,8 @@
 
 #include "math/vector.h"
 
+#include <memory>
+
 namespace Layer {
 // Base loss class - not instantiatable
 class Loss {

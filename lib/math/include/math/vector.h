@@ -3,6 +3,7 @@
 #include "vectorView.h"
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 namespace Math {
