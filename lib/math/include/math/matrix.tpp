@@ -128,4 +128,54 @@ std::unique_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
   return std::unique_ptr<MatrixView<T>>{
       new MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data}};
 }
+
+template <typename T> std::pair<size_t, size_t> Matrix<T>::argmax() const {
+  if (rows() == 0 || cols() == 0)
+    throw Math::Exception{"Math::Matrix<T>::argmax() const",
+                          "Can't get the maximum of an empty matrix"};
+
+  auto maxIndex{std::pair{0uz, 0uz}};
+
+  for (size_t i{}; i < rows(); ++i)
+    for (size_t j{}; j < cols(); ++j)
+      if (operator[](std::get<0>(maxIndex),
+                     std::get<1>(maxIndex)) < operator[](i, j))
+        maxIndex = {i, j};
+
+  return maxIndex;
+}
+
+template <typename T>
+std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxRow() const {
+  if (rows() == 0 || cols() == 0)
+    throw Math::Exception{"Math::Matrix<T>::argmaxRow() const",
+                          "Can't get the maximum of an empty matrix"};
+
+  std::unique_ptr<Math::Vector<size_t>> maxRow{
+      new Math::Vector<size_t>{rows()}};
+
+  for (size_t i{}; i < rows(); ++i)
+    for (size_t j{}; j < cols(); ++j)
+      if (operator[](i, (*maxRow)[i]) < operator[](i, j))
+        (*maxRow)[i] = j;
+
+  return maxRow;
+}
+
+template <typename T>
+std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxCol() const {
+  if (rows() == 0 || cols() == 0)
+    throw Math::Exception{"Math::Matrix<T>::argmaxCol() const",
+                          "Can't get the maximum of an empty matrix"};
+
+  std::unique_ptr<Math::Vector<size_t>> maxCol{
+      new Math::Vector<size_t>{cols()}};
+
+  for (size_t i{}; i < rows(); ++i)
+    for (size_t j{}; j < cols(); ++j)
+      if (operator[]((*maxCol)[j], j) < operator[](i, j))
+        (*maxCol)[j] = i;
+
+  return maxCol;
+}
 }; // namespace Math

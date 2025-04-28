@@ -2,6 +2,8 @@
 
 #include "matrixBase.h"
 #include "matrixView.h"
+#include "vector.h"
+
 #include <functional>
 #include <memory>
 #include <vector>
@@ -56,6 +58,16 @@ public:
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
   std::unique_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
+
+  // Returns the index of the biggest value in the matrix
+  // format: (row, col)
+  std::pair<size_t, size_t> argmax() const;
+
+  // Returns a vector containing the index of the biggest value in each row
+  std::unique_ptr<Math::Vector<size_t>> argmaxRow() const;
+
+  // Returns a vector containing the index of the biggest value in each column
+  std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
 
   // Getters
   size_t rows() const { return m_rows; }
