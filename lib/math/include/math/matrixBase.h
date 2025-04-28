@@ -1,5 +1,7 @@
 #pragma once
 
+#include "math/vector.h"
+#include <memory>
 #include <stddef.h>
 
 namespace Math {
@@ -16,5 +18,15 @@ public:
   // Getters
   virtual size_t rows() const = 0;
   virtual size_t cols() const = 0;
+
+  // Returns the index of the biggest value in the matrix
+  // format: (row, col)
+  virtual std::pair<size_t, size_t> argmax() const = 0;
+
+  // Returns a vector containing the index of the biggest value in each row
+  virtual std::unique_ptr<Math::Vector<size_t>> argmaxRow() const = 0;
+
+  // Returns a vector containing the index of the biggest value in each column
+  virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
 };
 } // namespace Math

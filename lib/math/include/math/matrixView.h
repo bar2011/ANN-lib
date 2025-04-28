@@ -24,6 +24,16 @@ public:
   size_t rows() const { return m_rows; }
   size_t cols() const { return m_cols; }
 
+  // Returns the index of the biggest value in the matrix
+  // format: (row, col)
+  std::pair<size_t, size_t> argmax() const;
+
+  // Returns a vector containing the index of the biggest value in each row
+  std::unique_ptr<Math::Vector<size_t>> argmaxRow() const;
+
+  // Returns a vector containing the index of the biggest value in each column
+  std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
+
   friend Matrix<T>;
 
 private:
