@@ -82,7 +82,8 @@ int main() {
     }
 
     testLoss->forward(softmaxOutput, std::get<0>(data[0])->view(0, batchSize));
-    std::cout << "Mean loss is: " << testLoss->mean() << '\n';
+    std::cout << "loss: " << testLoss->mean()
+              << " accuracy: " << testLoss->accuracy() << '\n';
 
     std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {

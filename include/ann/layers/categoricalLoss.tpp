@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 
 #include "categoricalLoss.h"
 
@@ -51,4 +52,16 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
   return m_output;
 }
 
+template <typename I, typename C>
+double CategoricalLoss<I, C>::accuracy() const {
+  // Get prediction for each row
+  std::unique_ptr<Math::Vector<size_t>> prediction{m_input->argmaxRow()};
+
+  double correctPredictions{};
+  for (size_t i{}; i < prediction->size(); ++i)
+    if ((*prediction)[i] == (*m_correct)[i])
+      ++correctPredictions;
+
+  return correctPredictions / prediction->size();
+}
 } // namespace Layer
