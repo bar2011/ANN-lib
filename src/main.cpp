@@ -62,10 +62,11 @@ int main() {
         std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
     std::unique_ptr<Layer::Dense<unsigned char>> hiddenLayer1{
-        new Layer::Dense<unsigned char>(rows * cols, layer1Neurons, batchSize)};
+        new Layer::Dense<unsigned char>(rows * cols, layer1Neurons, batchSize,
+                                        {ANN::Activation::Sigmoid})};
 
-    std::unique_ptr<Layer::Dense<double>> hiddenLayer2{
-        new Layer::Dense(layer1Neurons, layer2Neurons, batchSize)};
+    std::unique_ptr<Layer::Dense<double>> hiddenLayer2{new Layer::Dense(
+        layer1Neurons, layer2Neurons, batchSize, {ANN::Activation::Sigmoid})};
 
     std::unique_ptr<Layer::Dense<double>> outputLayer{
         new Layer::Dense(layer2Neurons, outputNeurons, batchSize)};
