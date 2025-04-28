@@ -70,12 +70,12 @@ template <typename T> const T &Vector<T>::operator[](size_t index) const {
   return m_data[index];
 }
 
-template <typename T> std::unique_ptr<VectorView<T>> Vector<T>::view() const {
-  return std::unique_ptr<VectorView<T>>{new VectorView<T>{0, m_size, m_data}};
+template <typename T> std::shared_ptr<VectorView<T>> Vector<T>::view() const {
+  return std::shared_ptr<VectorView<T>>{new VectorView<T>{0, m_size, m_data}};
 }
 
 template <typename T>
-std::unique_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
+std::shared_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
   if (end > m_size)
     throw Math::Exception{
         "Vector<T>::view(size_t, size_t) const",
@@ -87,6 +87,6 @@ std::unique_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
         "Unable to create view of vector.\nGiven start is after "
         "the given end."};
 
-  return std::unique_ptr<VectorView<T>>{new VectorView<T>{start, end, m_data}};
+  return std::shared_ptr<VectorView<T>>{new VectorView<T>{start, end, m_data}};
 }
 } // namespace Math

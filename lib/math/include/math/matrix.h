@@ -51,13 +51,13 @@ public:
   Matrix &reshape(const size_t rows, const size_t cols);
 
   // Get view of the entire matrix.
-  std::unique_ptr<MatrixView<T>> view() const;
+  std::shared_ptr<MatrixView<T>> view() const;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
-  std::unique_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
+  std::shared_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
 
   // Returns the index of the biggest value in the matrix
   // format: (row, col)

@@ -109,13 +109,13 @@ Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
   return *this;
 };
 
-template <typename T> std::unique_ptr<MatrixView<T>> Matrix<T>::view() const {
-  return std::unique_ptr<MatrixView<T>>{
+template <typename T> std::shared_ptr<MatrixView<T>> Matrix<T>::view() const {
+  return std::shared_ptr<MatrixView<T>>{
       new MatrixView<T>{0, m_rows, m_cols, m_data}};
 }
 
 template <typename T>
-std::unique_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
+std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
                                                size_t endRow) const {
   if (startRow >= endRow)
     throw Math::Exception{
@@ -125,7 +125,7 @@ std::unique_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
     throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
                           "Can't create a row view where the end row is "
                           "outside the matrix's bound"};
-  return std::unique_ptr<MatrixView<T>>{
+  return std::shared_ptr<MatrixView<T>>{
       new MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data}};
 }
 
