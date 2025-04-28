@@ -34,7 +34,7 @@ public:
 
 private:
   // No ownership of m_input by the class. Only a view.
-  std::weak_ptr<const Math::MatrixBase<I>> m_input{};
+  std::shared_ptr<const Math::MatrixBase<I>> m_input{};
   std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
 };
 } // namespace Layer

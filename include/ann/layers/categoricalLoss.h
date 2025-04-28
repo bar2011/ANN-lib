@@ -36,10 +36,13 @@ public:
   forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs,
           const std::shared_ptr<const Math::VectorBase<C>> &correct);
 
+  // Calculate average plain accuracy based on calculated
+  double accuracy() const;
+
 private:
   // No ownership of m_input by the class. Just a constant view.
-  std::weak_ptr<const Math::MatrixBase<I>> m_input{};
-  std::weak_ptr<const Math::VectorBase<C>> m_correct{};
+  std::shared_ptr<const Math::MatrixBase<I>> m_input{};
+  std::shared_ptr<const Math::VectorBase<C>> m_correct{};
 };
 } // namespace Layer
 

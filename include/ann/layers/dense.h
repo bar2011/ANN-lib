@@ -46,7 +46,7 @@ public:
 
 private:
   // No ownership of m_input by the class. Only a view.
-  std::weak_ptr<const Math::MatrixBase<I>> m_input{};
+  std::shared_ptr<const Math::MatrixBase<I>> m_input{};
   std::unique_ptr<Math::Matrix<double>> m_weights{new Math::Matrix<double>{}};
   std::unique_ptr<Math::Vector<double>> m_biases{new Math::Vector<double>{}};
   std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
