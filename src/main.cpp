@@ -52,38 +52,50 @@ int main() {
     // rows and columns in each image
     constexpr int rows{28};
     constexpr int cols{28};
+    constexpr int layer1Neurons{16};
+    constexpr int layer2Neurons{16};
+    constexpr int outputNeurons{10};
     constexpr int batchSize{10};
 
     // print processed images matrices from data training set
     printMatrixImage(
         std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
-    std::unique_ptr<Layer::Dense<unsigned char>> testLayer{
-        new Layer::Dense<unsigned char>(rows * cols, 10, batchSize)};
+    std::unique_ptr<Layer::Dense<unsigned char>> hiddenLayer1{
+        new Layer::Dense<unsigned char>(rows * cols, layer1Neurons, batchSize)};
 
-    std::unique_ptr<Layer::Softmax<double>> testSoftmax{
-        new Layer::Softmax(10, batchSize)};
+    std::unique_ptr<Layer::Dense<double>> hiddenLayer2{
+        new Layer::Dense(layer1Neurons, layer2Neurons, batchSize)};
 
-    std::unique_ptr<Layer::CategoricalLoss<double, unsigned char>> testLoss{
+    std::unique_ptr<Layer::Dense<double>> outputLayer{
+        new Layer::Dense(layer2Neurons, outputNeurons, batchSize)};
+
+    std::unique_ptr<Layer::Softmax<double>> outputSoftmax{
+        new Layer::Softmax(outputNeurons, batchSize)};
+
+    std::unique_ptr<Layer::CategoricalLoss<double, unsigned char>> loss{
         new Layer::CategoricalLoss<double, unsigned char>(batchSize)};
 
-    // Forward first row of training images
-    auto layerOutput{
-        testLayer->forward(std::get<1>(data[0])->view(0, batchSize))};
+    // FORWARD PASS
 
-    auto softmaxOutput{testSoftmax->forward(layerOutput)};
+    // Get first batchSize training images and labels
+    auto inputData{std::get<1>(data[0])->view(0, batchSize)};
+    auto inputCorrect{std::get<0>(data[0])->view(0, batchSize)};
 
-    std::cout << "\nRows: " << softmaxOutput->rows()
-              << ", cols: " << softmaxOutput->cols() << ", model output: \n";
-    for (size_t i{}; i < softmaxOutput->rows(); ++i) {
-      for (size_t j{}; j < softmaxOutput->cols(); ++j)
-        std::cout << (*softmaxOutput)[i, j] << ' ';
-      std::cout << '\n';
-    }
+    hiddenLayer1->forward(inputData);
+    hiddenLayer2->forward(hiddenLayer1->output());
+    outputLayer->forward(hiddenLayer2->output());
+    outputSoftmax->forward(outputLayer->output());
+    loss->forward(outputSoftmax->output(), inputCorrect);
 
-    testLoss->forward(softmaxOutput, std::get<0>(data[0])->view(0, batchSize));
-    std::cout << "loss: " << testLoss->mean()
-              << " accuracy: " << testLoss->accuracy() << '\n';
+    std::cout << "loss: " << loss->mean() << " accuracy: " << loss->accuracy()
+              << '\n';
+
+    auto predictions{outputSoftmax->output()->argmaxRow()};
+
+    for (size_t i{}; i < predictions->size(); ++i)
+      std::cout << (*predictions)[i] + 1 << ' ';
+    std::cout << '\n';
 
     std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {
