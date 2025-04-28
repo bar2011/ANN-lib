@@ -8,21 +8,22 @@ Softmax<I>::Softmax(size_t neuronNum, size_t batchNum)
     : m_output{new Math::Matrix<double>{batchNum, neuronNum}} {};
 
 template <typename I>
-Softmax<I>::Softmax(Softmax &&other)
+Softmax<I>::Softmax(Softmax &&other) noexcept
     : m_input{other.m_input}, m_output{other.m_output} {
-  other.m_input = nullptr;
-  other.m_output = nullptr;
+  other.m_input.reset();
+  other.m_output.reset();
 }
 
-template <typename I> Softmax<I> &Softmax<I>::operator=(Softmax &&other) {
+template <typename I>
+Softmax<I> &Softmax<I>::operator=(Softmax &&other) noexcept {
   if (&other != this) {
-    // Move other's pointers`
-    m_input = std::move(other.m_input);
-    m_output = std::move(other.m_output);
+    // Move other's pointers
+    m_input = other.m_input;
+    m_output = other.m_output;
 
-    // "Remove" other's pointers
-    other.m_input = nullptr;
-    other.m_output = nullptr;
+    // Reset other's pointers
+    other.m_input.reset();
+    other.m_output.reset();
   }
   return *this;
 }

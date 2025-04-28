@@ -15,13 +15,13 @@ public:
   Softmax(const Softmax &other) = delete;
 
   // Move constructor
-  Softmax(Softmax &&other);
+  Softmax(Softmax &&other) noexcept;
 
   // Copy assignment deleted
   Softmax &operator=(const Softmax &other) = delete;
 
   // Move assignment
-  Softmax &operator=(Softmax &&other);
+  Softmax &operator=(Softmax &&other) noexcept;
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables

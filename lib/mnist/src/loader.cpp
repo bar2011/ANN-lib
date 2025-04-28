@@ -18,14 +18,15 @@ std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
 MNist::Loader::DataPair
 MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
-  std::vector<unsigned char> labels{loadLabelsFile(labelsPath)};
+  std::shared_ptr<Math::Vector<unsigned char>> labels{
+      loadLabelsFile(labelsPath)};
   std::shared_ptr<Math::Matrix<unsigned char>> images{
       loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
 
-std::vector<unsigned char>
+std::shared_ptr<Math::Vector<unsigned char>>
 MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   std::ifstream labelsFile{labelsPath, std::ios::binary | std::ios::in};
 
@@ -41,7 +42,13 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
 
-  std::vector<unsigned char> labels{readBytes(labelsFile, size, labelsPath)};
+  std::shared_ptr<Math::Vector<unsigned char>> labels{
+      new Math::Vector<unsigned char>(size)};
+
+  labels->fill([&labelsFile, &labelsPath](unsigned char *item) {
+    if (!labelsFile.read(reinterpret_cast<char *>(item), 1))
+      throw;
+  });
 
   return labels;
 }

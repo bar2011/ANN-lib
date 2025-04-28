@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vectorView.h"
+
 #include <functional>
 #include <vector>
 
@@ -33,13 +35,24 @@ public:
   // Move assignment
   Vector &operator=(Vector &&other) noexcept;
 
+  // Fill the vector with values from the generator function
+  // gen input - a pointer to the item to be filled
+  void fill(std::function<void(T *)> gen);
+
+  // Get specific item from vector
+  T &operator[](size_t index);
+  const T &operator[](size_t index) const;
+
+  // Get view of the entire vector
+  std::unique_ptr<VectorView<T>> view() const;
+
+  // Returns a view of a range of indicies from the vector
+  // Included values are in the range of [start, end)
+  // Throws if end > size or start >= end
+  std::unique_ptr<VectorView<T>> view(size_t start, size_t end) const;
+
+  // Getters
   size_t size() const { return m_size; }
-
-  T &operator[](size_t index) { return m_data[index]; }
-  const T &operator[](size_t index) const { return m_data[index]; }
-
-  T *begin() { return m_data.begin().base(); }
-  T *end() { return m_data.end().base(); }
 
 private:
   std::vector<T> m_data{};

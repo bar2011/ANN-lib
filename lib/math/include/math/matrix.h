@@ -3,8 +3,8 @@
 #include "matrixBase.h"
 #include "matrixView.h"
 #include <functional>
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace Math {
 
@@ -49,7 +49,7 @@ public:
   Matrix &reshape(const size_t rows, const size_t cols);
 
   // Get view of the entire matrix.
-  MatrixView<T> view() const;
+  std::unique_ptr<MatrixView<T>> view() const;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,

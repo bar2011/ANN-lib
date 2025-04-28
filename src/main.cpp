@@ -1,6 +1,7 @@
 #include "math/matrixBase.h"
 #include "mnist/loader.h"
 
+#include "ann/layers/categoricalLoss.h"
 #include "ann/layers/dense.h"
 #include "ann/layers/softmax.h"
 
@@ -43,6 +44,11 @@ int main() {
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
     delete loader;
 
+    std::cout << "Data: \n";
+    for (size_t i{}; i < 50; ++i)
+      std::cout << static_cast<int>((*std::get<0>(data[0]))[i]) << ' ';
+    std::cout << '\n';
+
     // rows and columns in each image
     constexpr int rows{28};
     constexpr int cols{28};
@@ -58,6 +64,9 @@ int main() {
     std::unique_ptr<Layer::Softmax<double>> testSoftmax{
         new Layer::Softmax(10, batchSize)};
 
+    std::unique_ptr<Layer::CategoricalLoss<double, unsigned char>> testLoss{
+        new Layer::CategoricalLoss<double, unsigned char>(batchSize)};
+
     // Forward first row of training images
     auto layerOutput{
         testLayer->forward(std::get<1>(data[0])->view(0, batchSize))};
@@ -71,6 +80,9 @@ int main() {
         std::cout << (*softmaxOutput)[i, j] << ' ';
       std::cout << '\n';
     }
+
+    testLoss->forward(softmaxOutput, std::get<0>(data[0])->view(0, batchSize));
+    std::cout << "Mean loss is: " << testLoss->mean() << '\n';
 
     std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {
