@@ -20,5 +20,11 @@ struct Activation {
   Activation(Activation &&other) noexcept;
 
   std::function<double(double)> getForward();
+
+  // Returns function for backpropagation
+  // Returned function input - the output of the layer, the derivative of the
+  // specific output
+  // Returned function return - the derivative in respect to the activation function
+  std::function<double(double, double)> getBackward();
 };
 } // namespace ANN
