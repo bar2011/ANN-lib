@@ -54,6 +54,7 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
 
   return m_output;
 }
+
 template <typename I, typename C>
 std::shared_ptr<const Math::Matrix<double>> CategoricalLoss<I, C>::backward() {
   for (size_t i{}; i < m_input->rows(); ++i)

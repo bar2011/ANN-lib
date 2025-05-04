@@ -1,9 +1,8 @@
 #include "math/matrixBase.h"
 #include "mnist/loader.h"
 
-#include "ann/layers/categoricalLoss.h"
+#include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
-#include "ann/layers/softmax.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -71,11 +70,10 @@ int main() {
     std::unique_ptr<Layer::Dense<double>> outputLayer{
         new Layer::Dense(layer2Neurons, outputNeurons, batchSize)};
 
-    std::unique_ptr<Layer::Softmax<double>> outputSoftmax{
-        new Layer::Softmax(outputNeurons, batchSize)};
-
-    std::unique_ptr<Layer::CategoricalLoss<double, unsigned char>> loss{
-        new Layer::CategoricalLoss<double, unsigned char>(batchSize)};
+    std::unique_ptr<Layer::CategoricalLossSoftmax<double, unsigned char>>
+        outputSoftmaxLoss{
+            new Layer::CategoricalLossSoftmax<double, unsigned char>(
+                outputNeurons, batchSize)};
 
     // FORWARD PASS
 
@@ -86,22 +84,20 @@ int main() {
     hiddenLayer1->forward(inputData);
     hiddenLayer2->forward(hiddenLayer1->output());
     outputLayer->forward(hiddenLayer2->output());
-    outputSoftmax->forward(outputLayer->output());
-    loss->forward(outputSoftmax->output(), inputCorrect);
+    outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
-    std::cout << "loss: " << loss->mean() << " accuracy: " << loss->accuracy()
-              << '\n';
+    std::cout << "loss: " << outputSoftmaxLoss->mean()
+              << " accuracy: " << outputSoftmaxLoss->accuracy() << '\n';
 
-    auto predictions{outputSoftmax->output()->argmaxRow()};
+    auto predictions{outputSoftmaxLoss->softmaxOutput()->argmaxRow()};
 
     for (size_t i{}; i < predictions->size(); ++i)
       std::cout << (*predictions)[i] + 1 << ' ';
     std::cout << '\n';
 
     // BACKWARD PASS
-    loss->backward();
-    outputSoftmax->backward(loss->dinputs());
-    outputLayer->backward(outputSoftmax->dinputs());
+    outputSoftmaxLoss->backward();
+    outputLayer->backward(outputSoftmaxLoss->dinputs());
     hiddenLayer2->backward(outputLayer->dinputs());
     hiddenLayer1->backward(hiddenLayer2->dinputs());
 
