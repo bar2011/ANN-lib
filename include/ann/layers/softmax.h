@@ -28,14 +28,24 @@ public:
   std::shared_ptr<const Math::Matrix<double>>
   forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
 
+  // Compute dinputs gradient
+  std::shared_ptr<const Math::Matrix<double>>
+  backward(const std::shared_ptr<const Math::Matrix<double>> &dvalues);
+
   std::shared_ptr<const Math::Matrix<double>> output() const {
     return m_output;
+  }
+
+  std::shared_ptr<const Math::Matrix<double>> dinputs() const {
+    return m_dinputs;
   }
 
 private:
   // No ownership of m_input by the class. Only a view.
   std::shared_ptr<const Math::MatrixBase<I>> m_input{};
   std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
+
+  std::shared_ptr<Math::Matrix<double>> m_dinputs{new Math::Matrix<double>{}};
 };
 } // namespace Layer
 
