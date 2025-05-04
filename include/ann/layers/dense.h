@@ -40,9 +40,18 @@ public:
   std::shared_ptr<const Math::Matrix<double>>
   forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
 
+  // perform backward pass with given dvalues
+  // dvalues = matrix of how each input of each batch impacts the output of the
+  // network
+  // saves gradients as member variables
+  std::shared_ptr<Math::Matrix<double>>
+  backward(const std::shared_ptr<const Math::MatrixBase<double>> &dvalues);
+
   std::shared_ptr<const Math::Matrix<double>> output() const {
     return m_output;
   }
+
+  std::shared_ptr<Math::Matrix<double>> dinputs() const { return m_dinputs; }
 
 private:
   // No ownership of m_input by the class. Only a view.
@@ -51,6 +60,10 @@ private:
   std::unique_ptr<Math::Vector<double>> m_biases{new Math::Vector<double>{}};
   std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
   std::unique_ptr<ANN::Activation> m_activation{nullptr};
+
+  std::unique_ptr<Math::Matrix<double>> m_dweights{new Math::Matrix<double>{}};
+  std::shared_ptr<Math::Matrix<double>> m_dinputs{new Math::Matrix<double>{}};
+  std::unique_ptr<Math::Vector<double>> m_dbiases{new Math::Vector<double>{}};
 };
 } // namespace Layer
 
