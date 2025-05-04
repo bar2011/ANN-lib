@@ -98,6 +98,13 @@ int main() {
       std::cout << (*predictions)[i] + 1 << ' ';
     std::cout << '\n';
 
+    // BACKWARD PASS
+    loss->backward();
+    outputSoftmax->backward(loss->dinputs());
+    outputLayer->backward(outputSoftmax->dinputs());
+    hiddenLayer2->backward(outputLayer->dinputs());
+    hiddenLayer1->backward(hiddenLayer2->dinputs());
+
     std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
