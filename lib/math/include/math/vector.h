@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vectorBase.h"
 #include "vectorView.h"
 
 #include <functional>
@@ -7,10 +8,9 @@
 #include <vector>
 
 namespace Math {
-
 // Simple vector class with access to mathematical operations
 // T = the data type the vector holds
-template <typename T> class Vector {
+template <typename T> class Vector : public VectorBase<T> {
 public:
   // Default constructor
   Vector() : m_size{0} {};
@@ -54,6 +54,8 @@ public:
 
   // Getters
   size_t size() const { return m_size; }
+
+  friend Matrix<T>;
 
 private:
   std::vector<T> m_data{};

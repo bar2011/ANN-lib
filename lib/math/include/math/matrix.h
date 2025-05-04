@@ -3,6 +3,7 @@
 #include "matrixBase.h"
 #include "matrixView.h"
 #include "vector.h"
+#include "vectorView.h"
 
 #include <functional>
 #include <memory>
@@ -42,9 +43,23 @@ public:
   // gen input - a pointer to the item to be filled
   void fill(std::function<void(T *)> gen);
 
+  // Transform the current matrix using the given function
+  // gen's inputs = a pointer to a value from the current matrix, and the
+  // corresponding value from m. Both matrices must be the same dimensions
+  void transform(const MatrixBase<T> &m,
+                 std::function<void(T *, const T *)> gen);
+
+  // Inserts a row at the end of the matrix
+  // Throws if v.size != this->cols()
+  void insertRow(const Vector<T> &v);
+
   // Get specific item from matrix
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;
+
+  // Get specific row from matrix
+  const std::shared_ptr<VectorView<T>> operator[](const size_t row);
+  const std::shared_ptr<const VectorView<T>> operator[](const size_t row) const;
 
   // Reshapes matrix to given dimensions. Returns *this.
   // Throws if given (rows * cols) is not equal to current (rows * cols).
@@ -72,6 +87,8 @@ public:
   // Getters
   size_t rows() const { return m_rows; }
   size_t cols() const { return m_cols; }
+  std::vector<T> &data() { return m_data; };
+  const std::vector<T> &data() const { return m_data; };
 
 private:
   std::vector<T> m_data{};

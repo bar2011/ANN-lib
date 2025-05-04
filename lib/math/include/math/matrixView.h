@@ -1,6 +1,8 @@
 #pragma once
 
 #include "matrixBase.h"
+#include "vector.h"
+
 #include <vector>
 
 namespace Math {
@@ -33,6 +35,11 @@ public:
 
   // Returns a vector containing the index of the biggest value in each column
   std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
+
+  // Getters
+
+  // Return data from absolute start. Not necessarily start of MatrixView
+  const std::vector<T> &data() const { return m_data; };
 
   friend Matrix<T>;
 

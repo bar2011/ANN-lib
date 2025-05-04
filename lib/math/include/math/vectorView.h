@@ -9,6 +9,8 @@ namespace Math {
 
 template <typename T> class Vector;
 
+template <typename T> class Matrix;
+
 // Class which mimics Math::vector class, but holds a reference to a data vector
 // instead of the data itself. Hence, it has no ownership of the data it holds.
 template <typename T> class VectorView : public VectorBase<T> {
@@ -22,6 +24,8 @@ public:
   size_t size() const { return m_size; }
 
   friend Vector<T>;
+
+  friend Matrix<T>;
 
 private:
   VectorView(size_t start, size_t size, const std::vector<T> &data)

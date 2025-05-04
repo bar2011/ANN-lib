@@ -1,10 +1,12 @@
 #pragma once
 
-#include "math/vector.h"
 #include <memory>
 #include <stddef.h>
+#include <vector>
 
 namespace Math {
+
+template <typename T> class Vector;
 
 // Base matrix class - pure virtual interface, can't be instantiated. only to
 // inherit for other classes
@@ -28,5 +30,7 @@ public:
 
   // Returns a vector containing the index of the biggest value in each column
   virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
+
+  virtual const std::vector<T> &data() const = 0;
 };
 } // namespace Math

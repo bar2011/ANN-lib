@@ -2,6 +2,8 @@
 
 #include "exception.h"
 #include "matrix.h"
+#include "vector.h"
+#include "vectorView.h"
 
 #include <algorithm>
 #include <utility>
@@ -68,6 +70,21 @@ template <typename T> void Matrix<T>::fill(std::function<void(T *)> gen) {
 }
 
 template <typename T>
+void Matrix<T>::transform(const MatrixBase<T> &m,
+                          std::function<void(T *, const T *)> gen) {
+  for (size_t i{}; i < m_data.size(); ++i)
+    gen(&m_data[i], &m.data()[i]);
+}
+
+template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
+  if (v.size() != cols())
+    throw Math::Exception{"Math::Matrix<T>::insertRow(const Vector<T>&)",
+                          "Invalid size for added row"};
+
+  ++m_rows;
+  m_data.insert(m_data.end(), v.m_data.begin(), v.m_data.end());
+}
+template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
   if (row >= m_rows)
     throw Math::Exception{
@@ -93,6 +110,27 @@ const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
+}
+
+template <typename T>
+const std::shared_ptr<VectorView<T>> Matrix<T>::operator[](const size_t row) {
+  if (row >= m_rows)
+    throw Math::Exception{"Math::Matrix<T>::operator[](const size_t)",
+                          "Invalid row number: out of bounds"};
+
+  return std::shared_ptr<VectorView<T>>{
+      new VectorView<T>{row * m_cols, m_rows, m_data}};
+}
+
+template <typename T>
+const std::shared_ptr<const VectorView<T>>
+Matrix<T>::operator[](const size_t row) const {
+  if (row >= m_rows)
+    throw Math::Exception{"Math::Matrix<T>::operator[](const size_t) const",
+                          "Invalid row number: out of bounds"};
+
+  return std::shared_ptr<VectorView<T>>{
+      new VectorView<T>{row * m_cols, m_rows, m_data}};
 }
 
 template <typename T>
