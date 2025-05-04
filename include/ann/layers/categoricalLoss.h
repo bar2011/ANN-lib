@@ -2,6 +2,7 @@
 
 #include "loss.h"
 
+#include "math/matrix.h"
 #include "math/matrixBase.h"
 #include "math/vectorBase.h"
 
@@ -36,13 +37,23 @@ public:
   forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs,
           const std::shared_ptr<const Math::VectorBase<C>> &correct);
 
+  // perform backward pass based on the given inputs and correct values in
+  // forward pass
+  std::shared_ptr<const Math::Matrix<double>> backward();
+
   // Calculate average plain accuracy based on calculated
   double accuracy() const;
+
+  std::shared_ptr<const Math::Matrix<double>> dinputs() const {
+    return m_dinputs;
+  }
 
 private:
   // No ownership of m_input by the class. Just a constant view.
   std::shared_ptr<const Math::MatrixBase<I>> m_input{};
   std::shared_ptr<const Math::VectorBase<C>> m_correct{};
+
+  std::shared_ptr<Math::Matrix<double>> m_dinputs{};
 };
 } // namespace Layer
 

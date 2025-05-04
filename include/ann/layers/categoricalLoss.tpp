@@ -39,6 +39,9 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
   // Store arguments for later use by backpropagation
   m_input = inputs;
   m_correct = correct;
+  if (!m_dinputs)
+    m_dinputs = std::shared_ptr<Math::Matrix<double>>{
+        new Math::Matrix<double>{inputs->rows(), inputs->cols()}};
 
   for (size_t batch{}; batch < m_output->size(); ++batch) {
     double val{(*inputs)[batch, (*correct)[batch]]};
@@ -50,6 +53,21 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
   }
 
   return m_output;
+}
+template <typename I, typename C>
+std::shared_ptr<const Math::Matrix<double>> CategoricalLoss<I, C>::backward() {
+  for (size_t i{}; i < m_input->rows(); ++i)
+    for (size_t j{}; j < m_input->cols(); ++j) {
+      if ((*m_correct)[i] != j)
+        (*m_dinputs)[i, j] = 0;
+      else
+        // Set the corresponding value to the derivative of the loss function
+        // Divided by number or rows (which is number of batches) for some sort
+        // of normalization (useful while optimizing)
+        (*m_dinputs)[i, j] = -1 / (*m_input)[i, j] / m_input->rows();
+    }
+
+  return m_dinputs;
 }
 
 template <typename I, typename C>
