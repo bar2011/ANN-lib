@@ -12,6 +12,26 @@ CategoricalLossSoftmax<I, C>::CategoricalLossSoftmax(size_t neuronNum,
       m_dinputs{std::make_shared<Math::Matrix<double>>(neuronNum, batchNum)} {}
 
 template <typename I, typename C>
+CategoricalLossSoftmax<I, C>::CategoricalLossSoftmax(
+    CategoricalLossSoftmax &&other) noexcept
+    : m_softmaxOutput{std::move(other.m_softmaxOutput)},
+      m_lossOutput{std::move(other.m_lossOutput)}, m_input{other.m_input},
+      m_correct{other.m_correct}, m_dinputs{std::move(other.m_dinputs)} {}
+
+template <typename I, typename C>
+CategoricalLossSoftmax<I, C> &CategoricalLossSoftmax<I, C>::operator=(
+    CategoricalLossSoftmax &&other) noexcept {
+  if (this != &other) {
+    m_input = std::move(other.m_input);
+    m_correct = std::move(other.m_correct);
+    m_softmaxOutput = std::move(other.m_softmaxOutput);
+    m_lossOutput = std::move(other.m_lossOutput);
+    m_dinputs = std::move(other.m_dinputs);
+  }
+  return *this;
+}
+
+template <typename I, typename C>
 std::shared_ptr<const Math::Matrix<double>>
 CategoricalLossSoftmax<I, C>::forward(
     const std::shared_ptr<const Math::MatrixBase<I>> &inputs,
