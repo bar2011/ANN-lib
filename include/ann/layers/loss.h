@@ -19,11 +19,13 @@ protected:
   Loss() = default;
 
   // initialize member variables
-  Loss(size_t batchNum) : m_output{new Math::Vector<double>(batchNum)} {};
+  Loss(size_t batchNum)
+      : m_output{std::make_shared<Math::Vector<double>>(batchNum)} {};
 
   // Move constructor
   Loss(Loss &&other) : m_output{other.m_output} { other.m_output.reset(); }
 
-  std::shared_ptr<Math::Vector<double>> m_output{new Math::Vector<double>{}};
+  std::shared_ptr<Math::Vector<double>> m_output{
+      std::make_shared<Math::Vector<double>>()};
 };
 } // namespace Layer

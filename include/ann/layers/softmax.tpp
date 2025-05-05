@@ -7,8 +7,8 @@
 namespace Layer {
 template <typename I>
 Softmax<I>::Softmax(size_t neuronNum, size_t batchNum)
-    : m_output{new Math::Matrix<double>{batchNum, neuronNum}},
-      m_dinputs{new Math::Matrix<double>{0, neuronNum}} {};
+    : m_output{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
+      m_dinputs{std::make_shared<Math::Matrix<double>>(0, neuronNum)} {};
 
 template <typename I>
 Softmax<I>::Softmax(Softmax &&other) noexcept
@@ -64,8 +64,8 @@ template <typename I>
 std::shared_ptr<const Math::Matrix<double>> Softmax<I>::backward(
     const std::shared_ptr<const Math::Matrix<double>> &dvalues) {
   for (size_t i{}; i < dvalues->rows(); ++i) {
-    std::unique_ptr<Math::Matrix<double>> jacobianMatrix{
-        new Math::Matrix<double>{dvalues->cols(), dvalues->cols()}};
+    auto jacobianMatrix{std::make_unique<Math::Matrix<double>>{
+        dvalues->cols(), dvalues->cols()}};
 
     for (size_t row{}; row < dvalues->cols(); ++row)
       for (size_t col{}; col < dvalues->cols(); ++col)

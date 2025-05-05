@@ -56,14 +56,20 @@ public:
 private:
   // No ownership of m_input by the class. Only a view.
   std::shared_ptr<const Math::MatrixBase<I>> m_input{};
-  std::unique_ptr<Math::Matrix<double>> m_weights{new Math::Matrix<double>{}};
-  std::unique_ptr<Math::Vector<double>> m_biases{new Math::Vector<double>{}};
-  std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
+  std::unique_ptr<Math::Matrix<double>> m_weights{
+      std::make_unique<Math::Matrix<double>>()};
+  std::unique_ptr<Math::Vector<double>> m_biases{
+      std::make_unique<Math::Vector<double>>()};
+  std::shared_ptr<Math::Matrix<double>> m_output{
+      std::make_shared<Math::Matrix<double>>()};
   std::unique_ptr<ANN::Activation> m_activation{nullptr};
 
-  std::unique_ptr<Math::Matrix<double>> m_dweights{new Math::Matrix<double>{}};
-  std::shared_ptr<Math::Matrix<double>> m_dinputs{new Math::Matrix<double>{}};
-  std::unique_ptr<Math::Vector<double>> m_dbiases{new Math::Vector<double>{}};
+  std::unique_ptr<Math::Matrix<double>> m_dweights{
+      std::make_unique<Math::Matrix<double>>()};
+  std::shared_ptr<Math::Matrix<double>> m_dinputs{
+      std::make_shared<Math::Matrix<double>>()};
+  std::unique_ptr<Math::Vector<double>> m_dbiases{
+      std::make_unique<Math::Vector<double>>()};
 };
 } // namespace Layer
 

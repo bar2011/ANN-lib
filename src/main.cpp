@@ -37,11 +37,10 @@ template <typename T> void printMatrixImage(const Math::MatrixBase<T> &m) {
 
 int main() {
   try {
-    MNist::Loader *loader{new MNist::Loader(
+    auto loader{std::make_unique<MNist::Loader>(
         "data/train-labels-idx1-ubyte", "data/train-images-idx3-ubyte",
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
-    delete loader;
 
     std::cout << "Data: \n";
     for (size_t i{}; i < 50; ++i)
@@ -60,20 +59,20 @@ int main() {
     printMatrixImage(
         std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
-    std::unique_ptr<Layer::Dense<unsigned char>> hiddenLayer1{
-        new Layer::Dense<unsigned char>(rows * cols, layer1Neurons, batchSize,
-                                        {ANN::Activation::Sigmoid})};
+    auto hiddenLayer1{std::make_unique<Layer::Dense<unsigned char>>(
+        rows * cols, layer1Neurons, batchSize,
+        ANN::Activation{ANN::Activation::Sigmoid})};
 
-    std::unique_ptr<Layer::Dense<double>> hiddenLayer2{new Layer::Dense(
-        layer1Neurons, layer2Neurons, batchSize, {ANN::Activation::Sigmoid})};
+    auto hiddenLayer2{std::make_unique<Layer::Dense<double>>(
+        layer1Neurons, layer2Neurons, batchSize,
+        ANN::Activation{ANN::Activation::Sigmoid})};
 
-    std::unique_ptr<Layer::Dense<double>> outputLayer{
-        new Layer::Dense(layer2Neurons, outputNeurons, batchSize)};
+    auto outputLayer{std::make_unique<Layer::Dense<double>>(
+        layer2Neurons, outputNeurons, batchSize)};
 
-    std::unique_ptr<Layer::CategoricalLossSoftmax<double, unsigned char>>
-        outputSoftmaxLoss{
-            new Layer::CategoricalLossSoftmax<double, unsigned char>(
-                outputNeurons, batchSize)};
+    auto outputSoftmaxLoss{
+        std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(
+            outputNeurons, batchSize)};
 
     // FORWARD PASS
 

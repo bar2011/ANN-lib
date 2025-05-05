@@ -42,8 +42,8 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
 
-  std::shared_ptr<Math::Vector<unsigned char>> labels{
-      new Math::Vector<unsigned char>(size)};
+  auto labels{
+        std::make_shared<Math::Vector<unsigned char>>(size)};
 
   labels->fill([&labelsFile, &labelsPath](unsigned char *item) {
     if (!labelsFile.read(reinterpret_cast<char *>(item), 1))
@@ -74,8 +74,7 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  std::shared_ptr<Math::Matrix<unsigned char>> images{
-      new Math::Matrix<unsigned char>(size, rows * cols)};
+  auto images{std::make_unique<Math::Matrix<unsigned char>>(size, rows * cols)};
 
   images->fill([&imagesFile, &imagesPath](unsigned char *item) {
     if (!imagesFile.read(reinterpret_cast<char *>(item), 1))

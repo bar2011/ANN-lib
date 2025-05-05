@@ -11,6 +11,7 @@ set_source_files_properties(
   "${CMAKE_SOURCE_DIR}/include/ann/layers/dense.tpp"
   "${CMAKE_SOURCE_DIR}/include/ann/layers/softmax.tpp"
   "${CMAKE_SOURCE_DIR}/include/ann/layers/categoricalLoss.tpp"
+  "${CMAKE_SOURCE_DIR}/include/ann/layers/categoricalLossSoftmax.tpp"
   PROPERTIES HEADER_FILE_ONLY True
 )
 

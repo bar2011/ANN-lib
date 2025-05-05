@@ -43,9 +43,11 @@ public:
 private:
   // No ownership of m_input by the class. Only a view.
   std::shared_ptr<const Math::MatrixBase<I>> m_input{};
-  std::shared_ptr<Math::Matrix<double>> m_output{new Math::Matrix<double>{}};
+  std::shared_ptr<Math::Matrix<double>> m_output{
+      std::make_shared<Math::Matrix<double>>()};
 
-  std::shared_ptr<Math::Matrix<double>> m_dinputs{new Math::Matrix<double>{}};
+  std::shared_ptr<Math::Matrix<double>> m_dinputs{
+      std::make_shared<Math::Matrix<double>>()};
 };
 } // namespace Layer
 

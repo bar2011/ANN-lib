@@ -6,9 +6,10 @@ namespace Layer {
 template <typename I, typename C>
 CategoricalLossSoftmax<I, C>::CategoricalLossSoftmax(size_t neuronNum,
                                                      size_t batchNum)
-    : m_softmaxOutput{new Math::Matrix<double>{batchNum, neuronNum}},
-      m_lossOutput{new Math::Vector<double>{batchNum}},
-      m_dinputs{new Math::Matrix<double>{neuronNum, batchNum}} {}
+    : m_softmaxOutput{std::make_shared<Math::Matrix<double>>(batchNum,
+                                                             neuronNum)},
+      m_lossOutput{std::make_shared<Math::Vector<double>>(batchNum)},
+      m_dinputs{std::make_shared<Math::Matrix<double>>(neuronNum, batchNum)} {}
 
 template <typename I, typename C>
 std::shared_ptr<const Math::Matrix<double>>

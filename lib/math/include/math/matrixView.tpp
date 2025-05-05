@@ -55,8 +55,7 @@ std::unique_ptr<Math::Vector<size_t>> MatrixView<T>::argmaxRow() const {
     throw Math::Exception{"Math::MatrixView<T>::argmaxRow() const",
                           "Can't get the maximum of an empty matrix"};
 
-  std::unique_ptr<Math::Vector<size_t>> maxRow{
-      new Math::Vector<size_t>{rows()}};
+  auto maxRow{std::make_unique<Math::Vector<size_t>>(rows())};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)
@@ -72,8 +71,7 @@ std::unique_ptr<Math::Vector<size_t>> MatrixView<T>::argmaxCol() const {
     throw Math::Exception{"Math::MatrixView<T>::argmaxCol() const",
                           "Can't get the maximum of an empty matrix"};
 
-  std::unique_ptr<Math::Vector<size_t>> maxCol{
-      new Math::Vector<size_t>{cols()}};
+  auto maxCol{std::make_unique<Math::Vector<size_t>>(cols())};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)

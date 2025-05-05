@@ -40,8 +40,8 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
   m_input = inputs;
   m_correct = correct;
   if (!m_dinputs)
-    m_dinputs = std::shared_ptr<Math::Matrix<double>>{
-        new Math::Matrix<double>{inputs->rows(), inputs->cols()}};
+    m_dinputs =
+        std::make_shared<Math::Matrix<double>>(inputs->rows(), inputs->cols());
 
   for (size_t batch{}; batch < m_output->size(); ++batch) {
     double val{(*inputs)[batch, (*correct)[batch]]};

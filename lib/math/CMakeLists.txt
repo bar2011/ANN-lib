@@ -7,8 +7,11 @@ target_include_directories(MathHelpers INTERFACE include)
 # Ensure .tpp files are not exposed to users
 set_source_files_properties(
     include/math/matrix.tpp
+    include/math/matrixView.tpp
     include/math/vector.tpp
+    include/math/vectorView.tpp
     include/math/linear.tpp
+    include/math/random.tpp
     PROPERTIES HEADER_FILE_ONLY True
 )
 

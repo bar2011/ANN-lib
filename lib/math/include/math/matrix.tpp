@@ -118,8 +118,7 @@ const std::shared_ptr<VectorView<T>> Matrix<T>::operator[](const size_t row) {
     throw Math::Exception{"Math::Matrix<T>::operator[](const size_t)",
                           "Invalid row number: out of bounds"};
 
-  return std::shared_ptr<VectorView<T>>{
-      new VectorView<T>{row * m_cols, m_rows, m_data}};
+  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
 }
 
 template <typename T>
@@ -129,8 +128,7 @@ Matrix<T>::operator[](const size_t row) const {
     throw Math::Exception{"Math::Matrix<T>::operator[](const size_t) const",
                           "Invalid row number: out of bounds"};
 
-  return std::shared_ptr<VectorView<T>>{
-      new VectorView<T>{row * m_cols, m_rows, m_data}};
+  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
 }
 
 template <typename T>
@@ -148,8 +146,7 @@ Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
 };
 
 template <typename T> std::shared_ptr<MatrixView<T>> Matrix<T>::view() const {
-  return std::shared_ptr<MatrixView<T>>{
-      new MatrixView<T>{0, m_rows, m_cols, m_data}};
+  return std::make_shared<MatrixView<T>>(0, m_rows, m_cols, m_data);
 }
 
 template <typename T>
@@ -163,6 +160,8 @@ std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
     throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
                           "Can't create a row view where the end row is "
                           "outside the matrix's bound"};
+
+  // Can't use make_shared because the constructor is private
   return std::shared_ptr<MatrixView<T>>{
       new MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data}};
 }
@@ -189,8 +188,7 @@ std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxRow() const {
     throw Math::Exception{"Math::Matrix<T>::argmaxRow() const",
                           "Can't get the maximum of an empty matrix"};
 
-  std::unique_ptr<Math::Vector<size_t>> maxRow{
-      new Math::Vector<size_t>{rows()}};
+  auto maxRow{std::make_unique<Math::Vector<size_t>>(rows())};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)
@@ -206,8 +204,7 @@ std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxCol() const {
     throw Math::Exception{"Math::Matrix<T>::argmaxCol() const",
                           "Can't get the maximum of an empty matrix"};
 
-  std::unique_ptr<Math::Vector<size_t>> maxCol{
-      new Math::Vector<size_t>{cols()}};
+  auto maxCol{std::make_unique<Math::Vector<size_t>>(cols())};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)

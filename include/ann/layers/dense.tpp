@@ -10,15 +10,15 @@ namespace Layer {
 template <typename I>
 Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum,
                 ANN::Activation activation)
-    : m_weights{new Math::Matrix<double>{
+    : m_weights{std::make_unique<Math::Matrix<double>>(
           inputNum, neuronNum,
-          []() -> double { return 0.01 * Math::Random::getNormal(); }}},
-      m_biases{new Math::Vector<double>{neuronNum}},
-      m_output{new Math::Matrix<double>{batchNum, neuronNum}},
-      m_activation{new ANN::Activation{std::move(activation)}},
-      m_dweights{new Math::Matrix<double>{neuronNum, inputNum}},
-      m_dinputs{new Math::Matrix<double>{batchNum, neuronNum}},
-      m_dbiases{new Math::Vector<double>{neuronNum}} {};
+          []() -> double { return 0.01 * Math::Random::getNormal(); })},
+      m_biases{std::make_unique<Math::Vector<double>>(neuronNum)},
+      m_output{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
+      m_activation{std::make_unique<ANN::Activation>(std::move(activation))},
+      m_dweights{std::make_unique<Math::Matrix<double>>(neuronNum, inputNum)},
+      m_dinputs{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
+      m_dbiases{std::make_unique<Math::Vector<double>>(neuronNum)} {};
 
 template <typename I>
 Dense<I>::Dense(Dense &&other)
@@ -43,8 +43,8 @@ template <typename I>
 std::shared_ptr<const Math::Matrix<double>>
 Dense<I>::forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
-  m_output = std::shared_ptr<Math::Matrix<double>>{new Math::Matrix<double>(
-      Math::dot<double, I, double>(*inputs, *m_weights) + *m_biases)};
+  m_output = std::make_shared<Math::Matrix<double>>(
+      Math::dot<double, I, double>(*inputs, *m_weights) + *m_biases);
   auto activationForward{m_activation->getForward()};
   m_output->fill(
       [activationForward](double *val) { *val = activationForward(*val); });
@@ -55,8 +55,7 @@ Dense<I>::forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
 template <typename I>
 std::shared_ptr<Math::Matrix<double>> Dense<I>::backward(
     const std::shared_ptr<const Math::MatrixBase<double>> &dvalues) {
-  std::unique_ptr<Math::Matrix<double>> dactivation{
-      new Math::Matrix<double>{*m_output}};
+  auto dactivation{std::make_unique<Math::Matrix<double>>(*m_output)};
   auto backwardActivation{m_activation->getBackward()};
   dactivation->transform(*dvalues,
                          [&backwardActivation](double *a, const double *b) {
