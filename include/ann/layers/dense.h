@@ -82,6 +82,11 @@ private:
       std::make_shared<Math::Matrix<double>>()};
   std::unique_ptr<Math::Vector<double>> m_dbiases{
       std::make_unique<Math::Vector<double>>()};
+
+  std::unique_ptr<Math::Matrix<double>> m_weightUpdates{
+      std::make_unique<Math::Matrix<double>>()};
+  std::unique_ptr<Math::Vector<double>> m_biasUpdates{
+      std::make_unique<Math::Vector<double>>()};
 };
 } // namespace Layer
 

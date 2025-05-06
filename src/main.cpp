@@ -54,6 +54,7 @@ int main() {
     constexpr int epochs{trainingSize / batchSize};
     constexpr double learningRate{1e-1};
     constexpr double learningRateDecay{1e-2};
+    constexpr double learningRateMomentum{0.3};
 
     auto dense1{std::make_unique<Layer::Dense<float>>(
         imageRows * imageCols, layer1Neurons, batchSize,
@@ -73,8 +74,8 @@ int main() {
         std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(
             outputNeurons, batchSize)};
 
-    auto optimizer{
-        std::make_unique<Optimizers::SGD>(learningRate, learningRateDecay)};
+    auto optimizer{std::make_unique<Optimizers::SGD>(
+        learningRate, learningRateDecay, learningRateMomentum)};
 
     std::vector<size_t> batchSequence(epochs);
     std::iota(batchSequence.begin(), batchSequence.end(), 0);
