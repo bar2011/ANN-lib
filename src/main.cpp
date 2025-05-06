@@ -44,27 +44,23 @@ int main() {
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
 
-    // rows and columns in each image
-    constexpr int rows{28};
-    constexpr int cols{28};
+    constexpr int imageRows{28};
+    constexpr int imageCols{28};
     constexpr int layer1Neurons{16};
     constexpr int layer2Neurons{16};
     constexpr int outputNeurons{10};
     constexpr int batchSize{64};
     constexpr int trainingSize{60'000};
     constexpr int epochs{trainingSize / batchSize};
+    constexpr double learningRate{1e-1};
+    constexpr double learningRateDecay{1e-2};
 
-    // print processed images matrices from data training set
-    // printMatrixImage(
-    //     std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize,
-    //     28));
-
-    auto hiddenLayer1{std::make_unique<Layer::Dense<float>>(
-        rows * cols, layer1Neurons, batchSize,
+    auto dense1{std::make_unique<Layer::Dense<float>>(
+        imageRows * imageCols, layer1Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
         Layer::WeightInit::He)};
 
-    auto hiddenLayer2{std::make_unique<Layer::Dense<double>>(
+    auto dense2{std::make_unique<Layer::Dense<double>>(
         layer1Neurons, layer2Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
         Layer::WeightInit::He)};
@@ -77,7 +73,8 @@ int main() {
         std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(
             outputNeurons, batchSize)};
 
-    auto optimizer{std::make_unique<Optimizers::SGD>(0.01, 0.001)};
+    auto optimizer{
+        std::make_unique<Optimizers::SGD>(learningRate, learningRateDecay)};
 
     std::vector<size_t> batchSequence(epochs);
     std::iota(batchSequence.begin(), batchSequence.end(), 0);
@@ -94,9 +91,9 @@ int main() {
           std::get<0>(data[0])->view(batchSequence[epoch] * batchSize,
                                      (batchSequence[epoch] + 1) * batchSize)};
 
-      hiddenLayer1->forward(inputData);
-      hiddenLayer2->forward(hiddenLayer1->output());
-      outputLayer->forward(hiddenLayer2->output());
+      dense1->forward(inputData);
+      dense2->forward(dense1->output());
+      outputLayer->forward(dense2->output());
       outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
       if (epoch % 100 == 0)
@@ -108,20 +105,18 @@ int main() {
       // BACKWARD PASS
       outputSoftmaxLoss->backward();
       outputLayer->backward(outputSoftmaxLoss->dinputs());
-      hiddenLayer2->backward(outputLayer->dinputs());
-      hiddenLayer1->backward(hiddenLayer2->dinputs());
+      dense2->backward(outputLayer->dinputs());
+      dense1->backward(dense2->dinputs());
 
       optimizer->preUpdate();
       optimizer->updateParams(*outputLayer);
-      optimizer->updateParams(*hiddenLayer2);
-      optimizer->updateParams(*hiddenLayer1);
+      optimizer->updateParams(*dense2);
+      optimizer->updateParams(*dense1);
       optimizer->postUpdate();
     }
 
     std::cout << "FINAL loss: " << outputSoftmaxLoss->mean()
               << " acc: " << outputSoftmaxLoss->accuracy() << '\n';
-
-    std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
