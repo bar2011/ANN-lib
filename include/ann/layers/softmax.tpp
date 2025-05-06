@@ -8,25 +8,20 @@ namespace Layer {
 template <typename I>
 Softmax<I>::Softmax(size_t neuronNum, size_t batchNum)
     : m_output{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
-      m_dinputs{std::make_shared<Math::Matrix<double>>(0, neuronNum)} {};
+      m_dinputs{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)} {};
 
 template <typename I>
 Softmax<I>::Softmax(Softmax &&other) noexcept
-    : m_input{other.m_input}, m_output{other.m_output} {
-  other.m_input.reset();
-  other.m_output.reset();
-}
+    : m_input{std::move(other.m_input)}, m_output{std::move(other.m_output)},
+      m_dinputs{std::move(other.m_dinputs)} {}
 
 template <typename I>
 Softmax<I> &Softmax<I>::operator=(Softmax &&other) noexcept {
   if (&other != this) {
     // Move other's pointers
-    m_input = other.m_input;
-    m_output = other.m_output;
-
-    // Reset other's pointers
-    other.m_input.reset();
-    other.m_output.reset();
+    m_input = std::move(other.m_input);
+    m_output = std::move(other.m_output);
+    m_dinputs = std::move(other.m_dinputs);
   }
   return *this;
 }
@@ -63,17 +58,13 @@ Softmax<I>::forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs) {
 template <typename I>
 std::shared_ptr<const Math::Matrix<double>> Softmax<I>::backward(
     const std::shared_ptr<const Math::Matrix<double>> &dvalues) {
-  for (size_t i{}; i < dvalues->rows(); ++i) {
-    auto jacobianMatrix{std::make_unique<Math::Matrix<double>>{
-        dvalues->cols(), dvalues->cols()}};
-
-    for (size_t row{}; row < dvalues->cols(); ++row)
-      for (size_t col{}; col < dvalues->cols(); ++col)
-        (*jacobianMatrix)[row, col] =
-            ((row == col) ? 1 : 0) - (*dvalues)[row, col];
-
-    m_dinputs->insertRow(Math::dot(*jacobianMatrix, *(*dvalues)[i]));
-  }
+  for (size_t i{}; i < dvalues->rows(); ++i)
+    for (size_t j{}; j < dvalues->cols(); ++j) {
+      double sum{};
+      for (size_t k{}; k < dvalues->cols(); ++k)
+        sum += (*dvalues)[i, k] * (((j == k) ? 1.0 : 0.0) - (*m_output)[i, k]);
+      (*m_dinputs)[i, j] = (*m_output)[i, j] * sum;
+    }
 
   return m_dinputs;
 }
