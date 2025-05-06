@@ -44,12 +44,12 @@ std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
         std::make_shared<Math::Matrix<double>>(inputs->rows(), inputs->cols());
 
   for (size_t batch{}; batch < m_output->size(); ++batch) {
-    double val{(*inputs)[batch, (*correct)[batch]]};
+    double val{(*inputs)[batch, static_cast<size_t>((*correct)[batch])]};
     if (val >= 1 - 1e-7)
       val = 1 - 1e-7;
     else if (val <= 1e-7)
       val = 1e-7;
-    (*m_output)[batch] = -1 * std::log(val);
+    (*m_output)[batch] = -std::log(val);
   }
 
   return m_output;

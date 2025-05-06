@@ -9,7 +9,7 @@
 namespace Layer {
 // Categorical Cross-Entropy loss class
 // I = input type. Must be castable to double.
-// C = correct indicies ty[e. Must be castable to size_t.
+// C = correct indicies type. Must be castable to size_t.
 template <typename I = double, typename C = double>
 class CategoricalLoss : public Loss {
 public:

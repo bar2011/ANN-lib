@@ -9,7 +9,7 @@ CategoricalLossSoftmax<I, C>::CategoricalLossSoftmax(size_t neuronNum,
     : m_softmaxOutput{std::make_shared<Math::Matrix<double>>(batchNum,
                                                              neuronNum)},
       m_lossOutput{std::make_shared<Math::Vector<double>>(batchNum)},
-      m_dinputs{std::make_shared<Math::Matrix<double>>(neuronNum, batchNum)} {}
+      m_dinputs{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)} {}
 
 template <typename I, typename C>
 CategoricalLossSoftmax<I, C>::CategoricalLossSoftmax(
@@ -60,13 +60,13 @@ CategoricalLossSoftmax<I, C>::forward(
       (*m_softmaxOutput)[batch, i] /= normalBase;
   }
 
+  constexpr double epsilon{1e-7};
+
   for (size_t batch{}; batch < m_lossOutput->size(); ++batch) {
-    double val{(*inputs)[batch, (*correct)[batch]]};
-    if (val >= 1 - 1e-7)
-      val = 1 - 1e-7;
-    else if (val <= 1e-7)
-      val = 1e-7;
-    (*m_lossOutput)[batch] = -1 * std::log(val);
+    double val{std::clamp(
+        (*m_softmaxOutput)[batch, static_cast<size_t>((*correct)[batch])],
+        epsilon, 1 - epsilon)};
+    (*m_lossOutput)[batch] = -std::log(val);
   }
 
   return m_softmaxOutput;
@@ -75,11 +75,14 @@ CategoricalLossSoftmax<I, C>::forward(
 template <typename I, typename C>
 std::shared_ptr<const Math::Matrix<double>>
 CategoricalLossSoftmax<I, C>::backward() {
+  for (size_t i{}; i < m_dinputs->rows(); ++i) {
+    for (size_t j{}; j < m_dinputs->cols(); ++j)
+      (*m_dinputs)[i, j] = (*m_softmaxOutput)[i, j];
+    (*m_dinputs)[i, (*m_correct)[i]] -= 1;
+  }
   for (size_t i{}; i < m_dinputs->rows(); ++i)
     for (size_t j{}; j < m_dinputs->cols(); ++j)
-      (*m_dinputs)[i, j] =
-          ((*m_softmaxOutput)[i, j] - ((j == (*m_lossOutput)[i]) ? 1 : 0)) /
-          m_dinputs->rows();
+      (*m_dinputs)[i, j] /= m_dinputs->rows();
 
   return m_dinputs;
 }
