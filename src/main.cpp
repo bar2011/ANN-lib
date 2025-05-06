@@ -28,9 +28,9 @@ public:
 template <typename T> void printMatrixImage(const Math::MatrixBase<T> &m) {
   for (size_t row{}; row < m.rows(); ++row) {
     for (size_t col{}; col < m.cols(); ++col)
-      std::cout << "\033[38;2;" << static_cast<unsigned int>(m[row, col]) << ';'
-                << static_cast<unsigned int>(m[row, col]) << ';'
-                << static_cast<unsigned int>(m[row, col]) << "m█\033[0m";
+      std::cout << "\033[38;2;" << static_cast<unsigned int>(m[row, col] * 255)
+                << ';' << static_cast<unsigned int>(m[row, col] * 255) << ';'
+                << static_cast<unsigned int>(m[row, col] * 255) << "m█\033[0m";
     std::cout << '\n';
   }
 }
@@ -41,11 +41,6 @@ int main() {
         "data/train-labels-idx1-ubyte", "data/train-images-idx3-ubyte",
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
-
-    std::cout << "Data: \n";
-    for (size_t i{}; i < 50; ++i)
-      std::cout << static_cast<int>((*std::get<0>(data[0]))[i]) << ' ';
-    std::cout << '\n';
 
     // rows and columns in each image
     constexpr int rows{28};
@@ -59,16 +54,19 @@ int main() {
     printMatrixImage(
         std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
 
-    auto hiddenLayer1{std::make_unique<Layer::Dense<unsigned char>>(
+    auto hiddenLayer1{std::make_unique<Layer::Dense<float>>(
         rows * cols, layer1Neurons, batchSize,
-        ANN::Activation{ANN::Activation::Sigmoid})};
+        ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
+        Layer::WeightInit::He)};
 
     auto hiddenLayer2{std::make_unique<Layer::Dense<double>>(
         layer1Neurons, layer2Neurons, batchSize,
-        ANN::Activation{ANN::Activation::Sigmoid})};
+        ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
+        Layer::WeightInit::He)};
 
     auto outputLayer{std::make_unique<Layer::Dense<double>>(
-        layer2Neurons, outputNeurons, batchSize)};
+        layer2Neurons, outputNeurons, batchSize,
+        ANN::Activation{ANN::Activation::Linear}, Layer::WeightInit::He)};
 
     auto outputSoftmaxLoss{
         std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(

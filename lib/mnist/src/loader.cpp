@@ -6,7 +6,6 @@
 #include <fstream>
 #include <string>
 #include <tuple>
-#include <vector>
 
 std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
   auto train{loadImages(m_trainingLabelsPath, m_trainingImagesPath)};
@@ -20,8 +19,7 @@ MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
   std::shared_ptr<Math::Vector<unsigned char>> labels{
       loadLabelsFile(labelsPath)};
-  std::shared_ptr<Math::Matrix<unsigned char>> images{
-      loadImagesFile(imagesPath)};
+  std::shared_ptr<Math::Matrix<float>> images{loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
@@ -42,8 +40,7 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
 
-  auto labels{
-        std::make_shared<Math::Vector<unsigned char>>(size)};
+  auto labels{std::make_shared<Math::Vector<unsigned char>>(size)};
 
   labels->fill([&labelsFile, &labelsPath](unsigned char *item) {
     if (!labelsFile.read(reinterpret_cast<char *>(item), 1))
@@ -53,7 +50,7 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   return labels;
 }
 
-std::shared_ptr<Math::Matrix<unsigned char>>
+std::shared_ptr<Math::Matrix<float>>
 MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
@@ -74,38 +71,25 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  auto images{std::make_unique<Math::Matrix<unsigned char>>(size, rows * cols)};
+  auto images{std::make_unique<Math::Matrix<float>>(size, rows * cols)};
 
-  images->fill([&imagesFile, &imagesPath](unsigned char *item) {
-    if (!imagesFile.read(reinterpret_cast<char *>(item), 1))
+  images->fill([&imagesFile, &imagesPath](float *item) {
+    unsigned char byte{};
+    if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))
       throw MNist::Exception{
           "MNist::Loader::loadImagesFile(const std::string&)",
           "Can't read file " + imagesPath +
               ": file size smaller then needed to read all images."};
+    *item = static_cast<float>(byte) / 255.0f;
   });
 
   return images;
 }
 
-std::vector<unsigned char>
-MNist::Loader::readBytes(std::ifstream &file, const unsigned int length,
-                         const std::string &filename) {
-  std::vector<unsigned char> bytes(length);
-
-  if (!file.read(reinterpret_cast<char *>(bytes.begin().base()), length))
-    throw MNist::Exception{"MNist::Loader::readBytes(std::ifstream&, const "
-                           "unsigned int, const std::string&)",
-                           "Can't read file " + filename +
-                               ": file size smaller then needed to read " +
-                               std::to_string(length) + " bytes."};
-
-  return bytes;
-}
-
 unsigned int MNist::Loader::readU32(std::ifstream &file,
                                     const std::string &filename) {
-  char *bytes{new char[4]};
-  if (!file.read(bytes, 4))
+  std::array<char, 4> bytes{};
+  if (!file.read(bytes.begin(), 4))
     throw MNist::Exception{
         "MNist::Loader::readU32(std::ifstream&, const std::string&)",
         "Can't read file " + filename + ": reached end"};
@@ -114,9 +98,6 @@ unsigned int MNist::Loader::readU32(std::ifstream &file,
                                 (static_cast<unsigned char>(bytes[2]) << 8) |
                                 (static_cast<unsigned char>(bytes[1]) << 16) |
                                 (static_cast<unsigned char>(bytes[0]) << 24))};
-
-  delete[] bytes;
-  bytes = nullptr;
 
   return value;
 }

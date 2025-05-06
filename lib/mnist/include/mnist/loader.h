@@ -9,14 +9,13 @@
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <vector>
 
 namespace MNist {
 class Loader {
 public:
   // a type which contains a vector of labels and a matching vector of images
   using DataPair = std::tuple<std::shared_ptr<Math::Vector<unsigned char>>,
-                              std::shared_ptr<Math::Matrix<unsigned char>>>;
+                              std::shared_ptr<Math::Matrix<float>>>;
 
   Loader(std::string_view trainingLabelsPath,
          std::string_view trainingImagesPath,
@@ -47,12 +46,8 @@ private:
   static std::shared_ptr<Math::Vector<unsigned char>>
   loadLabelsFile(const std::string &labelsPath);
 
-  static std::shared_ptr<Math::Matrix<unsigned char>>
+  static std::shared_ptr<Math::Matrix<float>>
   loadImagesFile(const std::string &imagesPath);
-
-  static std::vector<unsigned char> readBytes(std::ifstream &file,
-                                              const unsigned int length,
-                                              const std::string &filename = "");
 
   static unsigned int readU32(std::ifstream &file,
                               const std::string &filename = "");
