@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "vectorBase.h"
@@ -22,6 +21,7 @@ public:
 
   // Getters
   size_t size() const { return m_size; }
+  const std::vector<T> &data() const { return m_data; }
 
   friend Vector<T>;
 

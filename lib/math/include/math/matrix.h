@@ -15,7 +15,7 @@ namespace Math {
 // T = the data type the matrix holds
 template <typename T> class Matrix : public MatrixBase<T> {
 public:
-  Matrix() : m_rows{0}, m_cols{0}, m_data(0) {};
+  Matrix() : m_rows{0}, m_cols{0}, m_data(0) {}
 
   // Create 0-filled matrix of given size
   Matrix(const size_t rows, const size_t cols);
@@ -88,7 +88,7 @@ public:
   size_t rows() const { return m_rows; }
   size_t cols() const { return m_cols; }
   std::vector<T> &data() { return m_data; };
-  const std::vector<T> &data() const { return m_data; };
+  const std::vector<T> &data() const { return m_data; }
 
 private:
   std::vector<T> m_data{};

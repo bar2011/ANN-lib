@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <vector>
 
 namespace Math {
 
@@ -13,5 +14,6 @@ public:
 
   // Getters
   virtual size_t size() const = 0;
+  virtual const std::vector<T> &data() const = 0;
 };
 } // namespace Math

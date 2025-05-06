@@ -26,6 +26,9 @@ public:
   size_t rows() const { return m_rows; }
   size_t cols() const { return m_cols; }
 
+  // Return entire underlying data. Not necessarily from the start of MatrixView
+  const std::vector<T> &data() const { return m_data; };
+
   // Returns the index of the biggest value in the matrix
   // format: (row, col)
   std::pair<size_t, size_t> argmax() const;
@@ -35,11 +38,6 @@ public:
 
   // Returns a vector containing the index of the biggest value in each column
   std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
-
-  // Getters
-
-  // Return data from absolute start. Not necessarily start of MatrixView
-  const std::vector<T> &data() const { return m_data; };
 
   friend Matrix<T>;
 

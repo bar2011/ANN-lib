@@ -41,9 +41,6 @@ Matrix<T>::Matrix(Matrix &&other) noexcept
 }
 
 template <typename T> Matrix<T> &Matrix<T>::operator=(const Matrix &other) {
-  if (other.rows() != this->rows() || other.cols() != this->cols())
-    throw Math::Exception{"Matrix<T>::operator=(const Matrix&)",
-                          "Matrices dimensions doesn't match."};
   if (&other != this) {
     m_rows = other.m_rows;
     m_cols = other.m_cols;
@@ -72,6 +69,10 @@ template <typename T> void Matrix<T>::fill(std::function<void(T *)> gen) {
 template <typename T>
 void Matrix<T>::transform(const MatrixBase<T> &m,
                           std::function<void(T *, const T *)> gen) {
+  if (m.rows() != rows() || m.cols() != cols())
+    throw Math::Exception{"Math::Matrix<T>::transform(const MatrixBase<T>&, "
+                          "std::function<void(T*,const T*)>",
+                          "Can't transform matrices with different dimensions"};
   for (size_t i{}; i < m_data.size(); ++i)
     gen(&m_data[i], &m.data()[i]);
 }
