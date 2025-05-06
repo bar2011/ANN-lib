@@ -1,4 +1,5 @@
 #include "ann/activation.h"
+#include "ann/exception.h"
 
 #include <cmath>
 
@@ -13,7 +14,12 @@ std::function<double(double)> Activation::getForward() {
     return [](double x) { return (x > 0) ? x : 0; };
   case Sigmoid:
     return [](double x) { return 1 / (1 + std::exp(-x)); };
+  case LeakyReLU:
+    auto c{args[0]};
+    return [c](double x) { return (x > 0) ? x : (c * x); };
   }
+  throw ANN::Exception{"ANN::Activation::getForward()",
+                       "Unknown or unsupported activation type entered"};
 }
 
 std::function<double(double, double)> Activation::getBackward() {
@@ -26,7 +32,12 @@ std::function<double(double, double)> Activation::getBackward() {
     return [](double out, double d) { return d * ((out > 0) ? 1 : 0); };
   case Sigmoid:
     return [](double out, double d) { return d * out * (1 - out); };
+  case LeakyReLU:
+    auto c{args[0]};
+    return [c](double out, double d) { return d * ((out > 0) ? 1 : c); };
   }
+  throw ANN::Exception{"ANN::Activation::getBackward()",
+                       "Unknown or unsupported activation type entered"};
 }
 
 Activation::Activation(Activation &&other) noexcept

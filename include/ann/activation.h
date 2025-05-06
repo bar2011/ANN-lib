@@ -10,6 +10,7 @@ struct Activation {
     Step,
     ReLU,
     Sigmoid,
+    LeakyReLU, // Needs one argument, for multiplicator of input
   } type;
 
   std::vector<double> args{};
@@ -24,7 +25,8 @@ struct Activation {
   // Returns function for backpropagation
   // Returned function input - the output of the layer, the derivative of the
   // specific output
-  // Returned function return - the derivative in respect to the activation function
+  // Returned function return - the derivative in respect to the activation
+  // function
   std::function<double(double, double)> getBackward();
 };
 } // namespace ANN
