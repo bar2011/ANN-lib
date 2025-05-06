@@ -9,16 +9,34 @@
 namespace Layer {
 template <typename I>
 Dense<I>::Dense(size_t inputNum, size_t neuronNum, size_t batchNum,
-                ANN::Activation activation)
-    : m_weights{std::make_unique<Math::Matrix<double>>(
-          inputNum, neuronNum,
-          []() -> double { return 0.01 * Math::Random::getNormal(); })},
-      m_biases{std::make_unique<Math::Vector<double>>(neuronNum)},
+                ANN::Activation activation, WeightInit initMethod)
+    : m_biases{std::make_unique<Math::Vector<double>>(neuronNum)},
       m_output{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
       m_activation{std::make_unique<ANN::Activation>(std::move(activation))},
-      m_dweights{std::make_unique<Math::Matrix<double>>(neuronNum, inputNum)},
+      m_dweights{std::make_unique<Math::Matrix<double>>(inputNum, neuronNum)},
       m_dinputs{std::make_shared<Math::Matrix<double>>(batchNum, neuronNum)},
-      m_dbiases{std::make_unique<Math::Vector<double>>(neuronNum)} {};
+      m_dbiases{std::make_unique<Math::Vector<double>>(neuronNum)} {
+  switch (initMethod) {
+  case WeightInit::Xavier:
+    m_weights = std::make_unique<Math::Matrix<double>>(
+        inputNum, neuronNum, [inputNum, neuronNum]() -> double {
+          return std::sqrt(2.0 / (inputNum + neuronNum)) *
+                 Math::Random::getNormal();
+        });
+    break;
+  case WeightInit::He:
+    m_weights = std::make_unique<Math::Matrix<double>>(
+        inputNum, neuronNum, [inputNum]() -> double {
+          return std::sqrt(2.0 / inputNum) * Math::Random::getNormal();
+        });
+    break;
+  case WeightInit::Random:
+    m_weights = std::make_unique<Math::Matrix<double>>(
+        inputNum, neuronNum,
+        []() -> double { return 0.01 * Math::Random::getNormal(); });
+    break;
+  }
+};
 
 template <typename I>
 Dense<I>::Dense(Dense &&other)
@@ -29,12 +47,10 @@ Dense<I>::Dense(Dense &&other)
 template <typename I> Dense<I> &Dense<I>::operator=(Dense &&other) {
   if (&other != this) {
     // Move other's pointers`
-    m_input.swap(other.m_input);
+    m_input = std::move(other.m_input);
     m_weights = std::move(other.m_weights);
     m_biases = std::move(other.m_biases);
     m_output = std::move(other.m_output);
-
-    other.m_input.reset();
   }
   return *this;
 }
@@ -67,12 +83,9 @@ std::shared_ptr<Math::Matrix<double>> Dense<I>::backward(
       Math::dotTranspose<double, double, double>(*dactivation, *m_weights);
 
   // Sum dvalues row-wise and set it to dbiases
-  for (size_t i{}; i < dactivation->rows(); ++i) {
-    double rowSum{};
+  for (size_t i{}; i < dactivation->rows(); ++i)
     for (size_t j{}; j < dactivation->cols(); ++j)
-      rowSum += (*dactivation)[i, j];
-    (*m_dbiases)[i] = rowSum;
-  }
+      (*m_dbiases)[j] += (*dactivation)[i, j];
 
   return m_dinputs;
 }

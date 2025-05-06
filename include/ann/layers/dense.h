@@ -9,6 +9,11 @@
 #include <memory>
 
 namespace Layer {
+enum class WeightInit {
+  Xavier,
+  He,
+  Random,
+};
 // Basic Dense layer class.
 // I = input data type
 template <typename I = double> class Dense {
@@ -20,7 +25,8 @@ public:
   // diviasion 1.
   // Uses activation of linear as default.
   Dense(size_t inputNum, size_t neuronNum, size_t batchNum,
-        ANN::Activation activation = {ANN::Activation::Linear});
+        ANN::Activation activation = {ANN::Activation::Linear},
+        WeightInit initMethod = WeightInit::Random);
 
   // Copy constructor deleted
   Dense(const Dense &other) = delete;
