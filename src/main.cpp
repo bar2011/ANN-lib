@@ -1,8 +1,10 @@
 #include "math/matrixBase.h"
+#include "math/random.h"
 #include "mnist/loader.h"
 
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
+#include "ann/optimizers/sgd.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -48,11 +50,14 @@ int main() {
     constexpr int layer1Neurons{16};
     constexpr int layer2Neurons{16};
     constexpr int outputNeurons{10};
-    constexpr int batchSize{10};
+    constexpr int batchSize{64};
+    constexpr int trainingSize{60'000};
+    constexpr int epochs{trainingSize / batchSize};
 
     // print processed images matrices from data training set
-    printMatrixImage(
-        std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize, 28));
+    // printMatrixImage(
+    //     std::get<1>(data[0])->view(0, batchSize)->reshape(28 * batchSize,
+    //     28));
 
     auto hiddenLayer1{std::make_unique<Layer::Dense<float>>(
         rows * cols, layer1Neurons, batchSize,
@@ -72,31 +77,49 @@ int main() {
         std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(
             outputNeurons, batchSize)};
 
-    // FORWARD PASS
+    auto optimizer{std::make_unique<Optimizers::SGD>(0.01, 0.001)};
 
-    // Get first batchSize training images and labels
-    auto inputData{std::get<1>(data[0])->view(0, batchSize)};
-    auto inputCorrect{std::get<0>(data[0])->view(0, batchSize)};
+    std::vector<size_t> batchSequence(epochs);
+    std::iota(batchSequence.begin(), batchSequence.end(), 0);
+    std::shuffle(batchSequence.begin(), batchSequence.end(), Math::Random::mt);
 
-    hiddenLayer1->forward(inputData);
-    hiddenLayer2->forward(hiddenLayer1->output());
-    outputLayer->forward(hiddenLayer2->output());
-    outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
+    for (size_t epoch{}; epoch < epochs; ++epoch) {
+      // FORWARD PASS
 
-    std::cout << "loss: " << outputSoftmaxLoss->mean()
-              << " accuracy: " << outputSoftmaxLoss->accuracy() << '\n';
+      // Get batchSize training images and labels
+      auto inputData{
+          std::get<1>(data[0])->view(batchSequence[epoch] * batchSize,
+                                     (batchSequence[epoch] + 1) * batchSize)};
+      auto inputCorrect{
+          std::get<0>(data[0])->view(batchSequence[epoch] * batchSize,
+                                     (batchSequence[epoch] + 1) * batchSize)};
 
-    auto predictions{outputSoftmaxLoss->softmaxOutput()->argmaxRow()};
+      hiddenLayer1->forward(inputData);
+      hiddenLayer2->forward(hiddenLayer1->output());
+      outputLayer->forward(hiddenLayer2->output());
+      outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
-    for (size_t i{}; i < predictions->size(); ++i)
-      std::cout << (*predictions)[i] + 1 << ' ';
-    std::cout << '\n';
+      if (epoch % 100 == 0)
+        std::cout << "epoch: " << epoch
+                  << "\tloss: " << outputSoftmaxLoss->mean()
+                  << "\tacc: " << outputSoftmaxLoss->accuracy()
+                  << "\tlr: " << optimizer->learningRate() << '\n';
 
-    // BACKWARD PASS
-    outputSoftmaxLoss->backward();
-    outputLayer->backward(outputSoftmaxLoss->dinputs());
-    hiddenLayer2->backward(outputLayer->dinputs());
-    hiddenLayer1->backward(hiddenLayer2->dinputs());
+      // BACKWARD PASS
+      outputSoftmaxLoss->backward();
+      outputLayer->backward(outputSoftmaxLoss->dinputs());
+      hiddenLayer2->backward(outputLayer->dinputs());
+      hiddenLayer1->backward(hiddenLayer2->dinputs());
+
+      optimizer->preUpdate();
+      optimizer->updateParams(*outputLayer);
+      optimizer->updateParams(*hiddenLayer2);
+      optimizer->updateParams(*hiddenLayer1);
+      optimizer->postUpdate();
+    }
+
+    std::cout << "FINAL loss: " << outputSoftmaxLoss->mean()
+              << " acc: " << outputSoftmaxLoss->accuracy() << '\n';
 
     std::cout << "\nFinished\n";
   } catch (std::runtime_error &e) {

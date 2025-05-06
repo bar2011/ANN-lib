@@ -8,6 +8,10 @@
 
 #include <memory>
 
+namespace Optimizers {
+class SGD;
+}
+
 namespace Layer {
 enum class WeightInit {
   Xavier,
@@ -58,6 +62,8 @@ public:
   }
 
   std::shared_ptr<Math::Matrix<double>> dinputs() const { return m_dinputs; }
+
+  friend Optimizers::SGD;
 
 private:
   // No ownership of m_input by the class. Only a view.
