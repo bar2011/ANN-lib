@@ -43,11 +43,18 @@ public:
   // gen input - a pointer to the item to be filled
   void fill(std::function<void(T *)> gen);
 
-  // Transform the current matrix using the given function
+  // Transform the current matrix with another matrix
   // gen's inputs = a pointer to a value from the current matrix, and the
   // corresponding value from m. Both matrices must be the same dimensions
   void transform(const MatrixBase<T> &m,
                  std::function<void(T *, const T *)> gen);
+
+  // Transform the current matrix with two other matrices
+  // gen's inputs = a pointer to a value from the current matrix, and the
+  // corresponding values from ma and mb. All matrices must be the same
+  // dimensions
+  void transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
+                 std::function<void(T *, const T *, const T *)> gen);
 
   // Inserts a row at the end of the matrix
   // Throws if v.size != this->cols()

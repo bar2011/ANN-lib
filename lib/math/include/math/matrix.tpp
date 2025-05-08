@@ -77,6 +77,19 @@ void Matrix<T>::transform(const MatrixBase<T> &m,
     gen(&m_data[i], &m.data()[i]);
 }
 
+template <typename T>
+void Matrix<T>::transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
+                          std::function<void(T *, const T *, const T *)> gen) {
+  if (ma.rows() != rows() || ma.cols() != cols() || mb.rows() != rows() ||
+      mb.cols() != cols())
+    throw Math::Exception{
+        "Math::Matrix<T>::transform(const MatrixBase<T>&, const MatrixBase<T>&"
+        "std::function<void(T*,const T*)>",
+        "Can't transform matrices with different dimensions"};
+  for (size_t i{}; i < m_data.size(); ++i)
+    gen(&m_data[i], &ma.data()[i], &mb.data()[i]);
+}
+
 template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
   if (v.size() != cols())
     throw Math::Exception{"Math::Matrix<T>::insertRow(const Vector<T>&)",

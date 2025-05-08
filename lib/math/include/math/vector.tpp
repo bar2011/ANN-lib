@@ -8,26 +8,22 @@
 namespace Math {
 
 template <typename T>
-Vector<T>::Vector(const size_t size, std::function<T()> gen)
-    : m_data(size) {
+Vector<T>::Vector(const size_t size, std::function<T()> gen) : m_data(size) {
   std::generate_n(m_data.begin(), size, gen);
 }
 
 template <typename T>
-Vector<T>::Vector(const size_t size, const T *data)
-    : m_data(size) {
+Vector<T>::Vector(const size_t size, const T *data) : m_data(size) {
   std::copy_n(data, size, m_data.begin());
 }
 
 template <typename T>
-Vector<T>::Vector(const Vector &other)
-    : m_data(other.m_data.size()) {
+Vector<T>::Vector(const Vector &other) : m_data(other.m_data.size()) {
   std::copy_n(other.m_data.begin(), m_data.size(), m_data.begin());
 }
 
 template <typename T>
-Vector<T>::Vector(Vector &&other) noexcept
-    : m_data{std::move(other.m_data)} {
+Vector<T>::Vector(Vector &&other) noexcept : m_data{std::move(other.m_data)} {
   other.m_data.size() = 0;
 }
 
@@ -59,6 +55,13 @@ void Vector<T>::transform(const VectorBase<T> &v,
                           std::function<void(T *, const T *)> gen) {
   for (size_t i{}; i < m_data.size(); ++i)
     gen(&m_data[i], &v[i]);
+}
+
+template <typename T>
+void Vector<T>::transform(const VectorBase<T> &va, const VectorBase<T> &vb,
+                          std::function<void(T *, const T *, const T *)> gen) {
+  for (size_t i{}; i < m_data.size(); ++i)
+    gen(&m_data[i], &va[i], &vb[i]);
 }
 
 template <typename T> T &Vector<T>::operator[](size_t index) {

@@ -39,11 +39,18 @@ public:
   // gen input - a pointer to the item to be filled
   void fill(std::function<void(T *)> gen);
 
-  // Transform the current vector using the given function
+  // Transform the current vector with another vector
   // gen's inputs = a pointer to a value from the current vector, and the
-  // corresponding value from v. Both vectors must be the same size
-  void transform(const VectorBase<T> &v,
+  // corresponding value from m. Both vectors must be the same size
+  void transform(const VectorBase<T> &m,
                  std::function<void(T *, const T *)> gen);
+
+  // Transform the current vector with two other matrices
+  // gen's inputs = a pointer to a value from the current vector, and the
+  // corresponding values from va and vb. All vectors must be the same
+  // size
+  void transform(const VectorBase<T> &va, const VectorBase<T> &vb,
+                 std::function<void(T *, const T *, const T *)> gen);
 
   // Get specific item from vector
   T &operator[](size_t index);
