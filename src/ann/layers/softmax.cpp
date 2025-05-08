@@ -1,5 +1,7 @@
 #include "ann/layers/softmax.h"
 
+#include <cmath>
+
 namespace Layer {
 
 Softmax::Softmax(size_t neuronNum, size_t batchNum)

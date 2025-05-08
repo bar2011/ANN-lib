@@ -1,5 +1,7 @@
 #include "ann/layers/categoricalLossSoftmax.h"
 
+#include <cmath>
+
 namespace Layer {
 
 CategoricalLossSoftmax::CategoricalLossSoftmax(unsigned short neuronNum,
