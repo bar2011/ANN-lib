@@ -8,6 +8,7 @@ add_library(ANN SHARED
   "ann/layers/categoricalLossSoftmax.cpp"
   "ann/layers/loss.cpp"
   "ann/optimizers/sgd.cpp"
+  "ann/optimizers/adagrad.cpp"
 )
 
 target_include_directories(ANN PUBLIC

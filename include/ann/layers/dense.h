@@ -9,8 +9,10 @@
 #include <memory>
 
 namespace Optimizers {
+class Optimizer;
 class SGD;
-}
+class Adagrad;
+} // namespace Optimizers
 
 namespace Layer {
 enum class WeightInit {
@@ -61,7 +63,9 @@ public:
 
   std::shared_ptr<Math::Matrix<float>> dinputs() const { return m_dinputs; }
 
-  friend Optimizers::SGD;
+  friend class Optimizers::Optimizer;
+  friend class Optimizers::SGD;
+  friend class Optimizers::Adagrad;
 
 private:
   // No ownership of m_input by the class. Only a view.
