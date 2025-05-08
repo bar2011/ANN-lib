@@ -9,6 +9,7 @@ add_library(ANN SHARED
   "ann/layers/loss.cpp"
   "ann/optimizers/sgd.cpp"
   "ann/optimizers/adagrad.cpp"
+  "ann/optimizers/rmsprop.cpp"
 )
 
 target_include_directories(ANN PUBLIC

@@ -1,26 +1,27 @@
-#include "ann/optimizers/adagrad.h"
+#include "ann/optimizers/rmsprop.h"
 
 #include <cmath>
 
 namespace Optimizers {
-void Adagrad::preUpdate() {
+void RMSProp::preUpdate() {
   m_learningRate =
       std::max(m_startingLearningRate / (1 + m_decay * m_iteration), 1e-7f);
 }
 
-void Adagrad::updateParams(Layer::Dense &layer) const {
+void RMSProp::updateParams(Layer::Dense &layer) const {
   auto learningRate{m_learningRate};
   auto epsilon{m_epsilon};
+  auto rho{m_rho};
 
   // update weight/bias update member variables to account for momentum
-  layer.m_weightUpdates->transform(*layer.m_dweights,
-                                   [](float *weight, const float *gradient) {
-                                     *weight += *gradient * *gradient;
-                                   });
-  layer.m_biasUpdates->transform(*layer.m_dbiases,
-                                 [](float *bias, const float *gradient) {
-                                   *bias += *gradient * *gradient;
-                                 });
+  layer.m_weightUpdates->transform(
+      *layer.m_dweights, [rho](float *weight, const float *gradient) {
+        *weight = rho * *weight + (1 - rho) * *gradient * *gradient;
+      });
+  layer.m_biasUpdates->transform(
+      *layer.m_dbiases, [rho](float *bias, const float *gradient) {
+        *bias = rho * *bias + (1 - rho) * *gradient * *gradient;
+      });
 
   // use weight/bias update to update weights/biases
   layer.m_weights->transform(*layer.m_dweights, *layer.m_weightUpdates,
@@ -38,5 +39,5 @@ void Adagrad::updateParams(Layer::Dense &layer) const {
       });
 }
 
-void Adagrad::postUpdate() { ++m_iteration; }
+void RMSProp::postUpdate() { ++m_iteration; }
 } // namespace Optimizers
