@@ -44,35 +44,34 @@ int main() {
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
 
-    constexpr int imageRows{28};
-    constexpr int imageCols{28};
-    constexpr int layer1Neurons{16};
-    constexpr int layer2Neurons{16};
-    constexpr int outputNeurons{10};
-    constexpr int batchSize{64};
-    constexpr int trainingSize{60'000};
-    constexpr int epochs{trainingSize / batchSize};
-    constexpr double learningRate{1e-1};
-    constexpr double learningRateDecay{1e-2};
-    constexpr double learningRateMomentum{0.3};
+    constexpr unsigned int imageRows{28};
+    constexpr unsigned int imageCols{28};
+    constexpr unsigned short layer1Neurons{16};
+    constexpr unsigned short layer2Neurons{16};
+    constexpr unsigned short outputNeurons{10};
+    constexpr unsigned int batchSize{64};
+    constexpr unsigned int trainingSize{60'000};
+    constexpr unsigned int epochs{trainingSize / batchSize};
+    constexpr float learningRate{1e-1};
+    constexpr float learningRateDecay{1e-2};
+    constexpr float learningRateMomentum{0.3};
 
-    auto dense1{std::make_unique<Layer::Dense<float>>(
+    auto dense1{std::make_unique<Layer::Dense>(
         imageRows * imageCols, layer1Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
         Layer::WeightInit::He)};
 
-    auto dense2{std::make_unique<Layer::Dense<double>>(
+    auto dense2{std::make_unique<Layer::Dense>(
         layer1Neurons, layer2Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
         Layer::WeightInit::He)};
 
-    auto outputLayer{std::make_unique<Layer::Dense<double>>(
+    auto outputLayer{std::make_unique<Layer::Dense>(
         layer2Neurons, outputNeurons, batchSize,
         ANN::Activation{ANN::Activation::Linear}, Layer::WeightInit::He)};
 
-    auto outputSoftmaxLoss{
-        std::make_unique<Layer::CategoricalLossSoftmax<double, unsigned char>>(
-            outputNeurons, batchSize)};
+    auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>(
+        outputNeurons, batchSize)};
 
     auto optimizer{std::make_unique<Optimizers::SGD>(
         learningRate, learningRateDecay, learningRateMomentum)};

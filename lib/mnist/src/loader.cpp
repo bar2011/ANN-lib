@@ -17,14 +17,14 @@ std::array<MNist::Loader::DataPair, 2> MNist::Loader::loadData() const {
 MNist::Loader::DataPair
 MNist::Loader::loadImages(const std::string &labelsPath,
                           const std::string &imagesPath) {
-  std::shared_ptr<Math::Vector<unsigned char>> labels{
+  std::shared_ptr<Math::Vector<unsigned short>> labels{
       loadLabelsFile(labelsPath)};
   std::shared_ptr<Math::Matrix<float>> images{loadImagesFile(imagesPath)};
 
   return std::make_tuple(std::move(labels), std::move(images));
 }
 
-std::shared_ptr<Math::Vector<unsigned char>>
+std::shared_ptr<Math::Vector<unsigned short>>
 MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   std::ifstream labelsFile{labelsPath, std::ios::binary | std::ios::in};
 
@@ -40,11 +40,16 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
 
-  auto labels{std::make_shared<Math::Vector<unsigned char>>(size)};
+  auto labels{std::make_shared<Math::Vector<unsigned short>>(size)};
 
-  labels->fill([&labelsFile, &labelsPath](unsigned char *item) {
-    if (!labelsFile.read(reinterpret_cast<char *>(item), 1))
-      throw;
+  labels->fill([&labelsFile, &labelsPath](unsigned short *item) {
+    unsigned char byte{};
+    if (!labelsFile.read(reinterpret_cast<char *>(&byte), 1))
+      throw MNist::Exception{
+          "MNist::Loader::loadImagesFile(const std::string&)",
+          "Can't read file " + labelsPath +
+              ": file size smaller then needed to read all images."};
+    *item = static_cast<unsigned short>(byte);
   });
 
   return labels;
