@@ -1,5 +1,14 @@
 # Compile main library
-add_library(ANN SHARED ann/ann.cpp ann/activation.cpp ann/layers/loss.cpp ann/optimizers/sgd.cpp)
+add_library(ANN SHARED
+  "ann/ann.cpp"
+  "ann/activation.cpp"
+  "ann/layers/dense.cpp"
+  "ann/layers/softmax.cpp"
+  "ann/layers/categoricalLoss.cpp"
+  "ann/layers/categoricalLossSoftmax.cpp"
+  "ann/layers/loss.cpp"
+  "ann/optimizers/sgd.cpp"
+)
 
 target_include_directories(ANN PUBLIC
           "${CMAKE_CURRENT_SOURCE_DIR}/ann"
@@ -8,10 +17,6 @@ target_include_directories(ANN PUBLIC
 
 # Make .tpp files not exposed to users
 set_source_files_properties(
-  "${CMAKE_SOURCE_DIR}/include/ann/layers/dense.tpp"
-  "${CMAKE_SOURCE_DIR}/include/ann/layers/softmax.tpp"
-  "${CMAKE_SOURCE_DIR}/include/ann/layers/categoricalLoss.tpp"
-  "${CMAKE_SOURCE_DIR}/include/ann/layers/categoricalLossSoftmax.tpp"
   PROPERTIES HEADER_FILE_ONLY True
 )
 

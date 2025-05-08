@@ -47,5 +47,3 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Layer
-
-#include "softmax.tpp"

@@ -1,6 +1,4 @@
-#pragma once
-
-#include "categoricalLoss.h"
+#include "ann/layers/categoricalLoss.h"
 
 #include <cmath>
 

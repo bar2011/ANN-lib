@@ -1,6 +1,4 @@
-#pragma once
-
-#include "softmax.h"
+#include "ann/layers/softmax.h"
 
 namespace Layer {
 

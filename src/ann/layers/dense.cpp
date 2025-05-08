@@ -1,6 +1,4 @@
-#pragma once
-
-#include "dense.h"
+#include "ann/layers/dense.h"
 
 #include "math/linear.h"
 #include "math/matrix.h"

@@ -87,5 +87,3 @@ private:
       std::make_unique<Math::Vector<float>>()};
 };
 } // namespace Layer
-
-#include "dense.tpp"

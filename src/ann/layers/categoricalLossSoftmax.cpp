@@ -1,6 +1,4 @@
-#pragma once
-
-#include "categoricalLossSoftmax.h"
+#include "ann/layers/categoricalLossSoftmax.h"
 
 namespace Layer {
 

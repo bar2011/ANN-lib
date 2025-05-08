@@ -66,5 +66,3 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{};
 };
 } // namespace Layer
-
-#include "categoricalLossSoftmax.tpp"
