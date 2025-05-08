@@ -1,29 +1,28 @@
 #pragma once
 
 #include "ann/layers/dense.h"
+#include "optimizer.h"
 
 namespace Optimizers {
-class SGD {
+class SGD : public Optimizer {
 public:
-  SGD(double learningRate = 1.0, double decay = 0.0, double momentum = 0.0)
+  SGD(float learningRate = 1.0, float decay = 0.0, float momentum = 0.0)
       : m_startingLearningRate{learningRate}, m_learningRate{learningRate},
         m_decay{decay}, m_momentum{momentum} {};
 
   void preUpdate();
 
-  template <typename T> void updateParams(Layer::Dense<T> &layer);
+  void updateParams(Layer::Dense &layer) const;
 
   void postUpdate();
 
-  double learningRate() const { return m_learningRate; }
+  float learningRate() const { return m_learningRate; }
 
 private:
-  double m_startingLearningRate{};
-  double m_learningRate{};
-  double m_decay{};
-  double m_momentum{};
-  double m_iteration{1};
+  float m_startingLearningRate{};
+  float m_learningRate{};
+  float m_decay{};
+  float m_momentum{};
+  float m_iteration{1};
 };
 } // namespace Optimizers
-
-#include "sgd.tpp"
