@@ -13,20 +13,19 @@ struct Activation {
     LeakyReLU, // Needs one argument, for multiplicator of input
   } type;
 
-  std::vector<double> args{};
+  std::vector<float> args{};
 
-  Activation(Type t, std::vector<double> a = {})
-      : type{t}, args{std::move(a)} {}
+  Activation(Type t, std::vector<float> a = {}) : type{t}, args{std::move(a)} {}
 
   Activation(Activation &&other) noexcept;
 
-  std::function<double(double)> getForward();
+  std::function<float(float)> getForward();
 
   // Returns function for backpropagation
   // Returned function input - the output of the layer, the derivative of the
   // specific output
   // Returned function return - the derivative in respect to the activation
   // function
-  std::function<double(double, double)> getBackward();
+  std::function<float(float, float)> getBackward();
 };
 } // namespace ANN

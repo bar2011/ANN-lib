@@ -6,13 +6,10 @@
 
 namespace Layer {
 // Categorical Cross-Entropy loss class
-// I = input type. Must be castable to double.
-// C = correct indicies ty[e. Must be castable to size_t.
-template <typename I = double, typename C = double>
 class CategoricalLossSoftmax {
 public:
   // initialize member variables
-  CategoricalLossSoftmax(size_t neuronNum, size_t batchNum);
+  CategoricalLossSoftmax(unsigned short neuronNum, unsigned int batchNum);
 
   // Copy constructor deleted
   CategoricalLossSoftmax(const CategoricalLossSoftmax &other) = delete;
@@ -32,41 +29,41 @@ public:
   // inputs = inputs to softmax
   // correct = vector of correct indicies, one for each batch
   // returns softmax output
-  std::shared_ptr<const Math::Matrix<double>>
-  forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs,
-          const std::shared_ptr<const Math::VectorBase<C>> &correct);
+  std::shared_ptr<const Math::Matrix<float>> forward(
+      const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+      const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
-  std::shared_ptr<const Math::Matrix<double>> backward();
+  std::shared_ptr<const Math::Matrix<float>> backward();
 
   // Calculate average plain accuracy based on calculated
-  double accuracy() const;
+  float accuracy() const;
 
   // Calculate average loss accross batches
-  double mean() const;
+  float mean() const;
 
-  std::shared_ptr<const Math::Matrix<double>> dinputs() const {
+  std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
   }
 
-  std::shared_ptr<const Math::Matrix<double>> softmaxOutput() const {
+  std::shared_ptr<const Math::Matrix<float>> softmaxOutput() const {
     return m_softmaxOutput;
   }
 
-  std::shared_ptr<const Math::Vector<double>> lossOutput() const {
+  std::shared_ptr<const Math::Vector<float>> lossOutput() const {
     return m_lossOutput;
   }
 
 private:
   // No ownership of m_input by the class. Just a constant view.
-  std::shared_ptr<const Math::MatrixBase<I>> m_input{};
-  std::shared_ptr<const Math::VectorBase<C>> m_correct{};
+  std::shared_ptr<const Math::MatrixBase<float>> m_input{};
+  std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
 
-  std::shared_ptr<Math::Matrix<double>> m_softmaxOutput{};
-  std::shared_ptr<Math::Vector<double>> m_lossOutput{};
+  std::shared_ptr<Math::Matrix<float>> m_softmaxOutput{};
+  std::shared_ptr<Math::Vector<float>> m_lossOutput{};
 
-  std::shared_ptr<Math::Matrix<double>> m_dinputs{};
+  std::shared_ptr<Math::Matrix<float>> m_dinputs{};
 };
 } // namespace Layer
 

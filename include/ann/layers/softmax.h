@@ -5,8 +5,7 @@
 
 namespace Layer {
 // Softmax activation as a layer
-// I = input data type
-template <typename I = double> class Softmax {
+class Softmax {
 public:
   // Initialize empty output matrix
   Softmax(size_t neuronNum, size_t batchNum);
@@ -25,29 +24,27 @@ public:
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
-  std::shared_ptr<const Math::Matrix<double>>
-  forward(const std::shared_ptr<const Math::MatrixBase<I>> &inputs);
+  std::shared_ptr<const Math::Matrix<float>>
+  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs);
 
   // Compute dinputs gradient
-  std::shared_ptr<const Math::Matrix<double>>
-  backward(const std::shared_ptr<const Math::Matrix<double>> &dvalues);
+  std::shared_ptr<const Math::Matrix<float>>
+  backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues);
 
-  std::shared_ptr<const Math::Matrix<double>> output() const {
-    return m_output;
-  }
+  std::shared_ptr<const Math::Matrix<float>> output() const { return m_output; }
 
-  std::shared_ptr<const Math::Matrix<double>> dinputs() const {
+  std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
   }
 
 private:
   // No ownership of m_input by the class. Only a view.
-  std::shared_ptr<const Math::MatrixBase<I>> m_input{};
-  std::shared_ptr<Math::Matrix<double>> m_output{
-      std::make_shared<Math::Matrix<double>>()};
+  std::shared_ptr<const Math::MatrixBase<float>> m_input{};
+  std::shared_ptr<Math::Matrix<float>> m_output{
+      std::make_shared<Math::Matrix<float>>()};
 
-  std::shared_ptr<Math::Matrix<double>> m_dinputs{
-      std::make_shared<Math::Matrix<double>>()};
+  std::shared_ptr<Math::Matrix<float>> m_dinputs{
+      std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Layer
 

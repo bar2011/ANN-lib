@@ -1,62 +1,52 @@
 #pragma once
-#include <cassert>
 
 #include "categoricalLoss.h"
 
 #include <cmath>
 
 namespace Layer {
-template <typename I, typename C>
-CategoricalLoss<I, C>::CategoricalLoss(size_t batchNum) : Loss(batchNum){};
 
-template <typename I, typename C>
-CategoricalLoss<I, C>::CategoricalLoss(CategoricalLoss<I, C> &&other) noexcept
+CategoricalLoss::CategoricalLoss(size_t batchNum) : Loss(batchNum) {};
+
+CategoricalLoss::CategoricalLoss(CategoricalLoss &&other) noexcept
     : Loss(std::move(other)) {
   m_input = other.m_input;
 
   other.m_input.reset();
 }
 
-template <typename I, typename C>
-CategoricalLoss<I, C> &
-CategoricalLoss<I, C>::operator=(CategoricalLoss<I, C> &&other) noexcept {
+CategoricalLoss &CategoricalLoss::operator=(CategoricalLoss &&other) noexcept {
   if (&other != this) {
     // Move other's pointers
-    m_input = other.m_input;
-    m_output = other.m_output;
-
-    // Reset other's pointers
-    other.m_input.reset();
-    other.m_output.reset();
+    m_input = std::move(other.m_input);
+    m_output = std::move(other.m_output);
   }
   return *this;
 }
 
-template <typename I, typename C>
-std::shared_ptr<const Math::Vector<double>> CategoricalLoss<I, C>::forward(
-    const std::shared_ptr<const Math::MatrixBase<I>> &inputs,
-    const std::shared_ptr<const Math::VectorBase<C>> &correct) {
+std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+    const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   // Store arguments for later use by backpropagation
   m_input = inputs;
   m_correct = correct;
   if (!m_dinputs)
     m_dinputs =
-        std::make_shared<Math::Matrix<double>>(inputs->rows(), inputs->cols());
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+
+  constexpr float epsilon{1e-7};
 
   for (size_t batch{}; batch < m_output->size(); ++batch) {
-    double val{(*inputs)[batch, static_cast<size_t>((*correct)[batch])]};
-    if (val >= 1 - 1e-7)
-      val = 1 - 1e-7;
-    else if (val <= 1e-7)
-      val = 1e-7;
+    float val{
+        std::clamp((*inputs)[batch, static_cast<size_t>((*correct)[batch])],
+                   epsilon, 1 - epsilon)};
     (*m_output)[batch] = -std::log(val);
   }
 
   return m_output;
 }
 
-template <typename I, typename C>
-std::shared_ptr<const Math::Matrix<double>> CategoricalLoss<I, C>::backward() {
+std::shared_ptr<const Math::Matrix<float>> CategoricalLoss::backward() {
   for (size_t i{}; i < m_input->rows(); ++i)
     for (size_t j{}; j < m_input->cols(); ++j) {
       if ((*m_correct)[i] != j)
@@ -71,12 +61,11 @@ std::shared_ptr<const Math::Matrix<double>> CategoricalLoss<I, C>::backward() {
   return m_dinputs;
 }
 
-template <typename I, typename C>
-double CategoricalLoss<I, C>::accuracy() const {
+float CategoricalLoss::accuracy() const {
   // Get prediction for each row
   std::unique_ptr<Math::Vector<size_t>> prediction{m_input->argmaxRow()};
 
-  double correctPredictions{};
+  float correctPredictions{};
   for (size_t i{}; i < prediction->size(); ++i)
     if ((*prediction)[i] == (*m_correct)[i])
       ++correctPredictions;

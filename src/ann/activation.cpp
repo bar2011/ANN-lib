@@ -4,37 +4,37 @@
 #include <cmath>
 
 namespace ANN {
-std::function<double(double)> Activation::getForward() {
+std::function<float(float)> Activation::getForward() {
   switch (type) {
   case Linear:
-    return [](double x) { return x; };
+    return [](float x) { return x; };
   case Step:
-    return [](double x) { return (x > 0) ? 1 : 0; };
+    return [](float x) { return (x > 0) ? 1 : 0; };
   case ReLU:
-    return [](double x) { return (x > 0) ? x : 0; };
+    return [](float x) { return (x > 0) ? x : 0; };
   case Sigmoid:
-    return [](double x) { return 1 / (1 + std::exp(-x)); };
+    return [](float x) { return 1 / (1 + std::exp(-x)); };
   case LeakyReLU:
     auto c{args[0]};
-    return [c](double x) { return (x > 0) ? x : (c * x); };
+    return [c](float x) { return (x > 0) ? x : (c * x); };
   }
   throw ANN::Exception{"ANN::Activation::getForward()",
                        "Unknown or unsupported activation type entered"};
 }
 
-std::function<double(double, double)> Activation::getBackward() {
+std::function<float(float, float)> Activation::getBackward() {
   switch (type) {
   case Linear:
-    return [](double out, double d) { return d; };
+    return [](float out, float d) { return d; };
   case Step:
-    return [](double out, double d) { return 0; };
+    return [](float out, float d) { return 0; };
   case ReLU:
-    return [](double out, double d) { return d * ((out > 0) ? 1 : 0); };
+    return [](float out, float d) { return d * ((out > 0) ? 1 : 0); };
   case Sigmoid:
-    return [](double out, double d) { return d * out * (1 - out); };
+    return [](float out, float d) { return d * out * (1 - out); };
   case LeakyReLU:
     auto c{args[0]};
-    return [c](double out, double d) { return d * ((out > 0) ? 1 : c); };
+    return [c](float out, float d) { return d * ((out > 0) ? 1 : c); };
   }
   throw ANN::Exception{"ANN::Activation::getBackward()",
                        "Unknown or unsupported activation type entered"};
