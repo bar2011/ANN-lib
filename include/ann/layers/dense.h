@@ -87,8 +87,12 @@ private:
   std::unique_ptr<Math::Vector<float>> m_dbiases{
       std::make_unique<Math::Vector<float>>()};
 
+  std::unique_ptr<Math::Matrix<float>> m_weightCache{
+      std::make_unique<Math::Matrix<float>>()};
   std::unique_ptr<Math::Matrix<float>> m_weightUpdates{
       std::make_unique<Math::Matrix<float>>()};
+  std::unique_ptr<Math::Vector<float>> m_biasCache{
+      std::make_unique<Math::Vector<float>>()};
   std::unique_ptr<Math::Vector<float>> m_biasUpdates{
       std::make_unique<Math::Vector<float>>()};
 };

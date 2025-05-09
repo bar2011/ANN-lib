@@ -12,31 +12,39 @@ void RMSProp::updateParams(Layer::Dense &layer) const {
   auto learningRate{m_learningRate};
   auto epsilon{m_epsilon};
   auto rho{m_rho};
+  // update weight/bias cache member variables to account for adaptive lr
+  layer.m_weightCache->transform(
+      *layer.m_dweights, [rho](float *weightCache, const float *gradient) {
+        *weightCache = rho * *weightCache + (1 - rho) * *gradient * *gradient;
+      });
+  layer.m_biasCache->transform(
+      *layer.m_dbiases, [rho](float *biasCache, const float *gradient) {
+        *biasCache = rho * *biasCache + (1 - rho) * *gradient * *gradient;
+      });
 
-  // update weight/bias update member variables to account for momentum
+  // Calculate actual weight/bias updates
   layer.m_weightUpdates->transform(
-      *layer.m_dweights, [rho](float *weight, const float *gradient) {
-        *weight = rho * *weight + (1 - rho) * *gradient * *gradient;
+      *layer.m_dweights, *layer.m_weightCache,
+      [learningRate, epsilon](float *weightUpdates, const float *gradient,
+                              const float *cache) {
+        *weightUpdates =
+            learningRate * *gradient / (std::sqrt(*cache) + epsilon);
       });
   layer.m_biasUpdates->transform(
-      *layer.m_dbiases, [rho](float *bias, const float *gradient) {
-        *bias = rho * *bias + (1 - rho) * *gradient * *gradient;
+      *layer.m_dbiases, *layer.m_biasCache,
+      [learningRate, epsilon](float *biasUpdates, const float *gradient,
+                              const float *cache) {
+        *biasUpdates = learningRate * *gradient / (std::sqrt(*cache) + epsilon);
       });
 
   // use weight/bias update to update weights/biases
-  layer.m_weights->transform(*layer.m_dweights, *layer.m_weightUpdates,
-                             [learningRate, epsilon](float *weight,
-                                                     const float *gradient,
-                                                     const float *updateCache) {
-                               *weight -= learningRate * *gradient /
-                                          (std::sqrt(*updateCache) + epsilon);
+  layer.m_weights->transform(*layer.m_weightUpdates,
+                             [](float *weight, const float *weightUpdates) {
+                               *weight -= *weightUpdates;
                              });
   layer.m_biases->transform(
-      *layer.m_dbiases, *layer.m_biasUpdates,
-      [learningRate, epsilon](float *bias, const float *gradient,
-                              const float *updateCache) {
-        *bias -= learningRate * *gradient / (std::sqrt(*updateCache) + epsilon);
-      });
+      *layer.m_biasUpdates,
+      [](float *bias, const float *biasUpdates) { *bias -= *biasUpdates; });
 }
 
 void RMSProp::postUpdate() { ++m_iteration; }
