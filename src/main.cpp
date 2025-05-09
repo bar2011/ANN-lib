@@ -4,7 +4,7 @@
 
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
-#include "ann/optimizers/sgd.h"
+#include "ann/optimizers/adam.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -52,8 +52,8 @@ int main() {
     constexpr unsigned int batchSize{64};
     constexpr unsigned int trainingSize{60'000};
     constexpr unsigned int epochs{trainingSize / batchSize};
-    constexpr float learningRate{1e-1};
-    constexpr float learningRateDecay{1e-2};
+    constexpr float learningRate{2e-2};
+    constexpr float learningRateDecay{1e-5};
     constexpr float learningRateMomentum{0.3};
 
     auto dense1{std::make_unique<Layer::Dense>(
@@ -73,8 +73,8 @@ int main() {
     auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>(
         outputNeurons, batchSize)};
 
-    auto optimizer{std::make_unique<Optimizers::SGD>(
-        learningRate, learningRateDecay, learningRateMomentum)};
+    auto optimizer{
+        std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
 
     std::vector<size_t> batchSequence(epochs);
     std::iota(batchSequence.begin(), batchSequence.end(), 0);

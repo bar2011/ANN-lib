@@ -13,6 +13,7 @@ class Optimizer;
 class SGD;
 class Adagrad;
 class RMSProp;
+class Adam;
 } // namespace Optimizers
 
 namespace Layer {
@@ -68,6 +69,7 @@ public:
   friend class Optimizers::SGD;
   friend class Optimizers::Adagrad;
   friend class Optimizers::RMSProp;
+  friend class Optimizers::Adam;
 
 private:
   // No ownership of m_input by the class. Only a view.

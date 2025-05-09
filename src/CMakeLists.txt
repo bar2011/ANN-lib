@@ -10,6 +10,7 @@ add_library(ANN SHARED
   "ann/optimizers/sgd.cpp"
   "ann/optimizers/adagrad.cpp"
   "ann/optimizers/rmsprop.cpp"
+  "ann/optimizers/adam.cpp"
 )
 
 target_include_directories(ANN PUBLIC
