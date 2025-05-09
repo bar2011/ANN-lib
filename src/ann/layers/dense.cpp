@@ -15,10 +15,10 @@ Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
       m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
       m_dbiases{std::make_unique<Math::Vector<float>>(neuronNum)},
       m_weightCache{std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
-      m_weightUpdates{
+      m_weightMomentums{
           std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
       m_biasCache{std::make_unique<Math::Vector<float>>(neuronNum)},
-      m_biasUpdates{std::make_unique<Math::Vector<float>>(neuronNum)} {
+      m_biasMomentums{std::make_unique<Math::Vector<float>>(neuronNum)} {
   switch (initMethod) {
   case WeightInit::Xavier:
     m_weights = std::make_unique<Math::Matrix<float>>(

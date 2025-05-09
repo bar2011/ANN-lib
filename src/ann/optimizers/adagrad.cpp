@@ -23,14 +23,14 @@ void Adagrad::updateParams(Layer::Dense &layer) const {
                                });
 
   // Calculate actual weight/bias updates
-  layer.m_weightUpdates->transform(
+  layer.m_weightMomentums->transform(
       *layer.m_dweights, *layer.m_weightCache,
       [learningRate, epsilon](float *weightUpdates, const float *gradient,
                               const float *cache) {
         *weightUpdates =
             learningRate * *gradient / (std::sqrt(*cache) + epsilon);
       });
-  layer.m_biasUpdates->transform(
+  layer.m_biasMomentums->transform(
       *layer.m_dbiases, *layer.m_biasCache,
       [learningRate, epsilon](float *biasUpdates, const float *gradient,
                               const float *cache) {
@@ -38,12 +38,12 @@ void Adagrad::updateParams(Layer::Dense &layer) const {
       });
 
   // use weight/bias update to update weights/biases
-  layer.m_weights->transform(*layer.m_weightUpdates,
+  layer.m_weights->transform(*layer.m_weightMomentums,
                              [](float *weight, const float *weightUpdates) {
                                *weight -= *weightUpdates;
                              });
   layer.m_biases->transform(
-      *layer.m_biasUpdates,
+      *layer.m_biasMomentums,
       [](float *bias, const float *biasUpdates) { *bias -= *biasUpdates; });
 }
 
