@@ -46,12 +46,12 @@ int main() {
 
     constexpr unsigned int imageRows{28};
     constexpr unsigned int imageCols{28};
-    constexpr unsigned short layer1Neurons{16};
+    constexpr unsigned short layer1Neurons{32};
     constexpr unsigned short layer2Neurons{16};
     constexpr unsigned short outputNeurons{10};
     constexpr unsigned int batchSize{64};
     constexpr unsigned int trainingSize{60'000};
-    constexpr unsigned int epochs{trainingSize / batchSize};
+    constexpr unsigned int epochs{1};
     constexpr float learningRate{2e-2};
     constexpr float learningRateDecay{1e-5};
     constexpr float learningRateMomentum{0.3};
@@ -76,43 +76,58 @@ int main() {
     auto optimizer{
         std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
 
-    std::vector<size_t> batchSequence(epochs);
-    std::iota(batchSequence.begin(), batchSequence.end(), 0);
-    std::shuffle(batchSequence.begin(), batchSequence.end(), Math::Random::mt);
+    std::cout << "started training\n";
+
+    Timer t{};
 
     for (size_t epoch{}; epoch < epochs; ++epoch) {
-      // FORWARD PASS
+      // Set up batch sequence
+      std::vector<size_t> batchSequence(trainingSize / batchSize);
+      std::iota(batchSequence.begin(), batchSequence.end(), 0);
+      std::shuffle(batchSequence.begin(), batchSequence.end(),
+                   Math::Random::mt);
 
-      // Get batchSize training images and labels
-      auto inputData{
-          std::get<1>(data[0])->view(batchSequence[epoch] * batchSize,
-                                     (batchSequence[epoch] + 1) * batchSize)};
-      auto inputCorrect{
-          std::get<0>(data[0])->view(batchSequence[epoch] * batchSize,
-                                     (batchSequence[epoch] + 1) * batchSize)};
+      for (size_t batch{}; batch < trainingSize / batchSize; ++batch) {
+        t.reset();
+        // FORWARD PASS
 
-      dense1->forward(inputData);
-      dense2->forward(dense1->output());
-      outputLayer->forward(dense2->output());
-      outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
+        // Get batchSize training images and labels
+        auto inputData{
+            std::get<1>(data[0])->view(batchSequence[batch] * batchSize,
+                                       (batchSequence[batch] + 1) * batchSize)};
+        auto inputCorrect{
+            std::get<0>(data[0])->view(batchSequence[batch] * batchSize,
+                                       (batchSequence[batch] + 1) * batchSize)};
 
-      if (epoch % 100 == 0)
-        std::cout << "epoch: " << epoch
-                  << "\tloss: " << outputSoftmaxLoss->mean()
-                  << "\tacc: " << outputSoftmaxLoss->accuracy()
-                  << "\tlr: " << optimizer->learningRate() << '\n';
+        dense1->forward(inputData);
+        dense2->forward(dense1->output());
+        outputLayer->forward(dense2->output());
+        outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
+        std::cout << "forward: " << t.elapsed() << '\n';
+        t.reset();
 
-      // BACKWARD PASS
-      outputSoftmaxLoss->backward();
-      outputLayer->backward(outputSoftmaxLoss->dinputs());
-      dense2->backward(outputLayer->dinputs());
-      dense1->backward(dense2->dinputs());
+        // BACKWARD PASS
+        outputSoftmaxLoss->backward();
+        outputLayer->backward(outputSoftmaxLoss->dinputs());
+        dense2->backward(outputLayer->dinputs());
+        dense1->backward(dense2->dinputs());
+        std::cout << "backward: " << t.elapsed() << '\n';
+        t.reset();
 
-      optimizer->preUpdate();
-      optimizer->updateParams(*outputLayer);
-      optimizer->updateParams(*dense2);
-      optimizer->updateParams(*dense1);
-      optimizer->postUpdate();
+        optimizer->preUpdate();
+        optimizer->updateParams(*outputLayer);
+        optimizer->updateParams(*dense2);
+        optimizer->updateParams(*dense1);
+        optimizer->postUpdate();
+        std::cout << "optimize: " << t.elapsed() << '\n';
+        throw;
+      }
+
+      // Display epoch data
+      std::cout << "epoch: " << epoch + 1
+                << "\tloss: " << outputSoftmaxLoss->mean()
+                << "\tacc: " << outputSoftmaxLoss->accuracy()
+                << "\tlr: " << optimizer->learningRate() << '\n';
     }
 
     std::cout << "FINAL loss: " << outputSoftmaxLoss->mean()
