@@ -38,7 +38,7 @@ T dot(const VectorBase<T> &va, const VectorBase<T> &vb, bool parallelize) {
     size_t end{std::min((thread + 1) * chunkSize, va.size())};
 
     futureResults.emplace_back(
-        std::async(std::launch::async, [start, end, thread, &va, &vb]() {
+        std::async(std::launch::async, [start, end, &va, &vb]() {
           T partialResult{};
           for (size_t i{start}; i < end; ++i)
             partialResult += va[i] * vb[i];
@@ -62,34 +62,39 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v) {
 
   Vector<T> result{m.rows()};
 
-  for (size_t i{}; i < m.rows(); ++i) {
-    T sum{};
-    for (size_t j{}; j < m.cols(); ++j)
-      sum += m[i, j] * v[j];
-    result[i] = sum;
-  }
-
-  return result;
-}
-
-template <typename T>
-Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb) {
-  if (ma.cols() != mb.rows())
-    throw Math::Exception{
-        "Math::dot(const MatrixBase<T>&, const MatrixBase<T>&)",
-        "Can't compute the dot product of two matrices where the first "
-        "matrix's col number isn't the same as the second matrix's row number"};
-
-  Matrix<T> result{ma.rows(), mb.cols()};
-
-  for (size_t i{}; i < ma.rows(); ++i) {
-    for (size_t j{}; j < mb.cols(); ++j) {
+  if (!parallelize) {
+    for (size_t i{}; i < m.rows(); ++i) {
       T sum{};
-      for (size_t k{}; k < ma.cols(); ++k)
-        sum += ma[i, k] * mb[k, j];
-      result[i, j] = sum;
+      for (size_t j{}; j < m.cols(); ++j)
+        sum += m[i, j] * v[j];
+      result[i] = sum;
     }
+
+    return result;
   }
+
+  size_t availableThreads{std::clamp<size_t>(
+      static_cast<size_t>(std::thread::hardware_concurrency()), 1, m.rows())};
+  size_t chunkSize{(m.rows() + availableThreads - 1) / availableThreads};
+
+  std::vector<std::thread> threads{};
+
+  for (size_t thread{}; thread < availableThreads; ++thread) {
+    size_t start{thread * chunkSize};
+    size_t end{std::min((thread + 1) * chunkSize, m.rows())};
+
+    threads.emplace_back(std::thread([start, end, thread, &m, &v, &result]() {
+      for (size_t i{start}; i < end; ++i) {
+        T sum{};
+        for (size_t j{}; j < m.cols(); ++j)
+          sum += m[i, j] * v[j];
+        result[i] = sum;
+      }
+    }));
+  }
+
+  for (auto &t : threads)
+    t.join();
 
   return result;
 }

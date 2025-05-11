@@ -8,13 +8,14 @@ namespace Math {
 // Variations of dot product - vector w/ vector, matrix w/ vector, matrix w/
 // matrix
 template <typename T>
-Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v);
 T dot(const VectorBase<T> &va, const VectorBase<T> &vb,
       bool parallelize = false);
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb);
 template <typename T, typename U, typename V>
 Matrix<T> dot(const MatrixBase<U> &ma, const MatrixBase<V> &mb);
+Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
+              bool parallelize = false);
 
 // Matrix with matrix dot product where the second one is transposed by default
 // (needed for ANN calculations and more efficiently done as one function)
