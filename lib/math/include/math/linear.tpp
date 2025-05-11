@@ -100,8 +100,6 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
   return result;
 }
 
-template <typename T, typename U, typename V>
-Matrix<T> dot(const MatrixBase<U> &ma, const MatrixBase<V> &mb) {
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
               bool parallelize) {
