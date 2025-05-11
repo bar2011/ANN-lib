@@ -6,17 +6,48 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include <algorithm>
+#include <future>
+#include <thread>
+#include <vector>
+
 namespace Math {
 
-template <typename T> T dot(const VectorBase<T> &va, const VectorBase<T> &vb) {
+template <typename T>
+T dot(const VectorBase<T> &va, const VectorBase<T> &vb, bool parallelize) {
   if (va.size() != vb.size())
     throw Math::Exception{
         "Math::dot(const VectorBase<T>&, const VectorBase<T>&)",
         "Can't calculate the dot product of two differently sized vectors"};
   T result{};
 
-  for (size_t i{}; i < va.size(); ++i)
-    result += va[i] * vb[i];
+  if (!parallelize) {
+    for (size_t i{}; i < va.size(); ++i)
+      result += va[i] * vb[i];
+    return result;
+  }
+
+  size_t availableThreads{std::clamp<size_t>(
+      static_cast<size_t>(std::thread::hardware_concurrency()), 1, va.size())};
+  size_t chunkSize{(va.size() + availableThreads - 1) / availableThreads};
+
+  std::vector<std::future<T>> futureResults{};
+
+  for (size_t thread{}; thread < availableThreads; ++thread) {
+    size_t start{thread * chunkSize};
+    size_t end{std::min((thread + 1) * chunkSize, va.size())};
+
+    futureResults.emplace_back(
+        std::async(std::launch::async, [start, end, thread, &va, &vb]() {
+          T partialResult{};
+          for (size_t i{start}; i < end; ++i)
+            partialResult += va[i] * vb[i];
+          return partialResult;
+        }));
+  }
+
+  for (auto &future : futureResults)
+    result += future.get();
 
   return result;
 }

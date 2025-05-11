@@ -7,9 +7,10 @@ namespace Math {
 
 // Variations of dot product - vector w/ vector, matrix w/ vector, matrix w/
 // matrix
-template <typename T> T dot(const VectorBase<T> &va, const VectorBase<T> &vb);
 template <typename T>
 Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v);
+T dot(const VectorBase<T> &va, const VectorBase<T> &vb,
+      bool parallelize = false);
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb);
 template <typename T, typename U, typename V>
