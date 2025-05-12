@@ -61,7 +61,7 @@ std::shared_ptr<const Math::Matrix<float>>
 Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
   m_output = std::make_shared<Math::Matrix<float>>(
-      Math::dot(*inputs, *m_weights) + *m_biases);
+      Math::dot(*inputs, *m_weights, true) + *m_biases);
   auto activationForward{m_activation->getForward()};
   m_output->fill(
       [activationForward](float *val) { *val = activationForward(*val); });
