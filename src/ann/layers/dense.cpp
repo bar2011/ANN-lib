@@ -78,8 +78,8 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
                          [&backwardActivation](float *a, const float *b) {
                            *a = backwardActivation(*a, *b);
                          });
-  *m_dweights = Math::dotTA<float>(*m_input, *dactivation);
-  *m_dinputs = Math::dotTB<float>(*dactivation, *m_weights);
+  *m_dweights = Math::dotTA<float>(*m_input, *dactivation, true);
+  *m_dinputs = Math::dotTB<float>(*dactivation, *m_weights, true);
 
   // Sum dvalues row-wise and set it to dbiases
   for (size_t i{}; i < dactivation->rows(); ++i)

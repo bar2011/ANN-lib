@@ -217,14 +217,43 @@ Matrix<T> dotTB(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
 
   Matrix<T> result{ma.rows(), mb.rows()};
 
-  for (size_t i{}; i < ma.rows(); ++i) {
-    for (size_t j{}; j < mb.rows(); ++j) {
-      T sum{};
-      for (size_t k{}; k < ma.cols(); ++k)
-        sum += ma[i, k] * mb[j, k];
-      result[i, j] = sum;
+  if (!parallelize) {
+    for (size_t i{}; i < ma.rows(); ++i) {
+      for (size_t j{}; j < mb.rows(); ++j) {
+        T sum{};
+        for (size_t k{}; k < ma.cols(); ++k)
+          sum += ma[i, k] * mb[j, k];
+        result[i, j] = sum;
+      }
     }
+
+    return result;
   }
+
+  size_t availableThreads{std::clamp<size_t>(
+      static_cast<size_t>(std::thread::hardware_concurrency()), 1, ma.rows())};
+  size_t chunkSize{(ma.rows() + availableThreads - 1) / availableThreads};
+
+  std::vector<std::thread> threads{};
+
+  for (size_t thread{}; thread < availableThreads; ++thread) {
+    size_t start{thread * chunkSize};
+    size_t end{std::min((thread + 1) * chunkSize, ma.rows())};
+
+    threads.emplace_back(std::thread([start, end, thread, &ma, &mb, &result]() {
+      for (size_t i{start}; i < end; ++i) {
+        for (size_t j{}; j < mb.rows(); ++j) {
+          T sum{};
+          for (size_t k{}; k < ma.cols(); ++k)
+            sum += ma[i, k] * mb[j, k];
+          result[i, j] = sum;
+        }
+      }
+    }));
+  }
+
+  for (auto &t : threads)
+    t.join();
 
   return result;
 }
