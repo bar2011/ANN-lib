@@ -5,7 +5,8 @@ add_library(MathHelpers INTERFACE)
 target_include_directories(MathHelpers INTERFACE include)
 
 # Ensure .tpp files are not exposed to users
-set_source_files_properties(
+target_sources(MathHelpers
+    PRIVATE
     include/math/matrix.tpp
     include/math/matrixView.tpp
     include/math/vector.tpp
@@ -13,7 +14,6 @@ set_source_files_properties(
     include/math/linear.tpp
     include/math/dot.tpp
     include/math/random.tpp
-    PROPERTIES HEADER_FILE_ONLY True
 )
 
 # Note: The .tpp files are included in the .h files internally, so users won't need access to them.
