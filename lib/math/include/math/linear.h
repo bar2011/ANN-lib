@@ -20,8 +20,11 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
 // Matrix with matrix dot product where the second one is transposed by default
 // (needed for ANN calculations and more efficiently done as one function)
 template <typename T, typename U, typename V>
-Matrix<T> dotTranspose(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
-                       bool transposeFirst = false);
+Matrix<T> dotTransposeFirst(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+                            bool parallelize = false);
+template <typename T, typename U, typename V>
+Matrix<T> dotTransposeSecond(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+                             bool parallelize = false);
 
 // Vector element-wise addition
 template <typename T>

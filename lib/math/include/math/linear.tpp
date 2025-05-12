@@ -153,49 +153,51 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
 }
 
 template <typename T, typename U, typename V>
-Matrix<T> dotTranspose(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
-                       bool transposeFirst) {
-  if (transposeFirst) {
-    if (ma.rows() != mb.rows())
-      throw Math::Exception{
-          "Math::dotTranspose(const MatrixBase<T>&, const MatrixBase<T>&)",
-          "Can't compute the \"transposed\" dot product of two matrices where "
-          "the first matrix's row number isn't the same as the second matrix's "
-          "row number (the first was rotated)"};
+Matrix<T> dotTransposeFirst(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+                            bool parallelize) {
+  if (ma.rows() != mb.rows())
+    throw Math::Exception{
+        "Math::dotTransposeFirst(const MatrixBase<T>&, const MatrixBase<T>&)",
+        "Can't compute the \"transposed\" dot product of two matrices where "
+        "the first matrix's row number isn't the same as the second matrix's "
+        "row number"};
 
-    Matrix<T> result{ma.cols(), mb.cols()};
+  Matrix<T> result{ma.cols(), mb.cols()};
 
-    for (size_t i{}; i < ma.cols(); ++i) {
-      for (size_t j{}; j < mb.cols(); ++j) {
-        T sum{};
-        for (size_t k{}; k < ma.rows(); ++k)
-          sum += ma[k, i] * mb[k, j];
-        result[i, j] = sum;
-      }
+  for (size_t i{}; i < ma.cols(); ++i) {
+    for (size_t j{}; j < mb.cols(); ++j) {
+      T sum{};
+      for (size_t k{}; k < ma.rows(); ++k)
+        sum += ma[k, i] * mb[k, j];
+      result[i, j] = sum;
     }
-
-    return result;
-  } else {
-    if (ma.cols() != mb.cols())
-      throw Math::Exception{
-          "Math::dotTranspose(const MatrixBase<T>&, const MatrixBase<T>&)",
-          "Can't compute the \"transposed\" dot product of two matrices where "
-          "the first matrix's col number isn't the same as the second matrix's "
-          "col number (the second was rotated)"};
-
-    Matrix<T> result{ma.rows(), mb.rows()};
-
-    for (size_t i{}; i < ma.rows(); ++i) {
-      for (size_t j{}; j < mb.rows(); ++j) {
-        T sum{};
-        for (size_t k{}; k < ma.cols(); ++k)
-          sum += ma[i, k] * mb[j, k];
-        result[i, j] = sum;
-      }
-    }
-
-    return result;
   }
+
+  return result;
+}
+
+template <typename T, typename U, typename V>
+Matrix<T> dotTransposeSecond(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+                             bool parallelize) {
+  if (ma.cols() != mb.cols())
+    throw Math::Exception{
+        "Math::dotTransposeSecond(const MatrixBase<T>&, const MatrixBase<T>&)",
+        "Can't compute the \"transposed\" dot product of two matrices where "
+        "the first matrix's col number isn't the same as the second matrix's "
+        "col number"};
+
+  Matrix<T> result{ma.rows(), mb.rows()};
+
+  for (size_t i{}; i < ma.rows(); ++i) {
+    for (size_t j{}; j < mb.rows(); ++j) {
+      T sum{};
+      for (size_t k{}; k < ma.cols(); ++k)
+        sum += ma[i, k] * mb[j, k];
+      result[i, j] = sum;
+    }
+  }
+
+  return result;
 }
 
 template <typename T>
