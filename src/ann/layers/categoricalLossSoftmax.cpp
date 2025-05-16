@@ -1,5 +1,7 @@
 #include "ann/layers/categoricalLossSoftmax.h"
 
+#include "utils/parallel.h"
+
 #include <cmath>
 
 namespace Layer {
@@ -35,35 +37,38 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
   m_input = inputs;
   m_correct = correct;
 
-  for (size_t batch{}; batch < m_softmaxOutput->rows(); ++batch) {
-    // max value in batch (for exponentiated values to not explode)
-    float maxValue = (*inputs)[batch, 0];
-    for (size_t i{1}; i < inputs->cols(); ++i)
-      if ((*inputs)[batch, i] > maxValue)
-        maxValue = (*inputs)[batch, i];
-
-    // sum of exponentiated inputs
-    float normalBase{};
-
-    for (size_t i{}; i < inputs->cols(); ++i) {
-      (*m_softmaxOutput)[batch, i] =
-          std::exp(static_cast<float>((*inputs)[batch, i] - maxValue));
-      normalBase += (*m_softmaxOutput)[batch, i];
-    }
-
-    // Normalize values
-    for (size_t i{}; i < inputs->cols(); ++i)
-      (*m_softmaxOutput)[batch, i] /= normalBase;
-  }
+  auto softmaxOutput{m_softmaxOutput};
+  auto lossOutput{m_lossOutput};
 
   constexpr float epsilon{1e-7};
 
-  for (size_t batch{}; batch < m_lossOutput->size(); ++batch) {
-    float val{std::clamp(
-        (*m_softmaxOutput)[batch, static_cast<size_t>((*correct)[batch])],
-        epsilon, 1 - epsilon)};
-    (*m_lossOutput)[batch] = -std::log(val);
-  }
+  Utils::Parallel::parallelFor(
+      m_softmaxOutput->rows(),
+      [inputs, correct, softmaxOutput, lossOutput, epsilon](size_t batch) {
+        // max value in batch (for exponentiated values to not explode)
+        float maxValue = (*inputs)[batch, 0];
+        for (size_t i{1}; i < inputs->cols(); ++i)
+          if ((*inputs)[batch, i] > maxValue)
+            maxValue = (*inputs)[batch, i];
+
+        // sum exponentiated inputs
+        float normalBase{};
+        for (size_t i{}; i < inputs->cols(); ++i) {
+          (*softmaxOutput)[batch, i] =
+              std::exp(static_cast<float>((*inputs)[batch, i] - maxValue));
+          normalBase += (*softmaxOutput)[batch, i];
+        }
+
+        // Normalize values
+        for (size_t i{}; i < inputs->cols(); ++i)
+          (*softmaxOutput)[batch, i] /= normalBase;
+
+        // Calculate batch loss
+        float val{std::clamp(
+            (*softmaxOutput)[batch, static_cast<size_t>((*correct)[batch])],
+            epsilon, 1 - epsilon)};
+        (*lossOutput)[batch] = -std::log(val);
+      });
 
   return m_softmaxOutput;
 }
