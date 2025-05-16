@@ -18,13 +18,13 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
               bool parallelize = false);
 
 // dot(a^T, b)
-template <typename T, typename U, typename V>
-Matrix<T> dotTA(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+template <typename T>
+Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 bool parallelize = false);
 
 // dot(a, b^T)
-template <typename T, typename U, typename V>
-Matrix<T> dotTB(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+template <typename T>
+Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 bool parallelize = false);
 
 }; // namespace Math

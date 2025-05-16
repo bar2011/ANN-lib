@@ -6,9 +6,11 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include "utils/parallel.h"
+
 #include <algorithm>
-#include <future>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace Math {
@@ -27,27 +29,15 @@ T dot(const VectorBase<T> &va, const VectorBase<T> &vb, bool parallelize) {
     return result;
   }
 
-  size_t availableThreads{std::clamp<size_t>(
-      static_cast<size_t>(std::thread::hardware_concurrency()), 1, va.size())};
-  size_t chunkSize{(va.size() + availableThreads - 1) / availableThreads};
+  std::vector<T> partialResults(va.size());
 
-  std::vector<std::future<T>> futureResults{};
+  Utils::Parallel::parallelFor(va.size(),
+                               [&va, &vb, &partialResults](size_t i) {
+                                 partialResults[i] += va[i] * vb[i];
+                               });
 
-  for (size_t thread{}; thread < availableThreads; ++thread) {
-    size_t start{thread * chunkSize};
-    size_t end{std::min((thread + 1) * chunkSize, va.size())};
-
-    futureResults.emplace_back(
-        std::async(std::launch::async, [start, end, &va, &vb]() {
-          T partialResult{};
-          for (size_t i{start}; i < end; ++i)
-            partialResult += va[i] * vb[i];
-          return partialResult;
-        }));
-  }
-
-  for (auto &future : futureResults)
-    result += future.get();
+  for (auto &partialResult : partialResults)
+    result += partialResult;
 
   return result;
 }
@@ -74,28 +64,12 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
     return result;
   }
 
-  size_t availableThreads{std::clamp<size_t>(
-      static_cast<size_t>(std::thread::hardware_concurrency()), 1, m.rows())};
-  size_t chunkSize{(m.rows() + availableThreads - 1) / availableThreads};
-
-  std::vector<std::thread> threads{};
-
-  for (size_t thread{}; thread < availableThreads; ++thread) {
-    size_t start{thread * chunkSize};
-    size_t end{std::min((thread + 1) * chunkSize, m.rows())};
-
-    threads.emplace_back(std::thread([start, end, thread, &m, &v, &result]() {
-      for (size_t i{start}; i < end; ++i) {
-        T sum{};
-        for (size_t j{}; j < m.cols(); ++j)
-          sum += m[i, j] * v[j];
-        result[i] = sum;
-      }
-    }));
-  }
-
-  for (auto &t : threads)
-    t.join();
+  Utils::Parallel::parallelFor(m.rows(), [&m, &v, &result](size_t i) {
+    T sum{};
+    for (size_t j{}; j < m.cols(); ++j)
+      sum += m[i, j] * v[j];
+    result[i] = sum;
+  });
 
   return result;
 }
@@ -124,36 +98,20 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
     return result;
   }
 
-  size_t availableThreads{std::clamp<size_t>(
-      static_cast<size_t>(std::thread::hardware_concurrency()), 1, ma.rows())};
-  size_t chunkSize{(ma.rows() + availableThreads - 1) / availableThreads};
-
-  std::vector<std::thread> threads{};
-
-  for (size_t thread{}; thread < availableThreads; ++thread) {
-    size_t start{thread * chunkSize};
-    size_t end{std::min((thread + 1) * chunkSize, ma.rows())};
-
-    threads.emplace_back(std::thread([start, end, thread, &ma, &mb, &result]() {
-      for (size_t i{start}; i < end; ++i) {
-        for (size_t j{}; j < mb.cols(); ++j) {
-          T sum{};
-          for (size_t k{}; k < ma.cols(); ++k)
-            sum += ma[i, k] * mb[k, j];
-          result[i, j] = sum;
-        }
-      }
-    }));
-  }
-
-  for (auto &t : threads)
-    t.join();
+  Utils::Parallel::parallelFor(ma.rows(), [&ma, &mb, &result](size_t i) {
+    for (size_t j{}; j < mb.cols(); ++j) {
+      T sum{};
+      for (size_t k{}; k < ma.cols(); ++k)
+        sum += ma[i, k] * mb[k, j];
+      result[i, j] = sum;
+    }
+  });
 
   return result;
 }
 
-template <typename T, typename U, typename V>
-Matrix<T> dotTA(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+template <typename T>
+Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 bool parallelize) {
   if (ma.rows() != mb.rows())
     throw Math::Exception{
@@ -177,36 +135,20 @@ Matrix<T> dotTA(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
     return result;
   }
 
-  size_t availableThreads{std::clamp<size_t>(
-      static_cast<size_t>(std::thread::hardware_concurrency()), 1, ma.cols())};
-  size_t chunkSize{(ma.cols() + availableThreads - 1) / availableThreads};
-
-  std::vector<std::thread> threads{};
-
-  for (size_t thread{}; thread < availableThreads; ++thread) {
-    size_t start{thread * chunkSize};
-    size_t end{std::min((thread + 1) * chunkSize, ma.cols())};
-
-    threads.emplace_back(std::thread([start, end, thread, &ma, &mb, &result]() {
-      for (size_t i{start}; i < end; ++i) {
-        for (size_t j{}; j < mb.cols(); ++j) {
-          T sum{};
-          for (size_t k{}; k < ma.rows(); ++k)
-            sum += ma[k, i] * mb[k, j];
-          result[i, j] = sum;
-        }
-      }
-    }));
-  }
-
-  for (auto &t : threads)
-    t.join();
+  Utils::Parallel::parallelFor(ma.cols(), [&ma, &mb, &result](size_t i) {
+    for (size_t j{}; j < mb.cols(); ++j) {
+      T sum{};
+      for (size_t k{}; k < ma.rows(); ++k)
+        sum += ma[k, i] * mb[k, j];
+      result[i, j] = sum;
+    }
+  });
 
   return result;
 }
 
-template <typename T, typename U, typename V>
-Matrix<T> dotTB(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
+template <typename T>
+Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 bool parallelize) {
   if (ma.cols() != mb.cols())
     throw Math::Exception{
@@ -230,30 +172,14 @@ Matrix<T> dotTB(const MatrixBase<U> &ma, const MatrixBase<V> &mb,
     return result;
   }
 
-  size_t availableThreads{std::clamp<size_t>(
-      static_cast<size_t>(std::thread::hardware_concurrency()), 1, ma.rows())};
-  size_t chunkSize{(ma.rows() + availableThreads - 1) / availableThreads};
-
-  std::vector<std::thread> threads{};
-
-  for (size_t thread{}; thread < availableThreads; ++thread) {
-    size_t start{thread * chunkSize};
-    size_t end{std::min((thread + 1) * chunkSize, ma.rows())};
-
-    threads.emplace_back(std::thread([start, end, thread, &ma, &mb, &result]() {
-      for (size_t i{start}; i < end; ++i) {
-        for (size_t j{}; j < mb.rows(); ++j) {
-          T sum{};
-          for (size_t k{}; k < ma.cols(); ++k)
-            sum += ma[i, k] * mb[j, k];
-          result[i, j] = sum;
-        }
-      }
-    }));
-  }
-
-  for (auto &t : threads)
-    t.join();
+  Utils::Parallel::parallelFor(ma.rows(), [&ma, &mb, &result](size_t i) {
+    for (size_t j{}; j < mb.rows(); ++j) {
+      T sum{};
+      for (size_t k{}; k < ma.cols(); ++k)
+        sum += ma[i, k] * mb[j, k];
+      result[i, j] = sum;
+    }
+  });
 
   return result;
 }

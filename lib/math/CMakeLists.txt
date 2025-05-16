@@ -4,6 +4,9 @@ add_library(MathHelpers INTERFACE)
 # Set include directories for public headers
 target_include_directories(MathHelpers INTERFACE include)
 
+# Use Utils library
+target_link_libraries(MathHelpers INTERFACE Utils)
+
 # Ensure .tpp files are not exposed to users
 target_sources(MathHelpers
     PRIVATE
