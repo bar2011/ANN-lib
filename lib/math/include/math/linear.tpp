@@ -6,6 +6,8 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include "utils/parallel.h"
+
 #include <algorithm>
 
 namespace Math {
@@ -27,18 +29,34 @@ template <typename T>
 Matrix<T> operator+(const MatrixBase<T> &m, const VectorBase<T> &v) {
   if (m.cols() == v.size()) { // row wise addition
     Matrix<T> result{m.rows(), m.cols()};
-    for (size_t i{}; i < m.rows(); ++i)
-      for (size_t j{}; j < m.cols(); ++j)
-        result[i, j] = m[i, j] + v[j];
+
+    // If matrix contains more then 1000 rows, parallelize addition
+    if (m.rows() <= 1000)
+      for (size_t i{}; i < m.rows(); ++i)
+        for (size_t j{}; j < m.cols(); ++j)
+          result[i, j] = m[i, j] + v[j];
+    else
+      Utils::Parallel::parallelFor(m.rows(), [&result, &m, &v](size_t i) {
+        for (size_t j{}; j < m.cols(); ++j)
+          result[i, j] = m[i, j] + v[j];
+      });
 
     return result;
   }
 
   if (m.rows() == v.size()) { // column wise addition
     Matrix<T> result{m.rows(), m.cols()};
-    for (size_t i{}; i < m.rows(); ++i)
-      for (size_t j{}; j < m.cols(); ++j)
-        result[i, j] = m[i, j] + v[i];
+
+    // If matrix contains more then 1000 rows, parallelize addition
+    if (m.rows() <= 1000)
+      for (size_t i{}; i < m.rows(); ++i)
+        for (size_t j{}; j < m.cols(); ++j)
+          result[i, j] = m[i, j] + v[i];
+    else
+      Utils::Parallel::parallelFor(m.rows(), [&result, &m, &v](size_t i) {
+        for (size_t j{}; j < m.cols(); ++j)
+          result[i, j] = m[i, j] + v[i];
+      });
 
     return result;
   }

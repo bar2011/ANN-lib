@@ -5,6 +5,8 @@
 #include "vector.h"
 #include "vectorView.h"
 
+#include "utils/parallel.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -62,8 +64,12 @@ template <typename T> Matrix<T> &Matrix<T>::operator=(Matrix &&other) noexcept {
 }
 
 template <typename T> void Matrix<T>::fill(std::function<void(T *)> gen) {
-  for (size_t i{}; i < m_data.size(); ++i)
-    gen(&m_data[i]);
+  if (m_data.size() <= 1000)
+    for (size_t i{}; i < m_data.size(); ++i)
+      gen(&m_data[i]);
+  else
+    Utils::Parallel::parallelFor(
+        m_data.size(), [gen, &data = m_data](size_t i) { gen(&data[i]); });
 }
 
 template <typename T>
@@ -98,6 +104,7 @@ template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
   ++m_rows;
   m_data.insert(m_data.end(), v.m_data.begin(), v.m_data.end());
 }
+
 template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
   if (row >= m_rows)
