@@ -37,12 +37,37 @@ template <typename T> void printMatrixImage(const Math::MatrixBase<T> &m) {
   }
 }
 
+std::string formatTime(double seconds) {
+  if (seconds >= 1.0)
+    return std::to_string(static_cast<unsigned long long>(seconds)) + "s";
+
+  const unsigned long long ns = static_cast<unsigned long long>(seconds * 1e9);
+  if (ns < 1000)
+    return std::to_string(ns) + "ns";
+
+  const unsigned long long us = ns / 1000;
+  if (us < 1000)
+    return std::to_string(us) + "us";
+
+  const unsigned long long ms = us / 1000;
+  if (ms < 1000)
+    return std::to_string(ms) + "ms";
+
+  // Fallback: round down to 0s
+  return "0s";
+}
+
 int main() {
   try {
     auto loader{std::make_unique<MNist::Loader>(
         "data/train-labels-idx1-ubyte", "data/train-images-idx3-ubyte",
         "data/t10k-labels-idx1-ubyte", "data/t10k-images-idx3-ubyte")};
     std::array<MNist::Loader::DataPair, 2> data{loader->loadData()};
+
+    auto trainingImages{std::get<1>(data[0])};
+    auto trainingLabels{std::get<0>(data[0])};
+    auto testingImages{std::get<1>(data[1])};
+    auto testingLabels{std::get<0>(data[1])};
 
     constexpr unsigned int imageRows{28};
     constexpr unsigned int imageCols{28};
@@ -53,7 +78,7 @@ int main() {
     constexpr unsigned int trainingSize{60'000};
     constexpr unsigned int epochs{1};
     constexpr float learningRate{2e-2};
-    constexpr float learningRateDecay{1e-5};
+    constexpr float learningRateDecay{3e-4};
     constexpr float learningRateMomentum{0.3};
 
     auto dense1{std::make_unique<Layer::Dense>(
@@ -76,62 +101,71 @@ int main() {
     auto optimizer{
         std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
 
-    std::cout << "started training\n";
-
     Timer t{};
 
+    constexpr size_t batches{trainingSize / batchSize};
+
+    // Set up floating point printing for training updates
+    std::cout << std::fixed << std::setprecision(4);
+
     for (size_t epoch{}; epoch < epochs; ++epoch) {
+
       // Set up batch sequence
       std::vector<size_t> batchSequence(trainingSize / batchSize);
       std::iota(batchSequence.begin(), batchSequence.end(), 0);
       std::shuffle(batchSequence.begin(), batchSequence.end(),
                    Math::Random::mt);
 
+      t.reset();
       for (size_t batch{}; batch < trainingSize / batchSize; ++batch) {
-        t.reset();
+
         // FORWARD PASS
 
         // Get batchSize training images and labels
         auto inputData{
-            std::get<1>(data[0])->view(batchSequence[batch] * batchSize,
-                                       (batchSequence[batch] + 1) * batchSize)};
+            trainingImages->view(batchSequence[batch] * batchSize,
+                                 (batchSequence[batch] + 1) * batchSize)};
         auto inputCorrect{
-            std::get<0>(data[0])->view(batchSequence[batch] * batchSize,
-                                       (batchSequence[batch] + 1) * batchSize)};
+            trainingLabels->view(batchSequence[batch] * batchSize,
+                                 (batchSequence[batch] + 1) * batchSize)};
 
         dense1->forward(inputData);
         dense2->forward(dense1->output());
         outputLayer->forward(dense2->output());
         outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
-        std::cout << "forward: " << t.elapsed() << '\n';
-        t.reset();
 
         // BACKWARD PASS
         outputSoftmaxLoss->backward();
         outputLayer->backward(outputSoftmaxLoss->dinputs());
         dense2->backward(outputLayer->dinputs());
         dense1->backward(dense2->dinputs());
-        std::cout << "backward: " << t.elapsed() << '\n';
-        t.reset();
 
         optimizer->preUpdate();
         optimizer->updateParams(*outputLayer);
         optimizer->updateParams(*dense2);
         optimizer->updateParams(*dense1);
         optimizer->postUpdate();
-        std::cout << "optimize: " << t.elapsed() << '\n';
-        throw;
+
+        if (batch % 13 == 0)
+          std::cout << '\r' << batch + 1 << '/' << trainingSize / batchSize
+                    << '\t' << static_cast<size_t>(t.elapsed()) << "s "
+                    << formatTime(t.elapsed() / (batch + 1))
+                    << "/step \taccuracy: " << outputSoftmaxLoss->accuracy()
+                    << " - loss: " << outputSoftmaxLoss->mean()
+                    << " - lr: " << optimizer->learningRate()
+                    << "                 " << std::flush;
       }
 
-      // Display epoch data
-      std::cout << "epoch: " << epoch + 1
-                << "\tloss: " << outputSoftmaxLoss->mean()
-                << "\tacc: " << outputSoftmaxLoss->accuracy()
-                << "\tlr: " << optimizer->learningRate() << '\n';
+      std::cout << '\n';
     }
 
-    std::cout << "FINAL loss: " << outputSoftmaxLoss->mean()
-              << " acc: " << outputSoftmaxLoss->accuracy() << '\n';
+    dense1->forward(testingImages);
+    dense2->forward(dense1->output());
+    outputLayer->forward(dense2->output());
+    outputSoftmaxLoss->forward(outputLayer->output(), testingLabels);
+
+    std::cout << "Test loss: " << outputSoftmaxLoss->mean()
+              << "\nTest accuracy: " << outputSoftmaxLoss->accuracy() << '\n';
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
