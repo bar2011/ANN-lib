@@ -3,15 +3,25 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include <optional>
+
 namespace Math {
 
+// va - first vector
+// vb - second vector
+// parallelize - should dot product be parallized. If provided empty, will
+//               parallelize automatically as seen needed
 template <typename T>
 T dot(const VectorBase<T> &va, const VectorBase<T> &vb,
-      bool parallelize = false);
+      std::optional<bool> parallelize = std::nullopt);
 
+// m - matrix
+// v - vector
+// parallelize - should dot product be parallized. If provided empty, will
+//               parallelize automatically as seen needed
 template <typename T>
 Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
-              bool parallelize = false);
+              std::optional<bool> parallelize = std::nullopt);
 
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,

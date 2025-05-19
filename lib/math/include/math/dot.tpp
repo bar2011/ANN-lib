@@ -8,33 +8,38 @@
 
 #include "utils/parallel.h"
 
-#include <algorithm>
-#include <thread>
-#include <utility>
 #include <vector>
 
 namespace Math {
 
 template <typename T>
-T dot(const VectorBase<T> &va, const VectorBase<T> &vb, bool parallelize) {
+T dot(const VectorBase<T> &va, const VectorBase<T> &vb,
+      std::optional<bool> parallelize) {
   if (va.size() != vb.size())
     throw Math::Exception{
         "Math::dot(const VectorBase<T>&, const VectorBase<T>&, bool)",
         "Can't calculate the dot product of two differently sized vectors"};
   T result{};
 
-  if (!parallelize) {
-    for (size_t i{}; i < va.size(); ++i)
+  const size_t size{va.size()};
+
+  // Operation cost per iteration (single multiplication, and vector summation)
+  constexpr size_t cost{2};
+
+  // Optimize if explicitly told so or if cost exceeded parallel threshold
+  const bool optimize{
+      parallelize.value_or(size * cost > PARALLEL_COST_MINIMUM)};
+  if (!optimize) {
+    for (size_t i{}; i < size; ++i)
       result += va[i] * vb[i];
     return result;
   }
 
-  std::vector<T> partialResults(va.size());
+  std::vector<T> partialResults(size);
 
-  Utils::Parallel::parallelFor(va.size(),
-                               [&va, &vb, &partialResults](size_t i) {
-                                 partialResults[i] += va[i] * vb[i];
-                               });
+  Utils::Parallel::parallelFor(size, [&va, &vb, &partialResults](size_t i) {
+    partialResults[i] = va[i] * vb[i];
+  });
 
   for (auto &partialResult : partialResults)
     result += partialResult;
@@ -44,7 +49,7 @@ T dot(const VectorBase<T> &va, const VectorBase<T> &vb, bool parallelize) {
 
 template <typename T>
 Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
-              bool parallelize) {
+              std::optional<bool> parallelize) {
   if (m.cols() != v.size())
     throw Math::Exception{
         "Math::dot(const MatrixBase<T>&, const VectorBase<T>&, bool)",
@@ -53,23 +58,17 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
 
   Vector<T> result{m.rows()};
 
-  if (!parallelize) {
-    for (size_t i{}; i < m.rows(); ++i) {
-      T sum{};
-      for (size_t j{}; j < m.cols(); ++j)
-        sum += m[i, j] * v[j];
-      result[i] = sum;
-    }
-
-    return result;
-  }
-
-  Utils::Parallel::parallelFor(m.rows(), [&m, &v, &result](size_t i) {
+  const auto computeRow{[&result, &m, &v](size_t i) {
     T sum{};
     for (size_t j{}; j < m.cols(); ++j)
       sum += m[i, j] * v[j];
     result[i] = sum;
-  });
+  }};
+
+  // Operation cost per iteration (n additions and multiplications)
+  const size_t cost{2 * m.cols()};
+
+  Utils::Parallel::dynamicParallelFor(cost, m.rows(), computeRow, parallelize);
 
   return result;
 }

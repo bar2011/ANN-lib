@@ -27,43 +27,31 @@ Vector<T> operator+(const VectorBase<T> &a, const VectorBase<T> &b) {
 
 template <typename T>
 Matrix<T> operator+(const MatrixBase<T> &m, const VectorBase<T> &v) {
-  if (m.cols() == v.size()) { // row wise addition
-    Matrix<T> result{m.rows(), m.cols()};
+  Matrix<T> result{m.rows(), m.cols()};
 
-    // If matrix contains more then 1000 rows, parallelize addition
-    if (m.rows() <= 1000)
-      for (size_t i{}; i < m.rows(); ++i)
-        for (size_t j{}; j < m.cols(); ++j)
-          result[i, j] = m[i, j] + v[j];
-    else
-      Utils::Parallel::parallelFor(m.rows(), [&result, &m, &v](size_t i) {
-        for (size_t j{}; j < m.cols(); ++j)
-          result[i, j] = m[i, j] + v[j];
-      });
+  // m.cols() different additions
+  const size_t cost{m.cols()};
 
-    return result;
-  }
+  std::function<void(size_t)> computeRow;
 
-  if (m.rows() == v.size()) { // column wise addition
-    Matrix<T> result{m.rows(), m.cols()};
+  if (m.cols() == v.size()) // row wise addition
+    computeRow = [&result, &m, &v](size_t i) {
+      for (size_t j{}; j < m.cols(); ++j)
+        result[i, j] = m[i, j] + v[j];
+    };
+  else if (m.rows() == v.size()) // column wise addition
+    computeRow = [&result, &m, &v](size_t i) {
+      for (size_t j{}; j < m.cols(); ++j)
+        result[i, j] = m[i, j] + v[i];
+    };
+  else
+    throw Math::Exception{
+        "Math::operator+(const MatrixBase<T>&, const VectorBase<T>&)",
+        "Can't add matrix and vector where their sizes don't match for row or "
+        "column wise addition"};
 
-    // If matrix contains more then 1000 rows, parallelize addition
-    if (m.rows() <= 1000)
-      for (size_t i{}; i < m.rows(); ++i)
-        for (size_t j{}; j < m.cols(); ++j)
-          result[i, j] = m[i, j] + v[i];
-    else
-      Utils::Parallel::parallelFor(m.rows(), [&result, &m, &v](size_t i) {
-        for (size_t j{}; j < m.cols(); ++j)
-          result[i, j] = m[i, j] + v[i];
-      });
+  Utils::Parallel::dynamicParallelFor(cost, m.rows(), computeRow);
 
-    return result;
-  }
-
-  throw Math::Exception{
-      "Math::operator+(const MatrixBase<T>&, const VectorBase<T>&)",
-      "Can't add matrix and vector where their sizes don't match for row or "
-      "column wise addition"};
+  return result;
 }
 }; // namespace Math
