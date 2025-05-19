@@ -105,6 +105,36 @@ template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
 }
 
 template <typename T>
+std::shared_ptr<Matrix<T>>
+Matrix<T>::transpose(size_t chunkSize, std::optional<bool> parallelize) const {
+  auto result{std::make_shared<Matrix<T>>(cols(), rows())};
+
+  auto srcData{m_data.begin()};
+  auto resultData{result->m_data.begin()};
+  const size_t cost{cols() * chunkSize * chunkSize};
+
+  Utils::Parallel::dynamicParallelFor(
+      cost, (rows() + chunkSize - 1) / chunkSize,
+      [srcData, resultData, cols = m_cols, rows = m_rows, chunkSize](size_t i) {
+        size_t ciStart{i * chunkSize};
+        size_t ciEnd{std::min(ciStart + chunkSize, rows)};
+
+        for (size_t j{}; j < (cols + chunkSize - 1) / chunkSize; ++j) {
+          size_t cjStart{j * chunkSize};
+          size_t cjEnd{std::min(cjStart + chunkSize, cols)};
+
+          // Process a single block of chunkSize x chunkSize
+          for (size_t ci{ciStart}; ci < ciEnd; ++ci)
+            for (size_t cj{cjStart}; cj < cjEnd; ++cj)
+              resultData[cj * rows + ci] = srcData[ci * cols + cj];
+        }
+      },
+      parallelize);
+
+  return result;
+}
+
+template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
   if (row >= m_rows)
     throw Math::Exception{

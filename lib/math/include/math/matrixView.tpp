@@ -3,6 +3,8 @@
 #include "exception.h"
 #include "matrixView.h"
 
+#include "utils/parallel.h"
+
 namespace Math {
 
 template <typename T>
@@ -79,5 +81,28 @@ std::unique_ptr<Math::Vector<size_t>> MatrixView<T>::argmaxCol() const {
         (*maxCol)[j] = i;
 
   return maxCol;
+}
+
+template <typename T>
+std::shared_ptr<Matrix<T>>
+MatrixView<T>::transpose(size_t chunkSize,
+                         std::optional<bool> parallelize) const {
+  auto result{std::make_shared<Matrix<T>>(cols(), rows())};
+  const size_t cost{cols() * chunkSize * chunkSize};
+
+  Utils::Parallel::dynamicParallelFor(
+      cost, (rows() + chunkSize - 1) / chunkSize,
+      [this, &result, chunkSize](size_t i) {
+        for (size_t j{}; j < cols() / chunkSize; ++j)
+          // Process a single block of chunkSizexchunkSize
+          for (size_t ci{i * chunkSize};
+               ci < std::min((i + 1) * chunkSize, rows()); ++ci)
+            for (size_t cj{j * chunkSize};
+                 cj < std::min((j + 1) * chunkSize, cols()); ++cj)
+              (*result)[cj, ci] = operator[](ci, cj);
+      },
+      parallelize);
+
+  return result;
 }
 } // namespace Math

@@ -63,6 +63,12 @@ public:
   // Throws if v.size != this->cols()
   void insertRow(const Vector<T> &v);
 
+  // Transposes the matrix. Returns the transposed one.
+  // Note: the returned matrix has complete ownership on its values
+  std::shared_ptr<Matrix<T>>
+  transpose(size_t chunkSize = 4,
+            std::optional<bool> parallelize = std::nullopt) const;
+
   // Get specific item from matrix
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;

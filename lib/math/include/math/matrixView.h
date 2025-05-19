@@ -39,6 +39,12 @@ public:
   // Returns a vector containing the index of the biggest value in each column
   std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
 
+  // Transposes the matrix. Returns the transposed one.
+  // Note: the returned matrix has complete ownership on its values
+  std::shared_ptr<Matrix<T>>
+  transpose(size_t chunkSize = 4,
+            std::optional<bool> parallelize = std::nullopt) const;
+
   friend Matrix<T>;
 
 private:

@@ -1,12 +1,15 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <stddef.h>
 #include <vector>
 
 namespace Math {
 
 template <typename T> class Vector;
+
+template <typename T> class Matrix;
 
 // Base matrix class - pure virtual interface, can't be instantiated. only to
 // inherit for other classes
@@ -32,5 +35,11 @@ public:
   virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
 
   virtual const std::vector<T> &data() const = 0;
+
+  // Transposes the matrix. Returns the transposed one.
+  // Note: the returned matrix has complete ownership on its values
+  virtual std::shared_ptr<Matrix<T>>
+  transpose(size_t chunkSize = 4,
+            std::optional<bool> parallelize = std::nullopt) const = 0;
 };
 } // namespace Math
