@@ -8,6 +8,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS False)		# Disable compiler extensions
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
+# Optimization settings
+# How many iterations of a loop would require parallelization for the simplest worker (e.g. single addition in each loop)
+set(PARALLEL_COST_MINIMUM 10000 CACHE STRING "Minimum estimated work units to parallelize")
+add_compile_definitions(PARALLEL_COST_MINIMUM=${PARALLEL_COST_MINIMUM})
+
 # Ensure correct flags for clang/libc++
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message(STATUS "Using Clang, setting flags for libc++")

@@ -38,5 +38,15 @@ void parallelFor(size_t loopLength, std::function<void(size_t)> innerLoop,
     currentStart = currentEnd;
   }
 }
+
+void dynamicParallelFor(size_t cost, size_t loopLength,
+                        std::function<void(size_t)> innerLoop,
+                        std::optional<bool> parallelize, size_t threadCount) {
+  if (parallelize.value_or(cost * loopLength > PARALLEL_COST_MINIMUM))
+    parallelFor(loopLength, innerLoop, threadCount);
+  else
+    for (size_t i{}; i < loopLength; ++i)
+      innerLoop(i);
+}
 } // namespace Parallel
 } // namespace Utils
