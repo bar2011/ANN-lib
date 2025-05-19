@@ -42,8 +42,12 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
 
   constexpr float epsilon{1e-7};
 
-  Utils::Parallel::parallelFor(
-      m_softmaxOutput->rows(),
+  // Chose 70 as a rough summation of operations done in the loop in comparison
+  // to a single addition
+  const size_t cost{inputs->cols() * 70};
+
+  Utils::Parallel::dynamicParallelFor(
+      cost, m_softmaxOutput->rows(),
       [inputs, correct, softmaxOutput, lossOutput, epsilon](size_t batch) {
         // max value in batch (for exponentiated values to not explode)
         float maxValue = (*inputs)[batch, 0];
@@ -74,14 +78,23 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
 }
 
 std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::backward() {
-  for (size_t i{}; i < m_dinputs->rows(); ++i) {
-    for (size_t j{}; j < m_dinputs->cols(); ++j)
-      (*m_dinputs)[i, j] = (*m_softmaxOutput)[i, j];
-    (*m_dinputs)[i, (*m_correct)[i]] -= 1;
-  }
-  for (size_t i{}; i < m_dinputs->rows(); ++i)
-    for (size_t j{}; j < m_dinputs->cols(); ++j)
-      (*m_dinputs)[i, j] /= m_dinputs->rows();
+  // Used as normalization base
+  size_t batches{m_dinputs->rows()};
+
+  // 3 = estimated cost of each single iteration in terms of integer addition
+  size_t cost{m_dinputs->cols() * 3};
+
+  // Implement derivative
+  Utils::Parallel::dynamicParallelFor(
+      cost, batches,
+      [batches, &correct = m_correct, &dinputs = m_dinputs,
+       softmaxOutput = m_softmaxOutput](size_t i) {
+        size_t correctIndex{(*correct)[i]};
+        for (size_t j{}; j < dinputs->cols(); ++j)
+          (*dinputs)[i, j] =
+              ((*softmaxOutput)[i, j] - ((j == correctIndex) ? 1 : 0)) /
+              batches;
+      });
 
   return m_dinputs;
 }
