@@ -1,5 +1,7 @@
 #include "ann/layers/softmax.h"
 
+#include "utils/parallel.h"
+
 #include <cmath>
 
 namespace Layer {
@@ -26,7 +28,10 @@ std::shared_ptr<const Math::Matrix<float>>
 Softmax::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
 
-  for (size_t batch{}; batch < m_output->rows(); ++batch) {
+  // An estimation of all the operations in a single iteration
+  size_t cost{55 * inputs->cols()};
+
+  auto calculateBatch{[inputs, output = m_output](size_t batch) {
     // max value in batch (for exponentiated values to not explode)
     float maxValue = (*inputs)[batch, 0];
     for (size_t i{1}; i < inputs->cols(); ++i)
@@ -37,28 +42,38 @@ Softmax::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
     float normalBase{};
 
     for (size_t i{}; i < inputs->cols(); ++i) {
-      (*m_output)[batch, i] =
+      (*output)[batch, i] =
           std::exp(static_cast<float>((*inputs)[batch, i] - maxValue));
-      normalBase += (*m_output)[batch, i];
+      normalBase += (*output)[batch, i];
     }
 
     // Normalize values
     for (size_t i{}; i < inputs->cols(); ++i)
-      (*m_output)[batch, i] /= normalBase;
-  }
+      (*output)[batch, i] /= normalBase;
+  }};
+
+  Utils::Parallel::dynamicParallelFor(cost, m_output->rows(), calculateBatch);
 
   return m_output;
 }
 
 std::shared_ptr<const Math::Matrix<float>>
 Softmax::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
-  for (size_t i{}; i < dvalues->rows(); ++i)
-    for (size_t j{}; j < dvalues->cols(); ++j) {
-      float sum{};
-      for (size_t k{}; k < dvalues->cols(); ++k)
-        sum += (*dvalues)[i, k] * (((j == k) ? 1.0 : 0.0) - (*m_output)[i, k]);
-      (*m_dinputs)[i, j] = (*m_output)[i, j] * sum;
-    }
+  // An estimation of all the operations in a single iteration
+  size_t cost{dvalues->cols() * dvalues->cols() * 2};
+
+  auto calculateBatch{
+      [dvalues, dinputs = m_dinputs, output = m_output](size_t batch) {
+        for (size_t j{}; j < dvalues->cols(); ++j) {
+          float sum{};
+          for (size_t k{}; k < dvalues->cols(); ++k)
+            sum += (*dvalues)[batch, k] *
+                   (((j == k) ? 1.0 : 0.0) - (*output)[batch, k]);
+          (*dinputs)[batch, j] = (*output)[batch, j] * sum;
+        }
+      }};
+
+  Utils::Parallel::dynamicParallelFor(cost, dvalues->rows(), calculateBatch);
 
   return m_dinputs;
 }

@@ -32,14 +32,20 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
     m_dinputs =
         std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
 
+  // An estimation of the cost of each iteration in terms of integer addition
+  const size_t cost{50};
+
   constexpr float epsilon{1e-7};
 
-  for (size_t batch{}; batch < m_output->size(); ++batch) {
-    float val{
-        std::clamp((*inputs)[batch, static_cast<size_t>((*correct)[batch])],
-                   epsilon, 1 - epsilon)};
-    (*m_output)[batch] = -std::log(val);
-  }
+  auto calculateBatch{
+      [inputs, correct, output = m_output, epsilon](size_t batch) {
+        float val{
+            std::clamp((*inputs)[batch, static_cast<size_t>((*correct)[batch])],
+                       epsilon, 1 - epsilon)};
+        (*output)[batch] = -std::log(val);
+      }};
+
+  Utils::Parallel::dynamicParallelFor(cost, inputs->rows(), calculateBatch);
 
   return m_output;
 }
