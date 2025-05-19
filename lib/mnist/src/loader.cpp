@@ -42,15 +42,17 @@ MNist::Loader::loadLabelsFile(const std::string &labelsPath) {
 
   auto labels{std::make_shared<Math::Vector<unsigned short>>(size)};
 
-  labels->fill([&labelsFile, &labelsPath](unsigned short *item) {
-    unsigned char byte{};
-    if (!labelsFile.read(reinterpret_cast<char *>(&byte), 1))
-      throw MNist::Exception{
-          "MNist::Loader::loadImagesFile(const std::string&)",
-          "Can't read file " + labelsPath +
-              ": file size smaller then needed to read all images."};
-    *item = static_cast<unsigned short>(byte);
-  });
+  labels->fill(
+      [&labelsFile, &labelsPath](unsigned short *item) {
+        unsigned char byte{};
+        if (!labelsFile.read(reinterpret_cast<char *>(&byte), 1))
+          throw MNist::Exception{
+              "MNist::Loader::loadImagesFile(const std::string&)",
+              "Can't read file " + labelsPath +
+                  ": file size smaller then needed to read all images."};
+        *item = static_cast<unsigned short>(byte);
+      },
+      false);
 
   return labels;
 }
@@ -78,15 +80,17 @@ MNist::Loader::loadImagesFile(const std::string &imagesPath) {
 
   auto images{std::make_unique<Math::Matrix<float>>(size, rows * cols)};
 
-  images->fill([&imagesFile, &imagesPath](float *item) {
-    unsigned char byte{};
-    if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))
-      throw MNist::Exception{
-          "MNist::Loader::loadImagesFile(const std::string&)",
-          "Can't read file " + imagesPath +
-              ": file size smaller then needed to read all images."};
-    *item = static_cast<float>(byte) / 255.0f;
-  });
+  images->fill(
+      [&imagesFile, &imagesPath](float *item) {
+        unsigned char byte{};
+        if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))
+          throw MNist::Exception{
+              "MNist::Loader::loadImagesFile(const std::string&)",
+              "Can't read file " + imagesPath +
+                  ": file size smaller then needed to read all images."};
+        *item = static_cast<float>(byte) / 255.0f;
+      },
+      false);
 
   return images;
 }
