@@ -101,7 +101,8 @@ int main() {
     auto optimizer{
         std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
 
-    Timer t{};
+    Timer trainingTimer{};
+    Timer displayTimer{};
 
     constexpr size_t batches{trainingSize / batchSize};
 
@@ -116,7 +117,7 @@ int main() {
       std::shuffle(batchSequence.begin(), batchSequence.end(),
                    Math::Random::mt);
 
-      t.reset();
+      trainingTimer.reset();
       for (size_t batch{}; batch < trainingSize / batchSize; ++batch) {
 
         // FORWARD PASS
@@ -146,14 +147,20 @@ int main() {
         optimizer->updateParams(*dense1);
         optimizer->postUpdate();
 
-        if (batch % 13 == 0)
+        // Display information every about half second, or at the first/final
+        // batch
+        if (displayTimer.elapsed() >= 0.5 ||
+            batch + 1 == trainingSize / batchSize || batch == 0) {
           std::cout << '\r' << batch + 1 << '/' << trainingSize / batchSize
-                    << '\t' << static_cast<size_t>(t.elapsed()) << "s "
-                    << formatTime(t.elapsed() / (batch + 1))
+                    << '\t' << static_cast<size_t>(trainingTimer.elapsed())
+                    << "s " << formatTime(trainingTimer.elapsed() / (batch + 1))
                     << "/step \taccuracy: " << outputSoftmaxLoss->accuracy()
                     << " - loss: " << outputSoftmaxLoss->mean()
                     << " - lr: " << optimizer->learningRate()
                     << "                 " << std::flush;
+
+          displayTimer.reset();
+        }
       }
 
       std::cout << '\n';
