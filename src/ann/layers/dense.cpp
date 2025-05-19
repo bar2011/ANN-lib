@@ -62,7 +62,7 @@ std::shared_ptr<const Math::Matrix<float>>
 Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
   m_output = std::make_shared<Math::Matrix<float>>(
-      Math::dot(*inputs, *m_weights, true) + *m_biases);
+      Math::dot(*inputs, *m_weights, true, true) + *m_biases);
   auto activationForward{m_activation->getForward()};
   m_output->fill(
       [activationForward](float *val) { *val = activationForward(*val); });
@@ -78,13 +78,15 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
                          [&backwardActivation](float *a, const float *b) {
                            *a = backwardActivation(*a, *b);
                          });
-  *m_dweights = Math::dotTA<float>(*m_input, *dactivation, true);
+  *m_dweights = Math::dotTA<float>(*m_input, *dactivation, true, true);
   *m_dinputs = Math::dotTB<float>(*dactivation, *m_weights, true);
 
-  // Sum dvalues row-wise and set it to dbiases
-  for (size_t i{}; i < dactivation->rows(); ++i)
-    for (size_t j{}; j < dactivation->cols(); ++j)
-      (*m_dbiases)[j] += (*dactivation)[i, j];
+  Utils::Parallel::dynamicParallelFor(
+      dactivation->cols(), dactivation->rows(),
+      [&dactivation, &dbiases = m_dbiases](size_t i) {
+        for (size_t j{}; j < dactivation->cols(); ++j)
+          (*dbiases)[j] += (*dactivation)[i, j];
+      });
 
   return m_dinputs;
 }
