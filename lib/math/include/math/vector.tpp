@@ -3,6 +3,8 @@
 #include "math/exception.h"
 #include "vector.h"
 
+#include "utils/parallel.h"
+
 #include <algorithm>
 
 namespace Math {
@@ -45,9 +47,12 @@ template <typename T> Vector<T> &Vector<T>::operator=(Vector &&other) noexcept {
   return *this;
 }
 
-template <typename T> void Vector<T>::fill(std::function<void(T *)> gen) {
-  for (size_t i{}; i < m_data.size(); ++i)
-    gen(&m_data[i]);
+template <typename T>
+void Vector<T>::fill(std::function<void(T *)> gen,
+                     std::optional<bool> parallelize, size_t cost) {
+  Utils::Parallel::dynamicParallelFor(
+      cost, m_data.size(), [gen, &data = m_data](size_t i) { gen(&data[i]); },
+      parallelize);
 }
 
 template <typename T>

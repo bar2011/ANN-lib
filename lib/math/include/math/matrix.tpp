@@ -63,13 +63,12 @@ template <typename T> Matrix<T> &Matrix<T>::operator=(Matrix &&other) noexcept {
   return *this;
 }
 
-template <typename T> void Matrix<T>::fill(std::function<void(T *)> gen) {
-  if (m_data.size() <= 1000)
-    for (size_t i{}; i < m_data.size(); ++i)
-      gen(&m_data[i]);
-  else
-    Utils::Parallel::parallelFor(
-        m_data.size(), [gen, &data = m_data](size_t i) { gen(&data[i]); });
+template <typename T>
+void Matrix<T>::fill(std::function<void(T *)> gen,
+                     std::optional<bool> parallelize, size_t cost) {
+  Utils::Parallel::dynamicParallelFor(
+      cost, m_data.size(), [gen, &data = m_data](size_t i) { gen(&data[i]); },
+      parallelize);
 }
 
 template <typename T>

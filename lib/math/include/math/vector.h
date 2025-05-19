@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Math {
@@ -38,7 +39,8 @@ public:
 
   // Fill the vector with values from the generator function
   // gen input - a pointer to the item to be filled
-  void fill(std::function<void(T *)> gen);
+  void fill(std::function<void(T *)> gen,
+            std::optional<bool> parallelize = std::nullopt, size_t cost = 5);
 
   // Transform the current vector with another vector
   // gen's inputs = a pointer to a value from the current vector, and the

@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Math {
@@ -41,7 +42,9 @@ public:
 
   // Fill the matrix with values from the generator function
   // gen input - a pointer to the item to be filled
-  void fill(std::function<void(T *)> gen);
+  // cost - estimated operation cost of gen, 1 = single addition
+  void fill(std::function<void(T *)> gen,
+            std::optional<bool> parallelie = std::nullopt, size_t cost = 5);
 
   // Transform the current matrix with another matrix
   // gen's inputs = a pointer to a value from the current matrix, and the
