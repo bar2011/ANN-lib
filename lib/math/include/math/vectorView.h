@@ -16,8 +16,10 @@ template <typename T> class VectorView : public VectorBase<T> {
 public:
   VectorView() = delete;
 
-  // Get specific item from vector
+  // Single item access - NO BOUNDS CHECKING
   const T &operator[](size_t index) const;
+  // Single item access - WITH BOUNDS CHECKING
+  const T &at(size_t index) const;
 
   // Getters
   size_t size() const { return m_size; }

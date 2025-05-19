@@ -15,8 +15,10 @@ template <typename T> class Matrix;
 // inherit for other classes
 template <typename T> class MatrixBase {
 public:
-  // Get specific item from matrix
+  // Single item access - NO BOUNDS CHECKING
   virtual const T &operator[](const size_t row, const size_t col) const = 0;
+  // Single item access - WITH BOUNDS CHECKING
+  virtual const T &at(const size_t row, const size_t col) const = 0;
 
   virtual MatrixBase &reshape(const size_t rows, const size_t cols) = 0;
 

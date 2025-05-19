@@ -55,9 +55,12 @@ public:
   void transform(const VectorBase<T> &va, const VectorBase<T> &vb,
                  std::function<void(T *, const T *, const T *)> gen);
 
-  // Get specific item from vector
+  // Single item access - NO BOUNDS CHECKING
   T &operator[](size_t index);
   const T &operator[](size_t index) const;
+  // Single item access - WITH BOUNDS CHECKING
+  T &at(size_t index);
+  const T &at(size_t index) const;
 
   // Get view of the entire vector
   std::shared_ptr<VectorView<T>> view() const;

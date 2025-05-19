@@ -70,16 +70,23 @@ void Vector<T>::transform(const VectorBase<T> &va, const VectorBase<T> &vb,
 }
 
 template <typename T> T &Vector<T>::operator[](size_t index) {
-  if (index >= m_data.size())
-    throw Math::Exception{"Vector<T>::operator[](size_t)",
-                          "Given index out of bounds"};
-
   return m_data[index];
 }
 
 template <typename T> const T &Vector<T>::operator[](size_t index) const {
+  return m_data[index];
+}
+
+template <typename T> T &Vector<T>::at(size_t index) {
   if (index >= m_data.size())
-    throw Math::Exception{"Vector<T>::operator[](size_t) const",
+    throw Math::Exception{"Vector<T>::at(size_t)", "Given index out of bounds"};
+
+  return m_data[index];
+}
+
+template <typename T> const T &Vector<T>::at(size_t index) const {
+  if (index >= m_data.size())
+    throw Math::Exception{"Vector<T>::at(size_t) const",
                           "Given index out of bounds"};
 
   return m_data[index];

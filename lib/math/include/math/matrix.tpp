@@ -136,27 +136,34 @@ Matrix<T>::transpose(size_t chunkSize, std::optional<bool> parallelize) const {
 
 template <typename T>
 T &Matrix<T>::operator[](const size_t row, const size_t col) {
-  if (row >= m_rows)
-    throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t)",
-        "Invalid row number: out of bounds"};
-  if (col >= m_cols)
-    throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t)",
-        "Invalid column number: out of bounds"};
-
   return m_data[row * m_cols + col];
 }
 
 template <typename T>
 const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
+  return m_data[row * m_cols + col];
+}
+
+template <typename T> T &Matrix<T>::at(const size_t row, const size_t col) {
+  if (row >= m_rows)
+    throw Math::Exception{"Math::Matrix<T>::at(const size_t, const size_t)",
+                          "Invalid row number: out of bounds"};
+  if (col >= m_cols)
+    throw Math::Exception{"Math::Matrix<T>::at(const size_t, const size_t)",
+                          "Invalid column number: out of bounds"};
+
+  return m_data[row * m_cols + col];
+}
+
+template <typename T>
+const T &Matrix<T>::at(const size_t row, const size_t col) const {
   if (row >= m_rows)
     throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t) const",
+        "Math::Matrix<T>::at(const size_t, const size_t) const",
         "Invalid row number: out of bounds"};
   if (col >= m_cols)
     throw Math::Exception{
-        "Math::Matrix<T>::operator[](const size_t, const size_t) const",
+        "Math::Matrix<T>::at(const size_t, const size_t) const",
         "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
@@ -164,8 +171,19 @@ const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
 
 template <typename T>
 const std::shared_ptr<VectorView<T>> Matrix<T>::operator[](const size_t row) {
+  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+}
+
+template <typename T>
+const std::shared_ptr<const VectorView<T>>
+Matrix<T>::operator[](const size_t row) const {
+  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+}
+
+template <typename T>
+const std::shared_ptr<VectorView<T>> Matrix<T>::at(const size_t row) {
   if (row >= m_rows)
-    throw Math::Exception{"Math::Matrix<T>::operator[](const size_t)",
+    throw Math::Exception{"Math::Matrix<T>::at(const size_t)",
                           "Invalid row number: out of bounds"};
 
   return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
@@ -173,9 +191,9 @@ const std::shared_ptr<VectorView<T>> Matrix<T>::operator[](const size_t row) {
 
 template <typename T>
 const std::shared_ptr<const VectorView<T>>
-Matrix<T>::operator[](const size_t row) const {
+Matrix<T>::at(const size_t row) const {
   if (row >= m_rows)
-    throw Math::Exception{"Math::Matrix<T>::operator[](const size_t) const",
+    throw Math::Exception{"Math::Matrix<T>::at(const size_t) const",
                           "Invalid row number: out of bounds"};
 
   return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
@@ -186,8 +204,7 @@ Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
   if (rows * cols != m_rows * m_cols)
     throw Math::Exception{
         "Math::Matrix<T>::reshape(const size_t, const size_t)",
-        "Can't reshape a matrix where the given dimensions don't give the same "
-        "number of values as the previous dimensions"};
+        "Reshape dimension mismatch"};
 
   m_rows = rows;
   m_cols = cols;
@@ -203,13 +220,11 @@ template <typename T>
 std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
                                                size_t endRow) const {
   if (startRow >= endRow)
-    throw Math::Exception{
-        "Math::Matrix<T>::view(size_t, size_t) const",
-        "Can't create a row view where the start row is ahead of the end row"};
+    throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
+                          "Start row ahead of the end row"};
   if (endRow > m_rows)
     throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
-                          "Can't create a row view where the end row is "
-                          "outside the matrix's bound"};
+                          "End row is outside the matrix's bound"};
 
   // Can't use make_shared because the constructor is private
   return std::shared_ptr<MatrixView<T>>{

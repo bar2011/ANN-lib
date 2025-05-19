@@ -15,8 +15,10 @@ template <typename T> class MatrixView : public MatrixBase<T> {
 public:
   MatrixView() = delete;
 
-  // Get specific item from matrix
+  // Single item access - NO BOUNDS CHECKING
   const T &operator[](const size_t row, const size_t col) const;
+  // Single item access - WITH BOUNDS CHECKING
+  const T &at(const size_t row, const size_t col) const;
 
   // Reshapes matrix view to given dimensions. Returns *this.
   // Throws if given (rows * cols) is not equal to current (rows * cols).

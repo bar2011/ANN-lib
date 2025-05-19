@@ -69,13 +69,19 @@ public:
   transpose(size_t chunkSize = 4,
             std::optional<bool> parallelize = std::nullopt) const;
 
-  // Get specific item from matrix
+  // Single item access - NO BOUNDS CHECKING
   T &operator[](const size_t row, const size_t col);
   const T &operator[](const size_t row, const size_t col) const;
+  // Single item access - WITH BOUNDS CHECKING
+  T &at(const size_t row, const size_t col);
+  const T &at(const size_t row, const size_t col) const;
 
-  // Get specific row from matrix
+  // Single row access - NO BOUNDS CHECKING
   const std::shared_ptr<VectorView<T>> operator[](const size_t row);
   const std::shared_ptr<const VectorView<T>> operator[](const size_t row) const;
+  // Single row access - WITH BOUNDS CHECKING
+  const std::shared_ptr<VectorView<T>> at(const size_t row);
+  const std::shared_ptr<const VectorView<T>> at(const size_t row) const;
 
   // Reshapes matrix to given dimensions. Returns *this.
   // Throws if given (rows * cols) is not equal to current (rows * cols).

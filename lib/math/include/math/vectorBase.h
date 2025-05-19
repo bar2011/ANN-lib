@@ -9,8 +9,10 @@ namespace Math {
 // inherit for other classes
 template <typename T> class VectorBase {
 public:
-  // Get specific item from matrix
+  // Single item access - NO BOUNDS CHECKING
   virtual const T &operator[](size_t index) const = 0;
+  // Single item access - WITH BOUNDS CHECKING
+  virtual const T &at(size_t index) const = 0;
 
   // Getters
   virtual size_t size() const = 0;
