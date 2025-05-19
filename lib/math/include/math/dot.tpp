@@ -75,43 +75,40 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
 
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-              bool parallelize) {
+              std::optional<bool> parallelize,
+              std::optional<bool> optimizeCache) {
   if (ma.cols() != mb.rows())
     throw Math::Exception{
         "Math::dot(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
         "Can't compute the dot product of two matrices where the first "
         "matrix's col number isn't the same as the second matrix's row number"};
 
+  // Operation cost per iteration (n additions and multiplications)
+  const size_t cost{2 * mb.cols() * ma.cols()};
+
+  if (optimizeCache.value_or(ma.rows() * cost > PARALLEL_COST_MINIMUM))
+    return dotTB(ma, *mb.transpose(), parallelize);
+
   Matrix<T> result{ma.rows(), mb.cols()};
 
-  if (!parallelize) {
-    for (size_t i{}; i < ma.rows(); ++i) {
-      for (size_t j{}; j < mb.cols(); ++j) {
-        T sum{};
-        for (size_t k{}; k < ma.cols(); ++k)
-          sum += ma[i, k] * mb[k, j];
-        result[i, j] = sum;
-      }
-    }
-
-    return result;
-  }
-
-  Utils::Parallel::parallelFor(ma.rows(), [&ma, &mb, &result](size_t i) {
+  const auto computeRow{[&result, &ma, &mb](size_t i) {
     for (size_t j{}; j < mb.cols(); ++j) {
       T sum{};
       for (size_t k{}; k < ma.cols(); ++k)
         sum += ma[i, k] * mb[k, j];
       result[i, j] = sum;
     }
-  });
+  }};
+
+  Utils::Parallel::dynamicParallelFor(cost, ma.rows(), computeRow, parallelize);
 
   return result;
 }
 
 template <typename T>
 Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                bool parallelize) {
+                std::optional<bool> parallelize,
+                std::optional<bool> optimizeCache) {
   if (ma.rows() != mb.rows())
     throw Math::Exception{
         "Math::TA(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
@@ -119,36 +116,32 @@ Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
         "the first matrix's row number isn't the same as the second matrix's "
         "row number"};
 
+  // Operation cost per iteration (n additions and multiplications)
+  const size_t cost{2 * mb.cols() * ma.rows()};
+
+  if (optimizeCache.value_or(ma.cols() * cost > PARALLEL_COST_MINIMUM))
+    return dotTB(*ma.transpose(4, parallelize), *mb.transpose(4, parallelize),
+                 parallelize);
+
   Matrix<T> result{ma.cols(), mb.cols()};
 
-  if (!parallelize) {
-    for (size_t i{}; i < ma.cols(); ++i) {
-      for (size_t j{}; j < mb.cols(); ++j) {
-        T sum{};
-        for (size_t k{}; k < ma.rows(); ++k)
-          sum += ma[k, i] * mb[k, j];
-        result[i, j] = sum;
-      }
-    }
-
-    return result;
-  }
-
-  Utils::Parallel::parallelFor(ma.cols(), [&ma, &mb, &result](size_t i) {
+  const auto computeRow{[&result, &ma, &mb](size_t i) {
     for (size_t j{}; j < mb.cols(); ++j) {
       T sum{};
       for (size_t k{}; k < ma.rows(); ++k)
         sum += ma[k, i] * mb[k, j];
       result[i, j] = sum;
     }
-  });
+  }};
+
+  Utils::Parallel::dynamicParallelFor(cost, ma.cols(), computeRow, parallelize);
 
   return result;
 }
 
 template <typename T>
 Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                bool parallelize) {
+                std::optional<bool> parallelize) {
   if (ma.cols() != mb.cols())
     throw Math::Exception{
         "Math::dotTB(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
@@ -158,27 +151,30 @@ Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
 
   Matrix<T> result{ma.rows(), mb.rows()};
 
-  if (!parallelize) {
-    for (size_t i{}; i < ma.rows(); ++i) {
-      for (size_t j{}; j < mb.rows(); ++j) {
-        T sum{};
-        for (size_t k{}; k < ma.cols(); ++k)
-          sum += ma[i, k] * mb[j, k];
-        result[i, j] = sum;
-      }
-    }
-
-    return result;
-  }
-
-  Utils::Parallel::parallelFor(ma.rows(), [&ma, &mb, &result](size_t i) {
-    for (size_t j{}; j < mb.rows(); ++j) {
+  const auto computeRow{[&result, &ma, &mb](size_t i) {
+    for (size_t j = 0; j < mb.rows(); ++j) {
       T sum{};
-      for (size_t k{}; k < ma.cols(); ++k)
+      size_t k{};
+
+      // Unrolling the loop for better performance
+      for (; k + 4 <= ma.cols(); k += 4) {
         sum += ma[i, k] * mb[j, k];
+        sum += ma[i, k + 1] * mb[j, k + 1];
+        sum += ma[i, k + 2] * mb[j, k + 2];
+        sum += ma[i, k + 3] * mb[j, k + 3];
+      }
+      // Handle remaining elements
+      for (; k < ma.cols(); ++k) {
+        sum += ma[i, k] * mb[j, k];
+      }
       result[i, j] = sum;
     }
-  });
+  }};
+
+  // Operation cost per iteration (n additions and multiplications)
+  const size_t cost{2 * mb.rows() * ma.cols()};
+
+  Utils::Parallel::dynamicParallelFor(cost, ma.rows(), computeRow, parallelize);
 
   return result;
 }

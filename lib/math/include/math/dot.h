@@ -23,19 +23,41 @@ template <typename T>
 Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
               std::optional<bool> parallelize = std::nullopt);
 
+// ma - first matrix
+// mb - second matrix
+// parallelize - should dot product be parallized. If provided empty, will
+//               parallelize automatically as seen needed
+// optimizeCache - should matrices be transposed as needed to optimize cache
+//                 friendliness. If provided empty, will transpose as seen
+//                 needed. the only real reason to turn this off is if memory is
+//                 a real concern
 template <typename T>
 Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-              bool parallelize = false);
+              std::optional<bool> parallelize = std::nullopt,
+              std::optional<bool> optimizeCache = std::nullopt);
 
 // dot(a^T, b)
+// ma - first matrix
+// mb - second matrix
+// parallelize - should dot product be parallized. If provided empty, will
+//               parallelize automatically as seen needed
+// optimizeCache - should matrices be transposed as needed to optimize cache
+//                 friendliness. If provided empty, will transpose as seen
+//                 needed. the only real reason to turn this off is if memory is
+//                 a real concern
 template <typename T>
 Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                bool parallelize = false);
+                std::optional<bool> parallelize = std::nullopt,
+                std::optional<bool> optimizeCache = std::nullopt);
 
 // dot(a, b^T)
+// va - first vector
+// vb - second vector
+// parallelize - should dot product be parallized. If provided empty, will
+//               parallelize automatically as seen needed
 template <typename T>
 Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                bool parallelize = false);
+                std::optional<bool> parallelize = std::nullopt);
 
 }; // namespace Math
 
