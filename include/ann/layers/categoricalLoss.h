@@ -10,8 +10,7 @@ namespace Layer {
 // Categorical Cross-Entropy loss class
 class CategoricalLoss : public Loss {
 public:
-  // initialize member variables
-  CategoricalLoss(size_t batchNum);
+  CategoricalLoss() = default;
 
   // Copy constructor deleted
   CategoricalLoss(const CategoricalLoss &other) = delete;
@@ -50,6 +49,7 @@ private:
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};
   std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
 
-  std::shared_ptr<Math::Matrix<float>> m_dinputs{};
+  std::shared_ptr<Math::Matrix<float>> m_dinputs{
+      std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Layer

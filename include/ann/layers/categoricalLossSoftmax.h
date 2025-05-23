@@ -10,8 +10,7 @@ namespace Layer {
 // Categorical Cross-Entropy loss class
 class CategoricalLossSoftmax : public Loss {
 public:
-  // initialize member variables
-  CategoricalLossSoftmax(unsigned short neuronNum, unsigned int batchNum);
+  CategoricalLossSoftmax() = default;
 
   // Copy constructor deleted
   CategoricalLossSoftmax(const CategoricalLossSoftmax &other) = delete;
@@ -62,9 +61,12 @@ private:
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};
   std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
 
-  std::shared_ptr<Math::Matrix<float>> m_softmaxOutput{};
-  std::shared_ptr<Math::Vector<float>> m_lossOutput{};
+  std::shared_ptr<Math::Matrix<float>> m_softmaxOutput{
+      std::make_shared<Math::Matrix<float>>()};
+  std::shared_ptr<Math::Vector<float>> m_lossOutput{
+      std::make_shared<Math::Vector<float>>()};
 
-  std::shared_ptr<Math::Matrix<float>> m_dinputs{};
+  std::shared_ptr<Math::Matrix<float>> m_dinputs{
+      std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Layer

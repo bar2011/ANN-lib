@@ -10,7 +10,7 @@ namespace Activation {
 // Step activation function
 class Step : public Activation {
 public:
-  Step(size_t inputNum, size_t batchNum);
+  Step() = default;
 
   // Copy constructor deleted
   Step(const Step &other) = delete;
@@ -48,4 +48,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Activations
+} // namespace Activation

@@ -10,8 +10,6 @@ namespace Activation {
 // Sigmoid activation function
 class Sigmoid : public Activation {
 public:
-  Sigmoid(size_t inputNum, size_t batchNum);
-
   // Copy constructor deleted
   Sigmoid(const Sigmoid &other) = delete;
 
@@ -48,4 +46,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Activations
+} // namespace Activation

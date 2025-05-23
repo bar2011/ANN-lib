@@ -10,7 +10,7 @@ namespace Activation {
 // Leaky Rectified Linear Unit activation function
 class LeakyReLU : public Activation {
 public:
-  LeakyReLU(size_t inputNum, size_t batchNum, float alpha);
+  LeakyReLU(float alpha);
 
   // Copy constructor deleted
   LeakyReLU(const LeakyReLU &other) = delete;
@@ -50,4 +50,4 @@ private:
 
   float m_alpha{};
 };
-} // namespace Activations
+} // namespace Activation

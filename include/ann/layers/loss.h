@@ -22,10 +22,6 @@ public:
 protected:
   Loss() = default;
 
-  // initialize member variables
-  Loss(size_t batchNum)
-      : m_output{std::make_shared<Math::Vector<float>>(batchNum)} {};
-
   // Move constructor
   Loss(Loss &&other) : m_output{other.m_output} { other.m_output.reset(); }
 

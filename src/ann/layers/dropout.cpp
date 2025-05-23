@@ -5,11 +5,7 @@
 
 namespace Layer {
 
-Dropout::Dropout(unsigned int inputNum, unsigned int batchNum, float dropout)
-    : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},
-      m_mask{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},
-      m_dropout{dropout},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)} {};
+Dropout::Dropout(float dropout) : m_dropout{dropout} {};
 
 Dropout::Dropout(Dropout &&other) noexcept
     : m_mask{std::move(other.m_mask)}, m_output{std::move(other.m_output)},
@@ -28,6 +24,16 @@ Dropout &Dropout::operator=(Dropout &&other) noexcept {
 
 std::shared_ptr<const Math::Matrix<float>>
 Dropout::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
+  // If mask's size doesn't match, resize (via recreation) all the matrices
+  if (m_mask->rows() != inputs->rows() || m_mask->cols() != inputs->cols()) {
+    m_mask =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+    m_output =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+    m_dinputs =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  }
+
   auto dropoutBatch{[&inputs, &output = m_output, &mask = m_mask,
                      dropout = m_dropout](size_t batch) {
     for (size_t i{}; i < inputs->cols(); ++i) {

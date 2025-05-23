@@ -4,14 +4,8 @@
 
 #include <cmath>
 
-namespace Layer {
 
-CategoricalLossSoftmax::CategoricalLossSoftmax(unsigned short neuronNum,
-                                               unsigned int batchNum)
-    : m_softmaxOutput{std::make_shared<Math::Matrix<float>>(batchNum,
-                                                            neuronNum)},
-      m_lossOutput{std::make_shared<Math::Vector<float>>(batchNum)},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)} {}
+namespace Layer {
 
 CategoricalLossSoftmax::CategoricalLossSoftmax(
     CategoricalLossSoftmax &&other) noexcept
@@ -36,6 +30,16 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
     const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   m_input = inputs;
   m_correct = correct;
+
+  // If m_output's size doesn't match inputs' size, resize all matrices
+  if (m_softmaxOutput->rows() != inputs->rows() ||
+      m_softmaxOutput->cols() != inputs->cols()) {
+    m_softmaxOutput =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+    m_lossOutput = std::make_shared<Math::Vector<float>>(inputs->rows());
+    m_dinputs =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  }
 
   auto softmaxOutput{m_softmaxOutput};
   auto lossOutput{m_lossOutput};

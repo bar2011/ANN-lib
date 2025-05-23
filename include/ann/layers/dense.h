@@ -36,7 +36,7 @@ public:
   // Maximum allowed neuron number - 65,535
   // Maximum allowed batch number - 4,294,967,295
   // Uses activation of linear as default.
-  Dense(unsigned int inputNum, unsigned short neuronNum, unsigned int batchNum,
+  Dense(unsigned int inputNum, unsigned short neuronNum,
         WeightInit initMethod = WeightInit::Random, float l1Weight = 0,
         float l1Bias = 0, float l2Weight = 0, float l2Bias = 0);
 

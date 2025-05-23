@@ -86,30 +86,25 @@ int main() {
     constexpr float learningRateMomentum{0.3};
 
     auto dense1{std::make_unique<Layer::Dense>(
-        imageRows * imageCols, layer1Neurons, batchSize, Layer::WeightInit::He,
-        0, 0, 1e-5f, 1e-5f)};
+        imageRows * imageCols, layer1Neurons, Layer::WeightInit::He, 0, 0,
+        1e-5f, 1e-5f)};
 
-    auto activation1{std::make_unique<Activation::LeakyReLU>(layer1Neurons,
-                                                             batchSize, 1e-2)};
+    auto activation1{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-    auto dropout1{
-        std::make_unique<Layer::Dropout>(layer1Neurons, batchSize, 1e-1)};
+    auto dropout1{std::make_unique<Layer::Dropout>(1e-1)};
 
     auto dense2{std::make_unique<Layer::Dense>(layer1Neurons, layer2Neurons,
-                                               batchSize, Layer::WeightInit::He,
-                                               0, 0, 1e-5f, 1e-5f)};
+                                               Layer::WeightInit::He, 0, 0,
+                                               1e-5f, 1e-5f)};
 
-    auto activation2{std::make_unique<Activation::LeakyReLU>(layer2Neurons,
-                                                             batchSize, 1e-2)};
+    auto activation2{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-    auto dropout2{
-        std::make_unique<Layer::Dropout>(layer2Neurons, batchSize, 5e-2)};
+    auto dropout2{std::make_unique<Layer::Dropout>(5e-2)};
 
     auto outputLayer{std::make_unique<Layer::Dense>(
-        layer2Neurons, outputNeurons, batchSize, Layer::WeightInit::He)};
+        layer2Neurons, outputNeurons, Layer::WeightInit::He)};
 
-    auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>(
-        outputNeurons, batchSize)};
+    auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>()};
 
     auto optimizer{
         std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};

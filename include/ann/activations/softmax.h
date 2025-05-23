@@ -9,8 +9,7 @@ namespace Activation {
 // Softmax activation as a layer
 class Softmax : public Activation {
 public:
-  // Initialize empty output matrix
-  Softmax(size_t inputNum, size_t batchNum);
+  Softmax() = default;
 
   // Copy constructor deleted
   Softmax(const Softmax &other) = delete;
@@ -48,4 +47,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Activations
+} // namespace Activation

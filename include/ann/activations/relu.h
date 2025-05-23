@@ -10,7 +10,7 @@ namespace Activation {
 // Rectified Linear Unit activation function
 class ReLU : public Activation {
 public:
-  ReLU(size_t inputNum, size_t batchNum);
+  ReLU() = default;
 
   // Copy constructor deleted
   ReLU(const ReLU &other) = delete;
@@ -48,4 +48,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Activations
+} // namespace Activation

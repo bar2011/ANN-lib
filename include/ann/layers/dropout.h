@@ -8,7 +8,7 @@ namespace Layer {
 class Dropout {
 public:
   // dropout - rate of neurons to *disable*
-  Dropout(unsigned int inputNum, unsigned int batchNum, float dropout);
+  Dropout(float dropout);
 
   // Copy constructor deleted
   Dropout(const Dropout &other) = delete;

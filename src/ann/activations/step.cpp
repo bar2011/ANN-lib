@@ -2,10 +2,6 @@
 
 namespace Activation {
 
-Step::Step(size_t inputNum, size_t batchNum)
-    : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)} {};
-
 Step::Step(Step &&other) noexcept
     : m_input{std::move(other.m_input)}, m_output{std::move(other.m_output)},
       m_dinputs{std::move(other.m_dinputs)} {}
@@ -24,9 +20,14 @@ std::shared_ptr<const Math::Matrix<float>>
 Step::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
 
-  if (inputs->rows() != m_output->rows())
+  // If m_output's size doesn't match inputs' size, resize all matrices
+  if (m_output->rows() != inputs->rows() ||
+      m_output->cols() != inputs->cols()) {
     m_output =
         std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+    m_dinputs =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  }
 
   m_output->transform(
       *inputs, [](float *out, const float *in) { *out = ((*out > 0) ? 1 : 0); },
@@ -40,4 +41,4 @@ Step::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   // Auto initialized to 0 - no calculation needed
   return m_dinputs;
 }
-} // namespace Activations
+} // namespace Activation

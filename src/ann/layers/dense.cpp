@@ -7,12 +7,10 @@
 
 namespace Layer {
 Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
-             unsigned int batchNum, WeightInit initMethod, float l1Weight,
-             float l1Bias, float l2Weight, float l2Bias)
+             WeightInit initMethod, float l1Weight, float l1Bias,
+             float l2Weight, float l2Bias)
     : m_biases{std::make_unique<Math::Vector<float>>(neuronNum)},
-      m_output{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
       m_dweights{std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
       m_dbiases{std::make_unique<Math::Vector<float>>(neuronNum)},
       m_weightCache{std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
       m_weightMomentums{

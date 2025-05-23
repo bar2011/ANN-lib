@@ -6,10 +6,6 @@
 
 namespace Activation {
 
-Softmax::Softmax(size_t inputNum, size_t batchNum)
-    : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)} {};
-
 Softmax::Softmax(Softmax &&other) noexcept
     : m_input{std::move(other.m_input)}, m_output{std::move(other.m_output)},
       m_dinputs{std::move(other.m_dinputs)} {}
@@ -27,6 +23,15 @@ Softmax &Softmax::operator=(Softmax &&other) noexcept {
 std::shared_ptr<const Math::Matrix<float>>
 Softmax::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
+
+  // If m_output's size doesn't match inputs' size, resize all matrices
+  if (m_output->rows() != inputs->rows() ||
+      m_output->cols() != inputs->cols()) {
+    m_output =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+    m_dinputs =
+        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  }
 
   // An estimation of all the operations in a single iteration
   size_t cost{55 * inputs->cols()};
@@ -77,4 +82,4 @@ Softmax::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
 
   return m_dinputs;
 }
-} // namespace Activations
+} // namespace Activation

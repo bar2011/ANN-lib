@@ -4,8 +4,6 @@
 
 namespace Layer {
 
-CategoricalLoss::CategoricalLoss(size_t batchNum) : Loss(batchNum) {};
-
 CategoricalLoss::CategoricalLoss(CategoricalLoss &&other) noexcept
     : Loss(std::move(other)) {
   m_input = other.m_input;
@@ -28,9 +26,14 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
   // Store arguments for later use by backpropagation
   m_input = inputs;
   m_correct = correct;
-  if (!m_dinputs)
+
+  // If m_dinput's size doesn't match inputs' size, resize all matrices
+  if (m_dinputs->rows() != inputs->rows() ||
+      m_dinputs->cols() != inputs->cols()) {
+    m_output = std::make_shared<Math::Vector<float>>(inputs->rows());
     m_dinputs =
         std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  }
 
   // An estimation of the cost of each iteration in terms of integer addition
   const size_t cost{50};
