@@ -8,13 +8,16 @@ namespace Math::Random {
 inline std::mt19937 generate();
 
 // Global Mersenne Twister engine.
-extern std::mt19937 mt;
+inline extern std::mt19937 mt;
 
 // Generates a random double in [min, max].
 inline double get(double min, double max);
 
 // Generates a random integer in [min, max].
 inline int getInt(int min, int max);
+
+// Generates true with probability p
+inline bool getBernoulli(double p);
 
 // Generates a random double from normal distribution (mean, stdDev).
 inline double getNormal(double mean = 0.0, double normalDiv = 1.0);

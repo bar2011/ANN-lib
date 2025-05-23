@@ -33,6 +33,10 @@ inline double get(double min, double max) {
 inline int getInt(int min, int max) {
   return std::uniform_int_distribution{min, max}(mt);
 }
+// Generates true with probability p
+inline bool getBernoulli(double p) {
+  return std::bernoulli_distribution{p}(mt);
+}
 
 // Generates a random double from normal distribution (mean, stdDev).
 inline double getNormal(double mean, double normalDiv) {

@@ -3,6 +3,7 @@ add_library(ANN SHARED
   "ann/ann.cpp"
   "ann/activation.cpp"
   "ann/layers/dense.cpp"
+  "ann/layers/dropout.cpp"
   "ann/layers/softmax.cpp"
   "ann/layers/categoricalLoss.cpp"
   "ann/layers/categoricalLossSoftmax.cpp"

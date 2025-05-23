@@ -4,6 +4,7 @@
 
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
+#include "ann/layers/dropout.h"
 #include "ann/optimizers/adam.h"
 
 #include <iostream>
@@ -86,6 +87,9 @@ int main() {
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
         Layer::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
 
+    auto dropout1{
+        std::make_unique<Layer::Dropout>(layer1Neurons, batchSize, 0.2)};
+
     auto dense2{std::make_unique<Layer::Dense>(
         layer1Neurons, layer2Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
@@ -131,7 +135,8 @@ int main() {
                                  (batchSequence[batch] + 1) * batchSize)};
 
         dense1->forward(inputData);
-        dense2->forward(dense1->output());
+        dropout1->forward(dense1->output());
+        dense2->forward(dropout1->output());
         outputLayer->forward(dense2->output());
         outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
@@ -145,7 +150,8 @@ int main() {
         outputSoftmaxLoss->backward();
         outputLayer->backward(outputSoftmaxLoss->dinputs());
         dense2->backward(outputLayer->dinputs());
-        dense1->backward(dense2->dinputs());
+        dropout1->backward(dense2->dinputs());
+        dense1->backward(dropout1->dinputs());
 
         optimizer->preUpdate();
         optimizer->updateParams(*outputLayer);

@@ -73,26 +73,31 @@ void Matrix<T>::fill(std::function<void(T *)> gen,
 
 template <typename T>
 void Matrix<T>::transform(const MatrixBase<T> &m,
-                          std::function<void(T *, const T *)> gen) {
+                          std::function<void(T *, const T *)> gen,
+                          std::optional<bool> parallelize, size_t cost) {
   if (m.rows() != rows() || m.cols() != cols())
     throw Math::Exception{"Math::Matrix<T>::transform(const MatrixBase<T>&, "
                           "std::function<void(T*,const T*)>",
                           "Can't transform matrices with different dimensions"};
-  for (size_t i{}; i < m_data.size(); ++i)
-    gen(&m_data[i], &m.data()[i]);
+  Utils::Parallel::dynamicParallelFor(
+      cost, m_data.size(),
+      [&gen, &data = m_data, &m](size_t i) { gen(&data[i], &m.data()[i]); });
 }
 
 template <typename T>
 void Matrix<T>::transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                          std::function<void(T *, const T *, const T *)> gen) {
+                          std::function<void(T *, const T *, const T *)> gen,
+                          std::optional<bool> parallelize, size_t cost) {
   if (ma.rows() != rows() || ma.cols() != cols() || mb.rows() != rows() ||
       mb.cols() != cols())
     throw Math::Exception{
         "Math::Matrix<T>::transform(const MatrixBase<T>&, const MatrixBase<T>&"
         "std::function<void(T*,const T*)>",
         "Can't transform matrices with different dimensions"};
-  for (size_t i{}; i < m_data.size(); ++i)
-    gen(&m_data[i], &ma.data()[i], &mb.data()[i]);
+  Utils::Parallel::dynamicParallelFor(
+      cost, m_data.size(), [&gen, &data = m_data, &ma, &mb](size_t i) {
+        gen(&data[i], &ma.data()[i], &mb.data()[i]);
+      });
 }
 
 template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {

@@ -44,20 +44,24 @@ public:
   // gen input - a pointer to the item to be filled
   // cost - estimated operation cost of gen, 1 = single addition
   void fill(std::function<void(T *)> gen,
-            std::optional<bool> parallelie = std::nullopt, size_t cost = 5);
+            std::optional<bool> parallelize = std::nullopt, size_t cost = 5);
 
   // Transform the current matrix with another matrix
   // gen's inputs = a pointer to a value from the current matrix, and the
   // corresponding value from m. Both matrices must be the same dimensions
   void transform(const MatrixBase<T> &m,
-                 std::function<void(T *, const T *)> gen);
+                 std::function<void(T *, const T *)> gen,
+                 std::optional<bool> parallelize = std::nullopt,
+                 size_t cost = 5);
 
   // Transform the current matrix with two other matrices
   // gen's inputs = a pointer to a value from the current matrix, and the
   // corresponding values from ma and mb. All matrices must be the same
   // dimensions
   void transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
-                 std::function<void(T *, const T *, const T *)> gen);
+                 std::function<void(T *, const T *, const T *)> gen,
+                 std::optional<bool> parallelize = std::nullopt,
+                 size_t cost = 5);
 
   // Inserts a row at the end of the matrix
   // Throws if v.size != this->cols()
