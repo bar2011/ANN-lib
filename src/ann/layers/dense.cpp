@@ -7,12 +7,10 @@
 
 namespace Layer {
 Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
-             unsigned int batchNum, ANN::Activation activation,
-             WeightInit initMethod, float l1Weight, float l1Bias,
-             float l2Weight, float l2Bias)
+             unsigned int batchNum, WeightInit initMethod, float l1Weight,
+             float l1Bias, float l2Weight, float l2Bias)
     : m_biases{std::make_unique<Math::Vector<float>>(neuronNum)},
       m_output{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
-      m_activation{std::make_unique<ANN::Activation>(std::move(activation))},
       m_dweights{std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
       m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
       m_dbiases{std::make_unique<Math::Vector<float>>(neuronNum)},
@@ -66,32 +64,21 @@ Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
   m_output = std::make_shared<Math::Matrix<float>>(
       Math::dot(*inputs, *m_weights, true, true) + *m_biases);
-  auto activationForward{m_activation->getForward()};
-  m_output->fill(
-      [activationForward](float *val) { *val = activationForward(*val); });
 
   return m_output;
 }
 
 std::shared_ptr<Math::Matrix<float>>
 Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
-  // Activation backprop
-  auto dactivation{std::make_unique<Math::Matrix<float>>(*m_output)};
-  auto backwardActivation{m_activation->getBackward()};
-  dactivation->transform(*dvalues,
-                         [&backwardActivation](float *a, const float *b) {
-                           *a = backwardActivation(*a, *b);
-                         });
-
   // Regular backprop
-  *m_dweights = Math::dotTA<float>(*m_input, *dactivation, true, true);
-  *m_dinputs = Math::dotTB<float>(*dactivation, *m_weights, true);
+  *m_dweights = Math::dotTA<float>(*m_input, *dvalues, true, true);
+  *m_dinputs = Math::dotTB<float>(*dvalues, *m_weights, true);
 
   Utils::Parallel::dynamicParallelFor(
-      dactivation->cols(), dactivation->rows(),
-      [&dactivation, &dbiases = m_dbiases](size_t i) {
-        for (size_t j{}; j < dactivation->cols(); ++j)
-          (*dbiases)[j] += (*dactivation)[i, j];
+      dvalues->cols(), dvalues->rows(),
+      [&dvalues, &dbiases = m_dbiases](size_t i) {
+        for (size_t j{}; j < dvalues->cols(); ++j)
+          (*dbiases)[j] += (*dvalues)[i, j];
       });
 
   // Regularization backprop

@@ -1,26 +1,28 @@
 #pragma once
 
+#include "activation.h"
+
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Layer {
-// Softmax activation as a layer
-class Softmax {
+namespace Activations {
+
+// Sigmoid activation function
+class Sigmoid : public Activation {
 public:
-  // Initialize empty output matrix
-  Softmax(size_t neuronNum, size_t batchNum);
+  Sigmoid(size_t inputNum, size_t batchNum);
 
   // Copy constructor deleted
-  Softmax(const Softmax &other) = delete;
+  Sigmoid(const Sigmoid &other) = delete;
 
   // Move constructor
-  Softmax(Softmax &&other) noexcept;
+  Sigmoid(Sigmoid &&other) noexcept;
 
   // Copy assignment deleted
-  Softmax &operator=(const Softmax &other) = delete;
+  Sigmoid &operator=(const Sigmoid &other) = delete;
 
   // Move assignment
-  Softmax &operator=(Softmax &&other) noexcept;
+  Sigmoid &operator=(Sigmoid &&other) noexcept;
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
@@ -46,4 +48,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Layer
+} // namespace Activations

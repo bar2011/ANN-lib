@@ -5,6 +5,9 @@
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
 #include "ann/layers/dropout.h"
+
+#include "ann/activations/leakyRelu.h"
+
 #include "ann/optimizers/adam.h"
 
 #include <iostream>
@@ -83,21 +86,27 @@ int main() {
     constexpr float learningRateMomentum{0.3};
 
     auto dense1{std::make_unique<Layer::Dense>(
-        imageRows * imageCols, layer1Neurons, batchSize,
-        ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
-        Layer::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
+        imageRows * imageCols, layer1Neurons, batchSize, Layer::WeightInit::He,
+        0, 0, 1e-5f, 1e-5f)};
+
+    auto activation1{std::make_unique<Activations::LeakyReLU>(layer1Neurons,
+                                                              batchSize, 1e-2)};
 
     auto dropout1{
-        std::make_unique<Layer::Dropout>(layer1Neurons, batchSize, 0.2)};
+        std::make_unique<Layer::Dropout>(layer1Neurons, batchSize, 1e-1)};
 
-    auto dense2{std::make_unique<Layer::Dense>(
-        layer1Neurons, layer2Neurons, batchSize,
-        ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
-        Layer::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
+    auto dense2{std::make_unique<Layer::Dense>(layer1Neurons, layer2Neurons,
+                                               batchSize, Layer::WeightInit::He,
+                                               0, 0, 1e-5f, 1e-5f)};
+
+    auto activation2{std::make_unique<Activations::LeakyReLU>(layer2Neurons,
+                                                              batchSize, 1e-2)};
+
+    auto dropout2{
+        std::make_unique<Layer::Dropout>(layer2Neurons, batchSize, 5e-2)};
 
     auto outputLayer{std::make_unique<Layer::Dense>(
-        layer2Neurons, outputNeurons, batchSize,
-        ANN::Activation{ANN::Activation::Linear}, Layer::WeightInit::He)};
+        layer2Neurons, outputNeurons, batchSize, Layer::WeightInit::He)};
 
     auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>(
         outputNeurons, batchSize)};
@@ -135,9 +144,12 @@ int main() {
                                  (batchSequence[batch] + 1) * batchSize)};
 
         dense1->forward(inputData);
-        dropout1->forward(dense1->output());
+        activation1->forward(dense1->output());
+        dropout1->forward(activation1->output());
         dense2->forward(dropout1->output());
-        outputLayer->forward(dense2->output());
+        activation2->forward(dense2->output());
+        dropout2->forward(activation2->output());
+        outputLayer->forward(dropout2->output());
         outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
         float dataLoss{outputSoftmaxLoss->mean()};
@@ -149,9 +161,12 @@ int main() {
         // BACKWARD PASS
         outputSoftmaxLoss->backward();
         outputLayer->backward(outputSoftmaxLoss->dinputs());
-        dense2->backward(outputLayer->dinputs());
+        dropout2->backward(outputLayer->dinputs());
+        activation2->backward(dropout2->dinputs());
+        dense2->backward(activation2->dinputs());
         dropout1->backward(dense2->dinputs());
-        dense1->backward(dropout1->dinputs());
+        activation1->backward(dropout1->dinputs());
+        dense1->backward(activation1->dinputs());
 
         optimizer->preUpdate();
         optimizer->updateParams(*outputLayer);
@@ -180,8 +195,10 @@ int main() {
     }
 
     dense1->forward(testingImages);
-    dense2->forward(dense1->output());
-    outputLayer->forward(dense2->output());
+    activation1->forward(dense1->output());
+    dense2->forward(activation1->output());
+    activation2->forward(dense2->output());
+    outputLayer->forward(activation2->output());
     outputSoftmaxLoss->forward(outputLayer->output(), testingLabels);
 
     std::cout << "Test loss: " << outputSoftmaxLoss->mean()

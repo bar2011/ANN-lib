@@ -1,13 +1,16 @@
 # Compile main library
 add_library(ANN SHARED
   "ann/ann.cpp"
-  "ann/activation.cpp"
   "ann/layers/dense.cpp"
   "ann/layers/dropout.cpp"
-  "ann/layers/softmax.cpp"
   "ann/layers/categoricalLoss.cpp"
   "ann/layers/categoricalLossSoftmax.cpp"
   "ann/layers/loss.cpp"
+  "ann/activations/step.cpp"
+  "ann/activations/relu.cpp"
+  "ann/activations/sigmoid.cpp"
+  "ann/activations/leakyRelu.cpp"
+  "ann/activations/softmax.cpp"
   "ann/optimizers/sgd.cpp"
   "ann/optimizers/adagrad.cpp"
   "ann/optimizers/rmsprop.cpp"

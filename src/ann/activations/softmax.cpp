@@ -1,14 +1,14 @@
-#include "ann/layers/softmax.h"
+#include "ann/activations/softmax.h"
 
 #include "utils/parallel.h"
 
 #include <cmath>
 
-namespace Layer {
+namespace Activations {
 
-Softmax::Softmax(size_t neuronNum, size_t batchNum)
-    : m_output{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
-      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)} {};
+Softmax::Softmax(size_t inputNum, size_t batchNum)
+    : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},
+      m_dinputs{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)} {};
 
 Softmax::Softmax(Softmax &&other) noexcept
     : m_input{std::move(other.m_input)}, m_output{std::move(other.m_output)},
@@ -77,4 +77,4 @@ Softmax::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
 
   return m_dinputs;
 }
-} // namespace Layer
+} // namespace Activations

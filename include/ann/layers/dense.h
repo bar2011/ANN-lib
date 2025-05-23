@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ann/activation.h"
-
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 #include "math/vector.h"
@@ -39,7 +37,6 @@ public:
   // Maximum allowed batch number - 4,294,967,295
   // Uses activation of linear as default.
   Dense(unsigned int inputNum, unsigned short neuronNum, unsigned int batchNum,
-        ANN::Activation activation = {ANN::Activation::Linear},
         WeightInit initMethod = WeightInit::Random, float l1Weight = 0,
         float l1Bias = 0, float l2Weight = 0, float l2Bias = 0);
 
@@ -89,7 +86,6 @@ private:
       std::make_unique<Math::Vector<float>>()};
   std::shared_ptr<Math::Matrix<float>> m_output{
       std::make_shared<Math::Matrix<float>>()};
-  std::unique_ptr<ANN::Activation> m_activation{nullptr};
 
   std::unique_ptr<Math::Matrix<float>> m_dweights{
       std::make_unique<Math::Matrix<float>>()};
