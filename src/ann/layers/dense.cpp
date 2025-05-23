@@ -8,7 +8,8 @@
 namespace Layer {
 Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
              unsigned int batchNum, ANN::Activation activation,
-             WeightInit initMethod)
+             WeightInit initMethod, float l1Weight, float l1Bias,
+             float l2Weight, float l2Bias)
     : m_biases{std::make_unique<Math::Vector<float>>(neuronNum)},
       m_output{std::make_shared<Math::Matrix<float>>(batchNum, neuronNum)},
       m_activation{std::make_unique<ANN::Activation>(std::move(activation))},
@@ -19,7 +20,9 @@ Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
       m_weightMomentums{
           std::make_unique<Math::Matrix<float>>(inputNum, neuronNum)},
       m_biasCache{std::make_unique<Math::Vector<float>>(neuronNum)},
-      m_biasMomentums{std::make_unique<Math::Vector<float>>(neuronNum)} {
+      m_biasMomentums{std::make_unique<Math::Vector<float>>(neuronNum)},
+      m_l1Weight{l1Weight}, m_l1Bias{l1Bias}, m_l2Weight{l2Weight},
+      m_l2Bias{l2Bias} {
   switch (initMethod) {
   case WeightInit::Xavier:
     m_weights = std::make_unique<Math::Matrix<float>>(
@@ -72,12 +75,15 @@ Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
 
 std::shared_ptr<Math::Matrix<float>>
 Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
+  // Activation backprop
   auto dactivation{std::make_unique<Math::Matrix<float>>(*m_output)};
   auto backwardActivation{m_activation->getBackward()};
   dactivation->transform(*dvalues,
                          [&backwardActivation](float *a, const float *b) {
                            *a = backwardActivation(*a, *b);
                          });
+
+  // Regular backprop
   *m_dweights = Math::dotTA<float>(*m_input, *dactivation, true, true);
   *m_dinputs = Math::dotTB<float>(*dactivation, *m_weights, true);
 
@@ -87,6 +93,39 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
         for (size_t j{}; j < dactivation->cols(); ++j)
           (*dbiases)[j] += (*dactivation)[i, j];
       });
+
+  // Regularization backprop
+
+  // L1 backprop (absolute value derivative)
+  if (m_l1Weight > 0)
+    Utils::Parallel::dynamicParallelFor(
+        m_weights->cols() * 4, m_weights->rows(),
+        [&weights = m_weights, regularizer = m_l1Weight](size_t i) {
+          for (size_t j{}; j < weights->cols(); ++j)
+            (*weights)[i, j] +=
+                regularizer * (((*weights)[i, j] >= 0) ? 1 : -1);
+        });
+  if (m_l1Bias > 0)
+    Utils::Parallel::dynamicParallelFor(
+        4, m_biases->size(),
+        [&biases = m_biases, regularizer = m_l1Bias](size_t i) {
+          (*biases)[i] += regularizer * (((*biases)[i] >= 0) ? 1 : -1);
+        });
+
+  // L2 backprop (squared value derivative)
+  if (m_l2Weight > 0)
+    Utils::Parallel::dynamicParallelFor(
+        m_weights->cols() * 5, m_weights->rows(),
+        [&weights = m_weights, regularizer = m_l2Weight](size_t i) {
+          for (size_t j{}; j < weights->cols(); ++j)
+            (*weights)[i, j] += regularizer * 2 * (*weights)[i, j];
+        });
+  if (m_l2Bias > 0)
+    Utils::Parallel::dynamicParallelFor(
+        5, m_biases->size(),
+        [&biases = m_biases, regularizer = m_l2Bias](size_t i) {
+          (*biases)[i] += regularizer * 2 * (*biases)[i];
+        });
 
   return m_dinputs;
 }

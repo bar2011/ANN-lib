@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dense.h"
+
 #include "math/vector.h"
 
 #include <memory>
@@ -14,6 +16,8 @@ public:
   std::shared_ptr<const Math::Vector<float>> getOutput() const {
     return m_output;
   }
+
+  float regularizationLoss(const Dense &layer) const;
 
 protected:
   Loss() = default;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "loss.h"
+
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 #include "math/vectorBase.h"
 
 namespace Layer {
 // Categorical Cross-Entropy loss class
-class CategoricalLossSoftmax {
+class CategoricalLossSoftmax : public Loss {
 public:
   // initialize member variables
   CategoricalLossSoftmax(unsigned short neuronNum, unsigned int batchNum);

@@ -84,12 +84,12 @@ int main() {
     auto dense1{std::make_unique<Layer::Dense>(
         imageRows * imageCols, layer1Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
-        Layer::WeightInit::He)};
+        Layer::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
 
     auto dense2{std::make_unique<Layer::Dense>(
         layer1Neurons, layer2Neurons, batchSize,
         ANN::Activation{ANN::Activation::LeakyReLU, {1e-2}},
-        Layer::WeightInit::He)};
+        Layer::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
 
     auto outputLayer{std::make_unique<Layer::Dense>(
         layer2Neurons, outputNeurons, batchSize,
@@ -135,6 +135,12 @@ int main() {
         outputLayer->forward(dense2->output());
         outputSoftmaxLoss->forward(outputLayer->output(), inputCorrect);
 
+        float dataLoss{outputSoftmaxLoss->mean()};
+        float regularizationLoss{
+            outputSoftmaxLoss->regularizationLoss(*dense1) +
+            outputSoftmaxLoss->regularizationLoss(*dense2)};
+        float loss{dataLoss + regularizationLoss};
+
         // BACKWARD PASS
         outputSoftmaxLoss->backward();
         outputLayer->backward(outputSoftmaxLoss->dinputs());
@@ -155,8 +161,9 @@ int main() {
                     << '\t' << static_cast<size_t>(trainingTimer.elapsed())
                     << "s " << formatTime(trainingTimer.elapsed() / (batch + 1))
                     << "/step \taccuracy: " << outputSoftmaxLoss->accuracy()
-                    << " - loss: " << outputSoftmaxLoss->mean()
-                    << " - lr: " << optimizer->learningRate()
+                    << " - loss: " << loss << " (data loss: " << dataLoss
+                    << ", reg loss: " << regularizationLoss
+                    << ") - lr: " << optimizer->learningRate()
                     << "                 " << std::flush;
 
           displayTimer.reset();

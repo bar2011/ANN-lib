@@ -8,6 +8,8 @@
 
 #include <memory>
 
+// Forward declarations
+
 namespace Optimizers {
 class Optimizer;
 class SGD;
@@ -15,6 +17,10 @@ class Adagrad;
 class RMSProp;
 class Adam;
 } // namespace Optimizers
+
+namespace Layer {
+class Loss;
+}
 
 namespace Layer {
 enum class WeightInit {
@@ -34,7 +40,8 @@ public:
   // Uses activation of linear as default.
   Dense(unsigned int inputNum, unsigned short neuronNum, unsigned int batchNum,
         ANN::Activation activation = {ANN::Activation::Linear},
-        WeightInit initMethod = WeightInit::Random);
+        WeightInit initMethod = WeightInit::Random, float l1Weight = 0,
+        float l1Bias = 0, float l2Weight = 0, float l2Bias = 0);
 
   // Copy constructor deleted
   Dense(const Dense &other) = delete;
@@ -71,6 +78,8 @@ public:
   friend class Optimizers::RMSProp;
   friend class Optimizers::Adam;
 
+  friend class Loss;
+
 private:
   // No ownership of m_input by the class. Only a view.
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};
@@ -97,5 +106,10 @@ private:
       std::make_unique<Math::Vector<float>>()};
   std::unique_ptr<Math::Vector<float>> m_biasMomentums{
       std::make_unique<Math::Vector<float>>()};
+
+  float m_l1Weight{};
+  float m_l1Bias{};
+  float m_l2Weight{};
+  float m_l2Bias{};
 };
 } // namespace Layer
