@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-namespace Activations {
+namespace Activation {
 
 Softmax::Softmax(size_t inputNum, size_t batchNum)
     : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},

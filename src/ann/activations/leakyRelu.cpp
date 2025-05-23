@@ -1,6 +1,6 @@
 #include "ann/activations/leakyRelu.h"
 
-namespace Activations {
+namespace Activation {
 
 LeakyReLU::LeakyReLU(size_t inputNum, size_t batchNum, float alpha)
     : m_output{std::make_shared<Math::Matrix<float>>(batchNum, inputNum)},

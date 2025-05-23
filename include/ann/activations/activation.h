@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace Activations {
+namespace Activation {
 
 class Activation {
 public:

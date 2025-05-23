@@ -5,7 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Activations {
+namespace Activation {
 
 // Rectified Linear Unit activation function
 class ReLU : public Activation {

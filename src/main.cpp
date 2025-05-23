@@ -89,8 +89,8 @@ int main() {
         imageRows * imageCols, layer1Neurons, batchSize, Layer::WeightInit::He,
         0, 0, 1e-5f, 1e-5f)};
 
-    auto activation1{std::make_unique<Activations::LeakyReLU>(layer1Neurons,
-                                                              batchSize, 1e-2)};
+    auto activation1{std::make_unique<Activation::LeakyReLU>(layer1Neurons,
+                                                             batchSize, 1e-2)};
 
     auto dropout1{
         std::make_unique<Layer::Dropout>(layer1Neurons, batchSize, 1e-1)};
@@ -99,8 +99,8 @@ int main() {
                                                batchSize, Layer::WeightInit::He,
                                                0, 0, 1e-5f, 1e-5f)};
 
-    auto activation2{std::make_unique<Activations::LeakyReLU>(layer2Neurons,
-                                                              batchSize, 1e-2)};
+    auto activation2{std::make_unique<Activation::LeakyReLU>(layer2Neurons,
+                                                             batchSize, 1e-2)};
 
     auto dropout2{
         std::make_unique<Layer::Dropout>(layer2Neurons, batchSize, 5e-2)};

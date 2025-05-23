@@ -5,7 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Activations {
+namespace Activation {
 
 // Step activation function
 class Step : public Activation {

@@ -5,7 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Activations {
+namespace Activation {
 // Softmax activation as a layer
 class Softmax : public Activation {
 public:

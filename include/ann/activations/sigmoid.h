@@ -5,7 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Activations {
+namespace Activation {
 
 // Sigmoid activation function
 class Sigmoid : public Activation {
