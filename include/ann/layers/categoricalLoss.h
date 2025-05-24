@@ -26,7 +26,7 @@ public:
 
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
-  // inputs = output of ANN
+  // predictions = output of ANN
   // correct = vector of correct indicies, one for each batch
   // returns average loss in each batch
   std::shared_ptr<const Math::Vector<float>> forward(
@@ -46,7 +46,7 @@ public:
 
 private:
   // No ownership of m_input and m_correct by the class. Just a constant view.
-  std::shared_ptr<const Math::MatrixBase<float>> m_input{};
+  std::shared_ptr<const Math::MatrixBase<float>> m_predictions{};
   std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
 
   std::shared_ptr<Math::Matrix<float>> m_dinputs{

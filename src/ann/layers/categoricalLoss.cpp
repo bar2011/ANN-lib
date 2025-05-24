@@ -6,15 +6,15 @@ namespace Layer {
 
 CategoricalLoss::CategoricalLoss(CategoricalLoss &&other) noexcept
     : Loss(std::move(other)) {
-  m_input = other.m_input;
+  m_predictions = other.m_predictions;
 
-  other.m_input.reset();
+  other.m_predictions.reset();
 }
 
 CategoricalLoss &CategoricalLoss::operator=(CategoricalLoss &&other) noexcept {
   if (&other != this) {
     // Move other's pointers
-    m_input = std::move(other.m_input);
+    m_predictions = std::move(other.m_predictions);
     m_output = std::move(other.m_output);
   }
   return *this;
@@ -24,7 +24,7 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
     const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   // Store arguments for later use by backpropagation
-  m_input = predictions;
+  m_predictions = predictions;
   m_correct = correct;
 
   // If m_dinput's size doesn't match inputs' size, resize all matrices
@@ -55,15 +55,15 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
 }
 
 std::shared_ptr<const Math::Matrix<float>> CategoricalLoss::backward() {
-  for (size_t i{}; i < m_input->rows(); ++i)
-    for (size_t j{}; j < m_input->cols(); ++j) {
+  for (size_t i{}; i < m_predictions->rows(); ++i)
+    for (size_t j{}; j < m_predictions->cols(); ++j) {
       if ((*m_correct)[i] != j)
         (*m_dinputs)[i, j] = 0;
       else
         // Set the corresponding value to the derivative of the loss function
         // Divided by number or rows (which is number of batches) for some sort
         // of normalization (useful while optimizing)
-        (*m_dinputs)[i, j] = -1 / (*m_input)[i, j] / m_input->rows();
+        (*m_dinputs)[i, j] = -1 / (*m_predictions)[i, j] / m_predictions->rows();
     }
 
   return m_dinputs;
@@ -71,7 +71,7 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLoss::backward() {
 
 float CategoricalLoss::accuracy() const {
   // Get prediction for each row
-  std::unique_ptr<Math::Vector<size_t>> prediction{m_input->argmaxRow()};
+  std::unique_ptr<Math::Vector<size_t>> prediction{m_predictions->argmaxRow()};
 
   float correctPredictions{};
   for (size_t i{}; i < prediction->size(); ++i)
