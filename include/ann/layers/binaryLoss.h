@@ -4,25 +4,24 @@
 
 #include "math/matrix.h"
 #include "math/matrixBase.h"
-#include "math/vectorBase.h"
 
 namespace Layer {
 // Categorical Cross-Entropy loss class
-class CategoricalLoss : public Loss {
+class BinaryLoss : public Loss {
 public:
-  CategoricalLoss() = default;
+  BinaryLoss() = default;
 
   // Copy constructor deleted
-  CategoricalLoss(const CategoricalLoss &other) = delete;
+  BinaryLoss(const BinaryLoss &other) = delete;
 
   // Move constructor
-  CategoricalLoss(CategoricalLoss &&other) noexcept;
+  BinaryLoss(BinaryLoss &&other) noexcept;
 
   // Copy assignment deleted
-  CategoricalLoss &operator=(const CategoricalLoss &other) = delete;
+  BinaryLoss &operator=(const BinaryLoss &other) = delete;
 
   // Move assignment
-  CategoricalLoss &operator=(CategoricalLoss &&other) noexcept;
+  BinaryLoss &operator=(BinaryLoss &&other) noexcept;
 
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
@@ -30,8 +29,8 @@ public:
   // correct = vector of correct indicies, one for each batch
   // returns average loss in each batch
   std::shared_ptr<const Math::Vector<float>> forward(
-      const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-      const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct);
+      const std::shared_ptr<const Math::MatrixBase<float>> &prediction,
+      const std::shared_ptr<const Math::MatrixBase<unsigned short>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
@@ -47,7 +46,7 @@ public:
 private:
   // No ownership of m_input and m_correct by the class. Just a constant view.
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};
-  std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
+  std::shared_ptr<const Math::MatrixBase<unsigned short>> m_correct{};
 
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};

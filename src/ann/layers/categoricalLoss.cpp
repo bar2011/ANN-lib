@@ -21,18 +21,18 @@ CategoricalLoss &CategoricalLoss::operator=(CategoricalLoss &&other) noexcept {
 }
 
 std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
-    const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+    const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
     const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   // Store arguments for later use by backpropagation
-  m_input = inputs;
+  m_input = predictions;
   m_correct = correct;
 
   // If m_dinput's size doesn't match inputs' size, resize all matrices
-  if (m_dinputs->rows() != inputs->rows() ||
-      m_dinputs->cols() != inputs->cols()) {
-    m_output = std::make_shared<Math::Vector<float>>(inputs->rows());
-    m_dinputs =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  if (m_dinputs->rows() != predictions->rows() ||
+      m_dinputs->cols() != predictions->cols()) {
+    m_output = std::make_shared<Math::Vector<float>>(predictions->rows());
+    m_dinputs = std::make_shared<Math::Matrix<float>>(predictions->rows(),
+                                                      predictions->cols());
   }
 
   // An estimation of the cost of each iteration in terms of integer addition
@@ -41,14 +41,15 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
   constexpr float epsilon{1e-7};
 
   auto calculateBatch{
-      [inputs, correct, output = m_output, epsilon](size_t batch) {
-        float val{
-            std::clamp((*inputs)[batch, static_cast<size_t>((*correct)[batch])],
-                       epsilon, 1 - epsilon)};
+      [predictions, correct, output = m_output, epsilon](size_t batch) {
+        float val{std::clamp(
+            (*predictions)[batch, static_cast<size_t>((*correct)[batch])],
+            epsilon, 1 - epsilon)};
         (*output)[batch] = -std::log(val);
       }};
 
-  Utils::Parallel::dynamicParallelFor(cost, inputs->rows(), calculateBatch);
+  Utils::Parallel::dynamicParallelFor(cost, predictions->rows(),
+                                      calculateBatch);
 
   return m_output;
 }
