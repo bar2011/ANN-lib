@@ -4,6 +4,7 @@ add_library(ANN SHARED
   "ann/layers/dense.cpp"
   "ann/layers/dropout.cpp"
   "ann/layers/MSELoss.cpp"
+  "ann/layers/MAELoss.cpp"
   "ann/layers/binaryLoss.cpp"
   "ann/layers/categoricalLoss.cpp"
   "ann/layers/categoricalLossSoftmax.cpp"
