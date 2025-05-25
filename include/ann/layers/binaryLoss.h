@@ -31,7 +31,7 @@ public:
   // returns average loss in each batch
   std::shared_ptr<const Math::Vector<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &prediction,
-          const std::shared_ptr<const Math::MatrixBase<bool>> &correct);
+          const std::shared_ptr<const Math::MatrixBase<float>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
@@ -47,7 +47,7 @@ public:
 private:
   // No ownership of m_input and m_correct by the class. Just a constant view.
   std::shared_ptr<const Math::MatrixBase<float>> m_predictions{};
-  std::shared_ptr<const Math::MatrixBase<bool>> m_correct{};
+  std::shared_ptr<const Math::MatrixBase<float>> m_correct{};
 
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};

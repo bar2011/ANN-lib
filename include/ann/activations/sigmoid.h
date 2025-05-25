@@ -10,6 +10,8 @@ namespace Activation {
 // Sigmoid activation function
 class Sigmoid : public Activation {
 public:
+  Sigmoid() = default;
+
   // Copy constructor deleted
   Sigmoid(const Sigmoid &other) = delete;
 

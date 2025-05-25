@@ -21,7 +21,7 @@ BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
 
 std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-    const std::shared_ptr<const Math::MatrixBase<bool>> &correct) {
+    const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
   // Store arguments for later use by backpropagation
   m_predictions = predictions;
   m_correct = correct;
