@@ -1,16 +1,14 @@
-#include "ann/layers/binaryLoss.h"
-
-#include <cmath>
+#include "ann/layers/MSELoss.h"
 
 namespace Layer {
 
-BinaryLoss::BinaryLoss(BinaryLoss &&other) noexcept : Loss(std::move(other)) {
+MSELoss::MSELoss(MSELoss &&other) noexcept : Loss(std::move(other)) {
   m_predictions = std::move(other.m_predictions);
   m_correct = std::move(other.m_correct);
   m_dinputs = std::move(other.m_dinputs);
 }
 
-BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
+MSELoss &MSELoss::operator=(MSELoss &&other) noexcept {
   if (&other != this) {
     m_predictions = std::move(other.m_predictions);
     m_output = std::move(other.m_output);
@@ -20,7 +18,7 @@ BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
+std::shared_ptr<const Math::Vector<float>> MSELoss::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
     const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
   // Store arguments for later use by backpropagation
@@ -36,20 +34,17 @@ std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
   }
 
   // An estimation of the cost of each iteration in terms of integer addition
-  const size_t cost{100 * predictions->cols()};
+  const size_t cost{4 * predictions->cols()};
 
-  constexpr float epsilon{1e-7};
-
-  auto calculateBatch{[predictions, correct, output = m_output,
-                       epsilon](size_t batch) {
+  auto calculateBatch{[predictions, correct, output = m_output](size_t batch) {
     float lossSum{};
     for (size_t i{}; i < predictions->cols(); ++i) {
-      float predictionClamped{
-          std::clamp((*predictions)[batch, i], epsilon, 1 - epsilon)};
-      // Sum loss for both correct and incorrect options
-      lossSum += -(*correct)[batch, i] * std::log(predictionClamped) -
-                 (1 - (*correct)[batch, i]) * std::log(1 - predictionClamped);
+      // Calculate difference
+      float diff{(*correct)[batch, i] - (*predictions)[batch, i]};
+      // Square it
+      lossSum += diff * diff;
     }
+
     (*output)[batch] = lossSum / predictions->cols();
   }};
 
@@ -59,22 +54,17 @@ std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> BinaryLoss::backward() {
+std::shared_ptr<const Math::Matrix<float>> MSELoss::backward() {
   const size_t cost{5 * m_predictions->cols()};
-
-  constexpr float epsilon{1e-7};
 
   // Add cols() to account for average, add rows() to normalize sum
   const size_t normalization{m_predictions->rows() * m_predictions->cols()};
 
-  auto calculateBatch{[this, normalization, epsilon](size_t batch) {
+  auto calculateBatch{[this, normalization](size_t batch) {
     for (size_t i{}; i < m_predictions->cols(); ++i) {
-      float predictionClamped{
-          std::clamp((*m_predictions)[batch, i], epsilon, 1 - epsilon)};
       // Calculate gradient according to derivative
       (*m_dinputs)[batch, i] =
-          -((*m_correct)[batch, i] / predictionClamped -
-            (1 - (*m_correct)[batch, i]) / (1 - predictionClamped)) /
+          2 * ((*m_predictions)[batch, i] - (*m_correct)[batch, i]) /
           normalization;
     }
   }};
@@ -83,16 +73,5 @@ std::shared_ptr<const Math::Matrix<float>> BinaryLoss::backward() {
                                       calculateBatch);
 
   return m_dinputs;
-}
-
-float BinaryLoss::accuracy() const {
-  float correctPredictions{};
-  for (size_t batch{}; batch < m_predictions->rows(); ++batch)
-    for (size_t i{}; i < m_predictions->cols(); ++i) {
-      bool prediction{(*m_predictions)[batch, i] >= 0.5};
-      if (prediction == (*m_correct)[batch, i])
-        ++correctPredictions;
-    }
-  return correctPredictions / (m_predictions->rows() * m_predictions->cols());
 }
 } // namespace Layer
