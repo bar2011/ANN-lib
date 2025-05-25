@@ -5,16 +5,17 @@
 namespace Layer {
 
 BinaryLoss::BinaryLoss(BinaryLoss &&other) noexcept : Loss(std::move(other)) {
-  m_predictions = other.m_predictions;
-
-  other.m_predictions.reset();
+  m_predictions = std::move(other.m_predictions);
+  m_correct = std::move(other.m_correct);
+  m_dinputs = std::move(other.m_dinputs);
 }
 
 BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
   if (&other != this) {
-    // Move other's pointers
     m_predictions = std::move(other.m_predictions);
     m_output = std::move(other.m_output);
+    m_correct = std::move(other.m_correct);
+    m_dinputs = std::move(other.m_dinputs);
   }
   return *this;
 }
@@ -39,18 +40,18 @@ std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
 
   constexpr float epsilon{1e-7};
 
-  auto calculateBatch{
-      [predictions, correct, output = m_output, epsilon](size_t batch) {
-        float lossSum{};
-        for (size_t i{}; i < predictions->cols(); ++i) {
-          float predictionClamped{
-              std::clamp((*predictions)[batch, i], epsilon, 1 - epsilon)};
-          // Sum loss for both correct and incorrect options
-          lossSum += -(*correct)[batch, i] * std::log(predictionClamped) +
-                     (1 - (*correct)[batch, i]) * std::log(predictionClamped);
-        }
-        (*output)[batch] = lossSum / predictions->cols();
-      }};
+  auto calculateBatch{[predictions, correct, output = m_output,
+                       epsilon](size_t batch) {
+    float lossSum{};
+    for (size_t i{}; i < predictions->cols(); ++i) {
+      float predictionClamped{
+          std::clamp((*predictions)[batch, i], epsilon, 1 - epsilon)};
+      // Sum loss for both correct and incorrect options
+      lossSum += -(*correct)[batch, i] * std::log(predictionClamped) -
+                 (1 - (*correct)[batch, i]) * std::log(1 - predictionClamped);
+    }
+    (*output)[batch] = lossSum / predictions->cols();
+  }};
 
   Utils::Parallel::dynamicParallelFor(cost, predictions->rows(),
                                       calculateBatch);
@@ -67,13 +68,13 @@ std::shared_ptr<const Math::Matrix<float>> BinaryLoss::backward() {
     for (size_t i{}; i < m_predictions->cols(); ++i) {
       float predictionClamped{
           std::clamp((*m_predictions)[batch, i], epsilon, 1 - epsilon)};
-      float correct{(*m_correct)[batch, i] ? 1.0f : 0.0f};
       // Calculate gradient according to the equation
       // Divide by cols() to account for average, divide by rows() to normalize
       // sum
-      (*m_dinputs)[batch, i] = -(correct / predictionClamped -
-                                 (1 - correct) / (1 - predictionClamped)) /
-                               m_predictions->cols() / m_predictions->rows();
+      (*m_dinputs)[batch, i] =
+          -((*m_correct)[batch, i] / predictionClamped -
+            (1 - (*m_correct)[batch, i]) / (1 - predictionClamped)) /
+          m_predictions->cols() / m_predictions->rows();
     }
   }};
 
