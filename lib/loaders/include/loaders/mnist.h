@@ -10,16 +10,16 @@
 #include <string_view>
 #include <tuple>
 
-namespace MNist {
-class Loader {
+namespace Loaders {
+class MNist {
 public:
   // a type which contains a vector of labels and a matching vector of images
   using DataPair = std::tuple<std::shared_ptr<Math::Vector<unsigned short>>,
                               std::shared_ptr<Math::Matrix<float>>>;
 
-  Loader(std::string_view trainingLabelsPath,
-         std::string_view trainingImagesPath,
-         std::string_view testingLabelsPath, std::string_view testingImagesPath)
+  MNist(std::string_view trainingLabelsPath,
+        std::string_view trainingImagesPath, std::string_view testingLabelsPath,
+        std::string_view testingImagesPath)
       : m_trainingLabelsPath{trainingLabelsPath},
         m_trainingImagesPath{trainingImagesPath},
         m_testingLabelsPath{testingLabelsPath},
@@ -52,4 +52,4 @@ private:
   static unsigned int readU32(std::ifstream &file,
                               const std::string &filename = "");
 };
-} // namespace MNist
+} // namespace Loaders

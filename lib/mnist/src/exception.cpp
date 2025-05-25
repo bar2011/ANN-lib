@@ -1,1 +1,0 @@
-#include "mnist/exception.h"

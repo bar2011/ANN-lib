@@ -20,13 +20,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_link_options(-stdlib=libc++)
 endif()
 
-# Main program
-add_subdirectory(src)
-
 # Helper libraries subdirectories
 add_subdirectory(lib/utils)
 add_subdirectory(lib/math)
-add_subdirectory(lib/mnist)
+add_subdirectory(lib/loaders)
+
+# Main program
+add_subdirectory(src)
 
 # Enable experimental features (e.g. jthread)
 add_compile_options(-fexperimental-library)

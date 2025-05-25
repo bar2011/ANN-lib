@@ -32,4 +32,4 @@ target_link_libraries(ANN PRIVATE MathHelpers Utils)
 
 # Add executable
 add_executable(NeuralNetwork_exec main.cpp)
-target_link_libraries(NeuralNetwork_exec ANN MNistLoader)
+target_link_libraries(NeuralNetwork_exec ANN Loaders)
