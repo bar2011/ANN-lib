@@ -4,7 +4,7 @@
 #include "math/matrixBase.h"
 #include "math/random.h"
 
-#include "ann/layers/MAELoss.h"
+#include "ann/layers/MSELoss.h"
 #include "ann/layers/binaryLoss.h"
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
@@ -110,14 +110,14 @@ void trainRegression() {
 
   auto activation1{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-  auto dropout1{std::make_unique<Layer::Dropout>(0.2)};
+  auto dropout1{std::make_unique<Layer::Dropout>(0.1)};
 
   auto dense2{std::make_unique<Layer::Dense>(layer1Neurons, layer2Neurons,
                                              Layer::WeightInit::He)};
 
   auto activation2{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-  auto dropout2{std::make_unique<Layer::Dropout>(0.2)};
+  auto dropout2{std::make_unique<Layer::Dropout>(0.1)};
 
   auto dense3{std::make_unique<Layer::Dense>(layer2Neurons, layer3Neurons,
                                              Layer::WeightInit::He)};
@@ -127,7 +127,7 @@ void trainRegression() {
   auto outputLayer{std::make_unique<Layer::Dense>(layer3Neurons, outputNeurons,
                                                   Layer::WeightInit::Xavier)};
 
-  auto outputLoss{std::make_unique<Layer::MAELoss>()};
+  auto outputLoss{std::make_unique<Layer::MSELoss>()};
 
   auto optimizer{
       std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
@@ -219,11 +219,9 @@ void trainRegression() {
   auto [testData, testLabels]{loader->getTest()};
   dense1->forward(std::move(testData));
   activation1->forward(dense1->output());
-  dropout1->forward(activation1->output());
-  dense2->forward(dropout1->output());
+  dense2->forward(activation1->output());
   activation2->forward(dense2->output());
-  dropout2->forward(activation2->output());
-  dense3->forward(dropout2->output());
+  dense3->forward(activation2->output());
   activation3->forward(dense3->output());
   outputLayer->forward(activation3->output());
   outputLoss->forward(outputLayer->output(), std::move(testLabels));
@@ -256,14 +254,14 @@ void trainBinaryLogisticRegression() {
 
   auto activation1{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-  auto dropout1{std::make_unique<Layer::Dropout>(0.2)};
+  auto dropout1{std::make_unique<Layer::Dropout>(0.1)};
 
   auto dense2{std::make_unique<Layer::Dense>(layer1Neurons, layer2Neurons,
                                              Layer::WeightInit::He)};
 
   auto activation2{std::make_unique<Activation::LeakyReLU>(1e-2)};
 
-  auto dropout2{std::make_unique<Layer::Dropout>(0.2)};
+  auto dropout2{std::make_unique<Layer::Dropout>(0.1)};
 
   auto dense3{std::make_unique<Layer::Dense>(layer2Neurons, layer3Neurons,
                                              Layer::WeightInit::He)};
@@ -370,11 +368,9 @@ void trainBinaryLogisticRegression() {
   auto [testData, testLabels]{loader->getTest()};
   dense1->forward(std::move(testData));
   activation1->forward(dense1->output());
-  dropout1->forward(activation1->output());
-  dense2->forward(dropout1->output());
+  dense2->forward(activation1->output());
   activation2->forward(dense2->output());
-  dropout2->forward(activation2->output());
-  dense3->forward(dropout2->output());
+  dense3->forward(activation2->output());
   activation3->forward(dense3->output());
   outputLayer->forward(activation3->output());
   outputActivation->forward(outputLayer->output());
