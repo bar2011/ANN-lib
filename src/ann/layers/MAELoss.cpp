@@ -62,7 +62,7 @@ std::shared_ptr<const Math::Matrix<float>> MAELoss::backward() {
 
   auto calculateBatch{[this, normalization](size_t batch) {
     for (size_t i{}; i < m_predictions->cols(); ++i) {
-      float diff{(*m_correct)[batch, i] - (*m_predictions)[batch, i]};
+      float diff{(*m_predictions)[batch, i] - (*m_correct)[batch, i]};
       // Calculate gradient according to derivative
       (*m_dinputs)[batch, i] = ((diff >= 0) ? 1.0f : -1.0f) / normalization;
     }
