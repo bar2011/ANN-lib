@@ -28,6 +28,11 @@ public:
   // (rows * cols) containing all the matrix's data
   Matrix(const size_t rows, const size_t cols, const T *const data);
 
+  // Constructor with rows, columns, and a single data vector of type T of size
+  // (rows * cols) containing all the matrix's data.
+  // Note: the data will be moved on construction
+  Matrix(const size_t rows, const size_t cols, std::vector<T> &&data);
+
   // Copy constructor
   Matrix(const Matrix &other);
 

@@ -17,13 +17,20 @@ public:
   // targets - number of outputs of the network
   CSV(const std::string &trainDataPath, const std::string &trainLabelPath,
       const std::string &testDataPath, const std::string &testLabelPath,
-      size_t batchSize, size_t testSize, size_t features, size_t targets);
+      size_t batchSize, size_t trainSize, size_t testSize, size_t features,
+      size_t targets);
 
   // Returns a pair of <data, labels> of the given batch
   // Throws if reached EOF before got to corresponding batch
   std::pair<std::unique_ptr<Math::Matrix<float>>,
             std::unique_ptr<Math::Matrix<float>>>
   getTrainBatch(size_t batchNum);
+
+  // Returns a pair of <data, labels> of all the training
+  // Throws if reached EOF before got to data end
+  std::pair<std::unique_ptr<Math::Matrix<float>>,
+            std::unique_ptr<Math::Matrix<float>>>
+  getTrainData();
 
   // Returns a pair of <data, labels> of all test data
   std::pair<std::unique_ptr<Math::Matrix<float>>,
@@ -37,6 +44,7 @@ private:
   std::ifstream m_testLabelsFile{};
 
   size_t m_batchSize{};
+  size_t m_trainSize{};
   size_t m_testSize{};
   size_t m_features{};
   size_t m_targets{};

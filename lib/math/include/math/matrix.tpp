@@ -25,6 +25,15 @@ Matrix<T>::Matrix(const size_t rows, const size_t cols, const T *const data)
 }
 
 template <typename T>
+Matrix<T>::Matrix(const size_t rows, const size_t cols, std::vector<T> &&data)
+    : m_data{std::move(data)}, m_rows{rows}, m_cols{cols} {
+  if (m_data.size() != m_rows * m_cols)
+    throw Math::Exception{
+        "Math::Matrix<T>(const size_t, const size_t, std::vector<T>&&)",
+        "Given vector doesn't match rows * cols"};
+}
+
+template <typename T>
 Matrix<T>::Matrix(const size_t rows, const size_t cols)
     : m_data(rows * cols), m_rows{rows}, m_cols{cols} {};
 

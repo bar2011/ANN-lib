@@ -2,60 +2,67 @@
 
 #include "loaders/exception.h"
 
+#include <sstream>
+
 namespace Loaders {
 CSV::CSV(const std::string &trainDataPath, const std::string &trainLabelPath,
          const std::string &testDataPath, const std::string &testLabelPath,
-         size_t batchSize, size_t testSize, size_t features, size_t targets)
+         size_t batchSize, size_t trainSize, size_t testSize, size_t features,
+         size_t targets)
     : m_trainDataFile{trainDataPath}, m_trainLabelsFile{trainLabelPath},
       m_testDataFile{testDataPath}, m_testLabelsFile{testLabelPath},
-      m_batchSize{batchSize}, m_testSize{testSize}, m_features{features},
-      m_targets{targets} {}
+      m_batchSize{batchSize}, m_trainSize{trainSize}, m_testSize{testSize},
+      m_features{features}, m_targets{targets} {}
 
 std::pair<std::unique_ptr<Math::Matrix<float>>,
           std::unique_ptr<Math::Matrix<float>>>
 CSV::getTrainBatch(size_t batchNum) {
-  for (size_t i{}; i < batchNum * m_batchSize; ++i) {
-    if (!m_trainDataFile.ignore(std::numeric_limits<std::streamsize>::max(),
-                                '\n'))
-      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
-                               "Reached EOF before got to start of batch data"};
+  std::string line{};
 
-    if (!m_trainLabelsFile.ignore(std::numeric_limits<std::streamsize>::max(),
-                                  '\n'))
-      throw Loaders::Exception{
-          "Loaders::CSV::getTrainBatch(size_t)",
-          "Reached EOF before got to start of batch labels"};
+  for (size_t i{}; i < batchNum * m_batchSize; ++i)
+    if (!std::getline(m_trainDataFile, line) ||
+        !std::getline(m_trainLabelsFile, line))
+      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+                               "Reached EOF before got to start of batch"};
+
+  std::vector<float> dataVector{};
+  std::vector<float> labelsVector{};
+  dataVector.reserve(m_batchSize * m_features);
+  dataVector.reserve(m_batchSize * m_targets);
+
+  std::string token{};
+
+  for (size_t batch{}; batch < m_batchSize; ++batch) {
+    if (!std::getline(m_trainDataFile, line))
+      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+                               "Reached EOF while reading batch data"};
+
+    std::istringstream ssData{line};
+    for (size_t i{}; i < m_features; ++i) {
+      if (!std::getline(ssData, token, ','))
+        throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+                                 "Data field missing"};
+      dataVector.push_back(std::stof(token));
+    }
+
+    if (!std::getline(m_trainLabelsFile, line))
+      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+                               "Reached EOF while reading batch labels"};
+
+    std::istringstream ssLabels{line};
+    for (size_t i{}; i < m_targets; ++i) {
+      if (!std::getline(ssLabels, token, ','))
+        throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+                                 "Label field missing"};
+      labelsVector.push_back(std::stof(token));
+    }
   }
 
-  auto batchData{std::make_unique<Math::Matrix<float>>(
-      m_batchSize, m_features, [&trainDataFile = m_trainDataFile]() {
-        float f{};
-        if (!(trainDataFile >> f))
-          throw Loaders::Exception{
-              "Loaders::CSV::getTrainBatch(size_t)",
-              "Reached EOF before got to end of batch data"};
-
-        // Skip comma/newline after data if exists
-        if (!trainDataFile.get())
-          trainDataFile.clear();
-
-        return f;
-      })};
+  auto batchData{std::make_unique<Math::Matrix<float>>(m_batchSize, m_features,
+                                                       std::move(dataVector))};
 
   auto batchLabels{std::make_unique<Math::Matrix<float>>(
-      m_batchSize, m_targets, [&trainLabelsFile = m_trainLabelsFile]() {
-        float f{};
-        if (!(trainLabelsFile >> f))
-          throw Loaders::Exception{
-              "Loaders::CSV::getTrainBatch(size_t)",
-              "Reached EOF before got to end of batch labels"};
-
-        // Skip comma/newline after data if exists
-        if (!trainLabelsFile.get())
-          trainLabelsFile.clear();
-
-        return f;
-      })};
+      m_batchSize, m_targets, std::move(labelsVector))};
 
   // Put fstreams back on the file start
   m_trainDataFile.clear();
@@ -64,6 +71,59 @@ CSV::getTrainBatch(size_t batchNum) {
   m_trainLabelsFile.seekg(0);
 
   return std::pair{std::move(batchData), std::move(batchLabels)};
+}
+
+std::pair<std::unique_ptr<Math::Matrix<float>>,
+          std::unique_ptr<Math::Matrix<float>>>
+CSV::getTrainData() {
+  std::string line{};
+
+  std::vector<float> dataVector{};
+  std::vector<float> labelsVector{};
+  dataVector.reserve(m_trainSize * m_features);
+  labelsVector.reserve(m_trainSize * m_targets);
+
+  std::string token{};
+
+  for (size_t batch{}; batch < m_trainSize; ++batch) {
+    if (!std::getline(m_trainDataFile, line))
+      throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+                               "Reached EOF while reading data"};
+
+    std::istringstream ssData{line};
+    for (size_t i{}; i < m_features; ++i) {
+      if (!std::getline(ssData, token, ','))
+        throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+                                 "Data field missing"};
+      dataVector.push_back(std::stof(token));
+    }
+
+    if (!std::getline(m_trainLabelsFile, line))
+      throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+                               "Reached EOF while reading labels"};
+
+    std::istringstream ssLabels{line};
+    for (size_t i{}; i < m_targets; ++i) {
+      if (!std::getline(ssLabels, token, ','))
+        throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+                                 "Label field missing"};
+      labelsVector.push_back(std::stof(token));
+    }
+  }
+
+  auto trainData{std::make_unique<Math::Matrix<float>>(m_trainSize, m_features,
+                                                       std::move(dataVector))};
+
+  auto trainLabels{std::make_unique<Math::Matrix<float>>(
+      m_trainSize, m_targets, std::move(labelsVector))};
+
+  // Put fstreams back on the file start
+  m_trainDataFile.clear();
+  m_trainDataFile.seekg(0);
+  m_trainLabelsFile.clear();
+  m_trainLabelsFile.seekg(0);
+
+  return std::pair{std::move(trainData), std::move(trainLabels)};
 }
 
 std::pair<std::unique_ptr<Math::Matrix<float>>,
