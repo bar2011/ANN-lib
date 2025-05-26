@@ -4,6 +4,7 @@
 #include "math/matrixBase.h"
 #include "math/random.h"
 
+#include "ann/layers/MAELoss.h"
 #include "ann/layers/binaryLoss.h"
 #include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
@@ -65,12 +66,13 @@ std::string formatTime(double seconds) {
   return "0s";
 }
 
+void trainRegression();
 void trainBinaryLogisticRegression();
 void trainMNist();
 
 int main() {
   try {
-    trainBinaryLogisticRegression();
+    trainRegression();
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
@@ -80,6 +82,154 @@ int main() {
   return 0;
 }
 
+void trainRegression() {
+  constexpr unsigned short inputs{20};
+  constexpr unsigned short layer1Neurons{64};
+  constexpr unsigned short layer2Neurons{64};
+  constexpr unsigned short layer3Neurons{32};
+  constexpr unsigned short outputNeurons{3};
+  constexpr unsigned int batchSize{64};
+  constexpr unsigned int trainingSize{50'000};
+  constexpr unsigned int testingSize{10'000};
+  constexpr unsigned int epochs{5};
+  constexpr float learningRate{2e-3};
+  constexpr float learningRateDecay{1e-3};
+
+  // normalized with:
+  // data: (X + 4.959753276971317) / 9.772888927315826
+  // labels: (Y + 857.3455055127644) / 1725.0832354415797
+  auto loader{std::make_unique<Loaders::CSV>(
+      "data/regression-train-data.csv", "data/regression-train-labels.csv",
+      "data/regression-test-data.csv", "data/regression-test-labels.csv",
+      batchSize, trainingSize, testingSize, inputs, outputNeurons)};
+
+  auto trainData{loader->getTrainData()};
+
+  auto dense1{std::make_unique<Layer::Dense>(inputs, layer1Neurons,
+                                             Layer::WeightInit::He)};
+
+  auto activation1{std::make_unique<Activation::LeakyReLU>(1e-2)};
+
+  auto dropout1{std::make_unique<Layer::Dropout>(0.2)};
+
+  auto dense2{std::make_unique<Layer::Dense>(layer1Neurons, layer2Neurons,
+                                             Layer::WeightInit::He)};
+
+  auto activation2{std::make_unique<Activation::LeakyReLU>(1e-2)};
+
+  auto dropout2{std::make_unique<Layer::Dropout>(0.2)};
+
+  auto dense3{std::make_unique<Layer::Dense>(layer2Neurons, layer3Neurons,
+                                             Layer::WeightInit::He)};
+
+  auto activation3{std::make_unique<Activation::LeakyReLU>(1e-2)};
+
+  auto outputLayer{std::make_unique<Layer::Dense>(layer3Neurons, outputNeurons,
+                                                  Layer::WeightInit::Xavier)};
+
+  auto outputLoss{std::make_unique<Layer::MAELoss>()};
+
+  auto optimizer{
+      std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
+
+  Timer trainingTimer{};
+  Timer displayTimer{};
+
+  constexpr size_t batches{trainingSize / batchSize};
+
+  // Set up floating point printing for training updates
+  std::cout << std::fixed << std::setprecision(4);
+
+  for (size_t epoch{}; epoch < epochs; ++epoch) {
+
+    std::cout << "Epoch " << epoch << ":\n";
+
+    // Set up batch sequence
+    std::vector<size_t> batchSequence(trainingSize / batchSize);
+    std::iota(batchSequence.begin(), batchSequence.end(), 0);
+    std::shuffle(batchSequence.begin(), batchSequence.end(), Math::Random::mt);
+
+    trainingTimer.reset();
+    for (size_t batch{}; batch < trainingSize / batchSize; ++batch) {
+
+      // FORWARD PASS
+
+      // Get batchSize training images and labels
+      auto currentBatch{batchSequence[batch]};
+      auto inputData{trainData.first->view(currentBatch * batchSize,
+                                           (currentBatch + 1) * batchSize)};
+      auto inputLabels{trainData.second->view(currentBatch * batchSize,
+                                              (currentBatch + 1) * batchSize)};
+
+      dense1->forward(std::move(inputData));
+      activation1->forward(dense1->output());
+      dropout1->forward(activation1->output());
+      dense2->forward(dropout1->output());
+      activation2->forward(dense2->output());
+      dropout2->forward(activation2->output());
+      dense3->forward(dropout2->output());
+      activation3->forward(dense3->output());
+      outputLayer->forward(activation3->output());
+      outputLoss->forward(outputLayer->output(), std::move(inputLabels));
+
+      float dataLoss{outputLoss->mean()};
+      float regularizationLoss{outputLoss->regularizationLoss(*dense1) +
+                               outputLoss->regularizationLoss(*dense2) +
+                               outputLoss->regularizationLoss(*dense3)};
+      float loss{dataLoss + regularizationLoss};
+
+      // BACKWARD PASS
+      outputLoss->backward();
+      outputLayer->backward(outputLoss->dinputs());
+      activation3->backward(outputLayer->dinputs());
+      dense3->backward(activation3->dinputs());
+      dropout2->backward(dense3->dinputs());
+      activation2->backward(dropout2->dinputs());
+      dense2->backward(activation2->dinputs());
+      dropout1->backward(dense2->dinputs());
+      activation1->backward(dropout1->dinputs());
+      dense1->backward(activation1->dinputs());
+
+      optimizer->preUpdate();
+      optimizer->updateParams(*outputLayer);
+      optimizer->updateParams(*dense3);
+      optimizer->updateParams(*dense2);
+      optimizer->updateParams(*dense1);
+      optimizer->postUpdate();
+
+      // Display information every about half second, or at the first/final
+      // batch
+      if (displayTimer.elapsed() >= 0.5 ||
+          batch + 1 == trainingSize / batchSize || batch == 0) {
+        std::cout << '\r' << batch + 1 << '/' << trainingSize / batchSize
+                  << '\t' << static_cast<size_t>(trainingTimer.elapsed())
+                  << "s " << formatTime(trainingTimer.elapsed() / (batch + 1))
+                  << "/step \tloss: " << loss << " (data loss: " << dataLoss
+                  << ", reg loss: " << regularizationLoss
+                  << ") - lr: " << optimizer->learningRate()
+                  << "                 " << std::flush;
+
+        displayTimer.reset();
+      }
+    }
+
+    std::cout << '\n';
+  }
+
+  auto [testData, testLabels]{loader->getTest()};
+  dense1->forward(std::move(testData));
+  activation1->forward(dense1->output());
+  dropout1->forward(activation1->output());
+  dense2->forward(dropout1->output());
+  activation2->forward(dense2->output());
+  dropout2->forward(activation2->output());
+  dense3->forward(dropout2->output());
+  activation3->forward(dense3->output());
+  outputLayer->forward(activation3->output());
+  outputLoss->forward(outputLayer->output(), std::move(testLabels));
+
+  std::cout << "Test loss: " << outputLoss->mean() << '\n';
+}
 
 void trainBinaryLogisticRegression() {
   constexpr unsigned short inputs{50};
@@ -173,7 +323,8 @@ void trainBinaryLogisticRegression() {
 
       float dataLoss{outputLoss->mean()};
       float regularizationLoss{outputLoss->regularizationLoss(*dense1) +
-                               outputLoss->regularizationLoss(*dense2)};
+                               outputLoss->regularizationLoss(*dense2) +
+                               outputLoss->regularizationLoss(*dense3)};
       float loss{dataLoss + regularizationLoss};
 
       // BACKWARD PASS
