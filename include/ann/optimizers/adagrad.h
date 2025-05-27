@@ -6,7 +6,7 @@
 namespace Optimizers {
 class Adagrad : public Optimizer {
 public:
-  Adagrad(float learningRate = 1.0, float decay = 0.0, float epsilon = 1e-7f)
+  Adagrad(float learningRate = 1e-2f, float decay = 0.0, float epsilon = 1e-7f)
       : m_startingLearningRate{learningRate}, m_learningRate{learningRate},
         m_decay{decay}, m_epsilon{epsilon} {};
 

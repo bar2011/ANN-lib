@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../modelDescriptors.h"
+
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 #include "math/vector.h"
@@ -21,24 +23,17 @@ class Loss;
 }
 
 namespace Layer {
-enum class WeightInit {
-  Xavier,
-  He,
-  Random,
-};
 // Basic Dense layer class.
-// I = input data type
 class Dense {
 public:
   Dense() = delete;
 
   // 0-init inputs, biases, and outputs
-  // Maximum allowed neuron number - 65,535
-  // Maximum allowed batch number - 4,294,967,295
   // Uses activation of linear as default.
-  Dense(unsigned int inputNum, unsigned short neuronNum,
-        WeightInit initMethod = WeightInit::Random, float l1Weight = 0,
-        float l1Bias = 0, float l2Weight = 0, float l2Bias = 0);
+  Dense(unsigned int inputNum, unsigned int neuronNum,
+        ANN::WeightInit initMethod = ANN::WeightInit::Random,
+        float l1Weight = 0, float l1Bias = 0, float l2Weight = 0,
+        float l2Bias = 0);
 
   // Copy constructor deleted
   Dense(const Dense &other) = delete;

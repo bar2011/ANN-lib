@@ -6,6 +6,7 @@
 
 #include "ann/layers/dense.h"
 #include "ann/layers/dropout.h"
+
 #include "ann/loss/MSE.h"
 #include "ann/loss/binary.h"
 #include "ann/loss/categoricalSoftmax.h"

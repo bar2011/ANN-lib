@@ -6,7 +6,7 @@
 #include "math/random.h"
 
 namespace Layer {
-Dense::Dense(unsigned int inputNum, unsigned short neuronNum,
+Dense::Dense(unsigned int inputNum, unsigned int neuronNum,
              WeightInit initMethod, float l1Weight, float l1Bias,
              float l2Weight, float l2Bias)
     : m_biases{std::make_unique<Math::Vector<float>>(neuronNum)},

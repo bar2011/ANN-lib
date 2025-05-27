@@ -6,7 +6,7 @@
 namespace Optimizers {
 class SGD : public Optimizer {
 public:
-  SGD(float learningRate = 1.0, float decay = 0.0, float momentum = 0.0)
+  SGD(float learningRate = 1e-2f, float decay = 0.0, float momentum = 0.0)
       : m_startingLearningRate{learningRate}, m_learningRate{learningRate},
         m_decay{decay}, m_momentum{momentum} {};
 
