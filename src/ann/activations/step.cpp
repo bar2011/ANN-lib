@@ -1,5 +1,6 @@
 #include "ann/activations/step.h"
 
+namespace ANN {
 namespace Activation {
 
 Step::Step(Step &&other) noexcept
@@ -42,3 +43,4 @@ Step::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Activation
+} // namespace ANN

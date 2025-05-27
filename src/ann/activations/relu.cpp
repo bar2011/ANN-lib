@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+namespace ANN {
 namespace Activation {
 
 ReLU::ReLU(ReLU &&other) noexcept
@@ -50,3 +51,4 @@ ReLU::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Activation
+} // namespace ANN

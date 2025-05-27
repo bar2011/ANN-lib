@@ -6,6 +6,7 @@
 #include "math/matrixBase.h"
 #include "math/vectorBase.h"
 
+namespace ANN {
 namespace Loss {
 // Categorical Cross-Entropy loss class
 class CategoricalSoftmax : public Loss {
@@ -69,3 +70,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Loss
+} // namespace ANN

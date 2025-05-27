@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Activation {
 // Softmax activation as a layer
 class Softmax : public Activation {
@@ -48,3 +49,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Activation
+} // namespace ANN

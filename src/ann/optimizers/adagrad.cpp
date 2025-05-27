@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Optimizers {
 void Adagrad::preUpdate() {
   m_learningRate =
@@ -49,3 +50,4 @@ void Adagrad::updateParams(Layer::Dense &layer) const {
 
 void Adagrad::postUpdate() { ++m_iteration; }
 } // namespace Optimizers
+} // namespace ANN

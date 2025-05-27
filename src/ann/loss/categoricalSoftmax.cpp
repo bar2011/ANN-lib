@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Loss {
 
 CategoricalSoftmax::CategoricalSoftmax(CategoricalSoftmax &&other) noexcept
@@ -123,3 +124,4 @@ float CategoricalSoftmax::mean() const {
   return outputSum / m_lossOutput->size();
 }
 } // namespace Loss
+} // namespace ANN

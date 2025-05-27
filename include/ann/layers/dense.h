@@ -10,6 +10,7 @@
 
 // Forward declarations
 
+namespace ANN {
 namespace Optimizers {
 class Optimizer;
 class SGD;
@@ -104,3 +105,4 @@ private:
   float m_l2Bias{};
 };
 } // namespace Layer
+} // namespace ANN

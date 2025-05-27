@@ -1,5 +1,6 @@
 #include "ann/loss/MSE.h"
 
+namespace ANN {
 namespace Loss {
 
 MSE::MSE(MSE &&other) noexcept : Loss(std::move(other)) {
@@ -75,3 +76,4 @@ std::shared_ptr<const Math::Matrix<float>> MSE::backward() {
   return m_dinputs;
 }
 } // namespace Loss
+} // namespace ANN

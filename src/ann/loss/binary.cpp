@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Loss {
 
 Binary::Binary(Binary &&other) noexcept : Loss(std::move(other)) {
@@ -96,3 +97,4 @@ float Binary::accuracy() const {
   return correctPredictions / (m_predictions->rows() * m_predictions->cols());
 }
 } // namespace Loss
+} // namespace ANN

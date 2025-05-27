@@ -5,6 +5,7 @@
 
 #include <memory>
 
+namespace ANN {
 namespace Activation {
 
 class Activation {
@@ -23,4 +24,5 @@ public:
   virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const = 0;
 };
 
-} // namespace Activations
+} // namespace Activation
+} // namespace ANN

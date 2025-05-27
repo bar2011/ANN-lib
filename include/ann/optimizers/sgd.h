@@ -3,6 +3,7 @@
 #include "ann/layers/dense.h"
 #include "optimizer.h"
 
+namespace ANN {
 namespace Optimizers {
 class SGD : public Optimizer {
 public:
@@ -26,3 +27,4 @@ private:
   float m_iteration{1};
 };
 } // namespace Optimizers
+} // namespace ANN

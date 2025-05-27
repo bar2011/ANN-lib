@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Loss {
 
 MAE::MAE(MAE &&other) noexcept : Loss(std::move(other)) {
@@ -74,3 +75,4 @@ std::shared_ptr<const Math::Matrix<float>> MAE::backward() {
   return m_dinputs;
 }
 } // namespace Loss
+} // namespace ANN

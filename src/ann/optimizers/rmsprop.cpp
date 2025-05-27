@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Optimizers {
 void RMSProp::preUpdate() {
   m_learningRate =
@@ -49,3 +50,4 @@ void RMSProp::updateParams(Layer::Dense &layer) const {
 
 void RMSProp::postUpdate() { ++m_iteration; }
 } // namespace Optimizers
+} // namespace ANN

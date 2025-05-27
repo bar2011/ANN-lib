@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Activation {
 
 Sigmoid::Sigmoid(Sigmoid &&other) noexcept
@@ -51,3 +52,4 @@ Sigmoid::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Activation
+} // namespace ANN

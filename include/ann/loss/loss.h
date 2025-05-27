@@ -4,6 +4,7 @@
 
 #include <memory>
 
+namespace ANN {
 // Forward declarations
 namespace Layer {
 class Dense;
@@ -32,3 +33,4 @@ protected:
       std::make_shared<Math::Vector<float>>()};
 };
 } // namespace Loss
+} // namespace ANN

@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Activation {
 
 Softmax::Softmax(Softmax &&other) noexcept
@@ -83,3 +84,4 @@ Softmax::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Activation
+} // namespace ANN

@@ -1,5 +1,6 @@
 #include "ann/activations/leakyRelu.h"
 
+namespace ANN {
 namespace Activation {
 
 LeakyReLU::LeakyReLU(float alpha) : m_alpha{alpha} {};
@@ -53,3 +54,4 @@ LeakyReLU::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Activation
+} // namespace ANN

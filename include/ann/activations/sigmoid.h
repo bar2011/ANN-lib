@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Activation {
 
 // Sigmoid activation function
@@ -49,3 +50,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Activation
+} // namespace ANN

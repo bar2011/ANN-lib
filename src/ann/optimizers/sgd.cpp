@@ -1,5 +1,6 @@
 #include "ann/optimizers/sgd.h"
 
+namespace ANN {
 namespace Optimizers {
 void SGD::preUpdate() {
   m_learningRate =
@@ -31,3 +32,4 @@ void SGD::updateParams(Layer::Dense &layer) const {
 
 void SGD::postUpdate() { ++m_iteration; }
 } // namespace Optimizers
+} // namespace ANN

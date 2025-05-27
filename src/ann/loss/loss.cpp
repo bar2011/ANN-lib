@@ -4,6 +4,7 @@
 
 #include <numeric>
 
+namespace ANN {
 namespace Loss {
 float Loss::mean() {
   float outputSum{};
@@ -48,3 +49,4 @@ float Loss::regularizationLoss(const Layer::Dense &layer) const {
   return regularization;
 }
 } // namespace Loss
+} // namespace ANN

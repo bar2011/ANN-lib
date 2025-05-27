@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Loss {
 // Mean Squared Error loss class
 class MSE : public Loss {
@@ -49,3 +50,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Loss
+} // namespace ANN

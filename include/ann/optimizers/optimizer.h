@@ -2,6 +2,7 @@
 
 #include "ann/layers/dense.h"
 
+namespace ANN {
 namespace Optimizers {
 // Base optimizer class - only to be inherited, doesn't contain any logic
 class Optimizer {
@@ -15,3 +16,4 @@ public:
   virtual float learningRate() const = 0;
 };
 } // namespace Optimizers
+} // namespace ANN

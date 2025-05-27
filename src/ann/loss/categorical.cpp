@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Loss {
 
 Categorical::Categorical(Categorical &&other) noexcept
@@ -82,3 +83,4 @@ float Categorical::accuracy() const {
   return correctPredictions / prediction->size();
 }
 } // namespace Loss
+} // namespace ANN

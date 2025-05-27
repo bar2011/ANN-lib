@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Loss {
 // Mean Absolute Error loss class
 class MAE : public Loss {
@@ -49,3 +50,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Loss
+} // namespace ANN

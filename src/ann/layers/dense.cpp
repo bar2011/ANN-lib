@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/random.h"
 
+namespace ANN {
 namespace Layer {
 Dense::Dense(unsigned int inputNum, unsigned int neuronNum,
              WeightInit initMethod, float l1Weight, float l1Bias,
@@ -115,3 +116,4 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Layer
+} // namespace ANN

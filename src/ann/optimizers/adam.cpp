@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace ANN {
 namespace Optimizers {
 void Adam::preUpdate() {
   m_learningRate =
@@ -64,3 +65,4 @@ void Adam::updateParams(Layer::Dense &layer) const {
 
 void Adam::postUpdate() { ++m_iteration; }
 } // namespace Optimizers
+} // namespace ANN

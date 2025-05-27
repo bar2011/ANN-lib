@@ -3,6 +3,7 @@
 #include "math/random.h"
 #include "utils/parallel.h"
 
+namespace ANN {
 namespace Layer {
 
 Dropout::Dropout(float dropout) : m_dropout{dropout} {};
@@ -60,3 +61,4 @@ Dropout::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
   return m_dinputs;
 }
 } // namespace Layer
+} // namespace ANN

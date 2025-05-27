@@ -3,6 +3,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Layer {
 // Dropout activation as a layer
 class Dropout {
@@ -49,3 +50,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Layer
+} // namespace ANN

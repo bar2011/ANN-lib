@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Activation {
 
 // Leaky Rectified Linear Unit activation function
@@ -51,3 +52,4 @@ private:
   float m_alpha{};
 };
 } // namespace Activation
+} // namespace ANN

@@ -5,6 +5,7 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
+namespace ANN {
 namespace Loss {
 // Categorical Cross-Entropy loss class
 class Binary : public Loss {
@@ -53,3 +54,4 @@ private:
       std::make_shared<Math::Matrix<float>>()};
 };
 } // namespace Loss
+} // namespace ANN
