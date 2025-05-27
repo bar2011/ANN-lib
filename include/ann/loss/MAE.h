@@ -5,23 +5,23 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Layer {
-// Mean Squared Error loss class
-class MSELoss : public Loss {
+namespace Loss {
+// Mean Absolute Error loss class
+class MAE : public Loss {
 public:
-  MSELoss() = default;
+  MAE() = default;
 
   // Copy constructor deleted
-  MSELoss(const MSELoss &other) = delete;
+  MAE(const MAE &other) = delete;
 
   // Move constructor
-  MSELoss(MSELoss &&other) noexcept;
+  MAE(MAE &&other) noexcept;
 
   // Copy assignment deleted
-  MSELoss &operator=(const MSELoss &other) = delete;
+  MAE &operator=(const MAE &other) = delete;
 
   // Move assignment
-  MSELoss &operator=(MSELoss &&other) noexcept;
+  MAE &operator=(MAE &&other) noexcept;
 
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
@@ -48,4 +48,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Layer
+} // namespace Loss

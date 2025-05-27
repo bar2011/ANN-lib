@@ -16,7 +16,7 @@ class RMSProp;
 class Adam;
 } // namespace Optimizers
 
-namespace Layer {
+namespace Loss {
 class Loss;
 }
 
@@ -75,7 +75,7 @@ public:
   friend class Optimizers::RMSProp;
   friend class Optimizers::Adam;
 
-  friend class Loss;
+  friend class Loss::Loss;
 
 private:
   // No ownership of m_input by the class. Only a view.

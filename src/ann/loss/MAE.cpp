@@ -1,16 +1,16 @@
-#include "ann/layers/MAELoss.h"
+#include "ann/loss/MAE.h"
 
 #include <cmath>
 
-namespace Layer {
+namespace Loss {
 
-MAELoss::MAELoss(MAELoss &&other) noexcept : Loss(std::move(other)) {
+MAE::MAE(MAE &&other) noexcept : Loss(std::move(other)) {
   m_predictions = std::move(other.m_predictions);
   m_correct = std::move(other.m_correct);
   m_dinputs = std::move(other.m_dinputs);
 }
 
-MAELoss &MAELoss::operator=(MAELoss &&other) noexcept {
+MAE &MAE::operator=(MAE &&other) noexcept {
   if (&other != this) {
     m_predictions = std::move(other.m_predictions);
     m_output = std::move(other.m_output);
@@ -20,9 +20,9 @@ MAELoss &MAELoss::operator=(MAELoss &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Vector<float>> MAELoss::forward(
-    const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-    const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
+std::shared_ptr<const Math::Vector<float>>
+MAE::forward(const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
+             const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
   // Store arguments for later use by backpropagation
   m_predictions = predictions;
   m_correct = correct;
@@ -54,7 +54,7 @@ std::shared_ptr<const Math::Vector<float>> MAELoss::forward(
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> MAELoss::backward() {
+std::shared_ptr<const Math::Matrix<float>> MAE::backward() {
   const size_t cost{5 * m_predictions->cols()};
 
   // Add cols() to account for average, add rows() to normalize sum
@@ -73,4 +73,4 @@ std::shared_ptr<const Math::Matrix<float>> MAELoss::backward() {
 
   return m_dinputs;
 }
-} // namespace Layer
+} // namespace Loss

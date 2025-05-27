@@ -1,12 +1,15 @@
 #pragma once
 
-#include "dense.h"
-
 #include "math/vector.h"
 
 #include <memory>
 
+// Forward declarations
 namespace Layer {
+class Dense;
+}
+
+namespace Loss {
 // Base loss class - not instantiatable
 class Loss {
 public:
@@ -17,7 +20,7 @@ public:
     return m_output;
   }
 
-  float regularizationLoss(const Dense &layer) const;
+  float regularizationLoss(const Layer::Dense &layer) const;
 
 protected:
   Loss() = default;
@@ -28,4 +31,4 @@ protected:
   std::shared_ptr<Math::Vector<float>> m_output{
       std::make_shared<Math::Vector<float>>()};
 };
-} // namespace Layer
+} // namespace Loss

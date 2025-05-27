@@ -1,16 +1,16 @@
-#include "ann/layers/binaryLoss.h"
+#include "ann/loss/binary.h"
 
 #include <cmath>
 
-namespace Layer {
+namespace Loss {
 
-BinaryLoss::BinaryLoss(BinaryLoss &&other) noexcept : Loss(std::move(other)) {
+Binary::Binary(Binary &&other) noexcept : Loss(std::move(other)) {
   m_predictions = std::move(other.m_predictions);
   m_correct = std::move(other.m_correct);
   m_dinputs = std::move(other.m_dinputs);
 }
 
-BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
+Binary &Binary::operator=(Binary &&other) noexcept {
   if (&other != this) {
     m_predictions = std::move(other.m_predictions);
     m_output = std::move(other.m_output);
@@ -20,7 +20,7 @@ BinaryLoss &BinaryLoss::operator=(BinaryLoss &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
+std::shared_ptr<const Math::Vector<float>> Binary::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
     const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
   // Store arguments for later use by backpropagation
@@ -59,7 +59,7 @@ std::shared_ptr<const Math::Vector<float>> BinaryLoss::forward(
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> BinaryLoss::backward() {
+std::shared_ptr<const Math::Matrix<float>> Binary::backward() {
   const size_t cost{5 * m_predictions->cols()};
 
   constexpr float epsilon{1e-7};
@@ -85,7 +85,7 @@ std::shared_ptr<const Math::Matrix<float>> BinaryLoss::backward() {
   return m_dinputs;
 }
 
-float BinaryLoss::accuracy() const {
+float Binary::accuracy() const {
   float correctPredictions{};
   for (size_t batch{}; batch < m_predictions->rows(); ++batch)
     for (size_t i{}; i < m_predictions->cols(); ++i) {
@@ -95,4 +95,4 @@ float BinaryLoss::accuracy() const {
     }
   return correctPredictions / (m_predictions->rows() * m_predictions->cols());
 }
-} // namespace Layer
+} // namespace Loss

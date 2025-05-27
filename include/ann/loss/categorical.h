@@ -6,23 +6,23 @@
 #include "math/matrixBase.h"
 #include "math/vectorBase.h"
 
-namespace Layer {
+namespace Loss {
 // Categorical Cross-Entropy loss class
-class CategoricalLoss : public Loss {
+class Categorical : public Loss {
 public:
-  CategoricalLoss() = default;
+  Categorical() = default;
 
   // Copy constructor deleted
-  CategoricalLoss(const CategoricalLoss &other) = delete;
+  Categorical(const Categorical &other) = delete;
 
   // Move constructor
-  CategoricalLoss(CategoricalLoss &&other) noexcept;
+  Categorical(Categorical &&other) noexcept;
 
   // Copy assignment deleted
-  CategoricalLoss &operator=(const CategoricalLoss &other) = delete;
+  Categorical &operator=(const Categorical &other) = delete;
 
   // Move assignment
-  CategoricalLoss &operator=(CategoricalLoss &&other) noexcept;
+  Categorical &operator=(Categorical &&other) noexcept;
 
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
@@ -52,4 +52,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Layer
+} // namespace Loss

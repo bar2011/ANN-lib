@@ -1,8 +1,10 @@
-#include "ann/layers/loss.h"
+#include "ann/loss/loss.h"
+
+#include "ann/layers/dense.h"
 
 #include <numeric>
 
-namespace Layer {
+namespace Loss {
 float Loss::mean() {
   float outputSum{};
 
@@ -12,7 +14,7 @@ float Loss::mean() {
   return outputSum / static_cast<float>(m_output->size());
 }
 
-float Loss::regularizationLoss(const Dense &layer) const {
+float Loss::regularizationLoss(const Layer::Dense &layer) const {
   float regularization{};
 
   if (layer.m_l1Weight > 0)
@@ -45,4 +47,4 @@ float Loss::regularizationLoss(const Dense &layer) const {
 
   return regularization;
 }
-} // namespace Layer
+} // namespace Loss

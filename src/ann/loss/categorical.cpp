@@ -1,17 +1,17 @@
-#include "ann/layers/categoricalLoss.h"
+#include "ann/loss/categorical.h"
 
 #include <cmath>
 
-namespace Layer {
+namespace Loss {
 
-CategoricalLoss::CategoricalLoss(CategoricalLoss &&other) noexcept
+Categorical::Categorical(Categorical &&other) noexcept
     : Loss(std::move(other)) {
   m_predictions = other.m_predictions;
 
   other.m_predictions.reset();
 }
 
-CategoricalLoss &CategoricalLoss::operator=(CategoricalLoss &&other) noexcept {
+Categorical &Categorical::operator=(Categorical &&other) noexcept {
   if (&other != this) {
     // Move other's pointers
     m_predictions = std::move(other.m_predictions);
@@ -20,7 +20,7 @@ CategoricalLoss &CategoricalLoss::operator=(CategoricalLoss &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
+std::shared_ptr<const Math::Vector<float>> Categorical::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
     const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   // Store arguments for later use by backpropagation
@@ -54,7 +54,7 @@ std::shared_ptr<const Math::Vector<float>> CategoricalLoss::forward(
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> CategoricalLoss::backward() {
+std::shared_ptr<const Math::Matrix<float>> Categorical::backward() {
   for (size_t i{}; i < m_predictions->rows(); ++i)
     for (size_t j{}; j < m_predictions->cols(); ++j) {
       if ((*m_correct)[i] != j)
@@ -63,13 +63,14 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLoss::backward() {
         // Set the corresponding value to the derivative of the loss function
         // Divided by number or rows (which is number of batches) for some sort
         // of normalization (useful while optimizing)
-        (*m_dinputs)[i, j] = -1 / (*m_predictions)[i, j] / m_predictions->rows();
+        (*m_dinputs)[i, j] =
+            -1 / (*m_predictions)[i, j] / m_predictions->rows();
     }
 
   return m_dinputs;
 }
 
-float CategoricalLoss::accuracy() const {
+float Categorical::accuracy() const {
   // Get prediction for each row
   std::unique_ptr<Math::Vector<size_t>> prediction{m_predictions->argmaxRow()};
 
@@ -80,4 +81,4 @@ float CategoricalLoss::accuracy() const {
 
   return correctPredictions / prediction->size();
 }
-} // namespace Layer
+} // namespace Loss

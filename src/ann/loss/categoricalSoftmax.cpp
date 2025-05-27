@@ -1,20 +1,18 @@
-#include "ann/layers/categoricalLossSoftmax.h"
+#include "ann/loss/categoricalSoftmax.h"
 
 #include "utils/parallel.h"
 
 #include <cmath>
 
+namespace Loss {
 
-namespace Layer {
-
-CategoricalLossSoftmax::CategoricalLossSoftmax(
-    CategoricalLossSoftmax &&other) noexcept
+CategoricalSoftmax::CategoricalSoftmax(CategoricalSoftmax &&other) noexcept
     : m_softmaxOutput{std::move(other.m_softmaxOutput)},
       m_lossOutput{std::move(other.m_lossOutput)}, m_input{other.m_input},
       m_correct{other.m_correct}, m_dinputs{std::move(other.m_dinputs)} {}
 
-CategoricalLossSoftmax &
-CategoricalLossSoftmax::operator=(CategoricalLossSoftmax &&other) noexcept {
+CategoricalSoftmax &
+CategoricalSoftmax::operator=(CategoricalSoftmax &&other) noexcept {
   if (this != &other) {
     m_input = std::move(other.m_input);
     m_correct = std::move(other.m_correct);
@@ -25,7 +23,7 @@ CategoricalLossSoftmax::operator=(CategoricalLossSoftmax &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
+std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
     const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
   m_input = inputs;
@@ -81,7 +79,7 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::forward(
   return m_softmaxOutput;
 }
 
-std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::backward() {
+std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::backward() {
   // Used as normalization base
   size_t batches{m_dinputs->rows()};
 
@@ -103,7 +101,7 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalLossSoftmax::backward() {
   return m_dinputs;
 }
 
-float CategoricalLossSoftmax::accuracy() const {
+float CategoricalSoftmax::accuracy() const {
   // Get prediction for each row
   std::unique_ptr<Math::Vector<size_t>> prediction{
       m_softmaxOutput->argmaxRow()};
@@ -116,7 +114,7 @@ float CategoricalLossSoftmax::accuracy() const {
   return correctPredictions / prediction->size();
 }
 
-float CategoricalLossSoftmax::mean() const {
+float CategoricalSoftmax::mean() const {
   float outputSum{};
 
   for (size_t i{}; i < m_lossOutput->size(); ++i)
@@ -124,4 +122,4 @@ float CategoricalLossSoftmax::mean() const {
 
   return outputSum / m_lossOutput->size();
 }
-} // namespace Layer
+} // namespace Loss

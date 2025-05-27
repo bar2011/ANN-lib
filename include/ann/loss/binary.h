@@ -5,28 +5,29 @@
 #include "math/matrix.h"
 #include "math/matrixBase.h"
 
-namespace Layer {
-// Mean Absolute Error loss class
-class MAELoss : public Loss {
+namespace Loss {
+// Categorical Cross-Entropy loss class
+class Binary : public Loss {
 public:
-  MAELoss() = default;
+  Binary() = default;
 
   // Copy constructor deleted
-  MAELoss(const MAELoss &other) = delete;
+  Binary(const Binary &other) = delete;
 
   // Move constructor
-  MAELoss(MAELoss &&other) noexcept;
+  Binary(Binary &&other) noexcept;
 
   // Copy assignment deleted
-  MAELoss &operator=(const MAELoss &other) = delete;
+  Binary &operator=(const Binary &other) = delete;
 
   // Move assignment
-  MAELoss &operator=(MAELoss &&other) noexcept;
+  Binary &operator=(Binary &&other) noexcept;
 
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
   // prediction = output of ANN
-  // correct = matrix filled with the correct values for each prediction
+  // correct = matrix filled with the correct values for each prediction, where:
+  //    true - 1, false - 0
   // returns average loss in each batch
   std::shared_ptr<const Math::Vector<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &prediction,
@@ -35,6 +36,9 @@ public:
   // perform backward pass based on the given inputs and correct values in
   // forward pass
   std::shared_ptr<const Math::Matrix<float>> backward();
+
+  // Calculate average plain accuracy based on calculated
+  float accuracy() const;
 
   std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
@@ -48,4 +52,4 @@ private:
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};
 };
-} // namespace Layer
+} // namespace Loss

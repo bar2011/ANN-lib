@@ -4,11 +4,11 @@
 #include "math/matrixBase.h"
 #include "math/random.h"
 
-#include "ann/layers/MSELoss.h"
-#include "ann/layers/binaryLoss.h"
-#include "ann/layers/categoricalLossSoftmax.h"
 #include "ann/layers/dense.h"
 #include "ann/layers/dropout.h"
+#include "ann/loss/MSE.h"
+#include "ann/loss/binary.h"
+#include "ann/loss/categoricalSoftmax.h"
 
 #include "ann/activations/leakyRelu.h"
 #include "ann/activations/sigmoid.h"
@@ -127,7 +127,7 @@ void trainRegression() {
   auto outputLayer{std::make_unique<Layer::Dense>(layer3Neurons, outputNeurons,
                                                   Layer::WeightInit::Xavier)};
 
-  auto outputLoss{std::make_unique<Layer::MSELoss>()};
+  auto outputLoss{std::make_unique<Loss::MSE>()};
 
   auto optimizer{
       std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
@@ -273,7 +273,7 @@ void trainBinaryLogisticRegression() {
 
   auto outputActivation{std::make_unique<Activation::Sigmoid>()};
 
-  auto outputLoss{std::make_unique<Layer::BinaryLoss>()};
+  auto outputLoss{std::make_unique<Loss::Binary>()};
 
   auto optimizer{
       std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
@@ -421,7 +421,7 @@ void trainMNist() {
   auto outputLayer{std::make_unique<Layer::Dense>(layer2Neurons, outputNeurons,
                                                   Layer::WeightInit::He)};
 
-  auto outputSoftmaxLoss{std::make_unique<Layer::CategoricalLossSoftmax>()};
+  auto outputSoftmaxLoss{std::make_unique<Loss::CategoricalSoftmax>()};
 
   auto optimizer{
       std::make_unique<Optimizers::Adam>(learningRate, learningRateDecay)};
