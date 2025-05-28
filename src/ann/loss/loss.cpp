@@ -15,7 +15,7 @@ float Loss::mean() {
   return outputSum / static_cast<float>(m_output->size());
 }
 
-float Loss::regularizationLoss(const Layer::Dense &layer) const {
+float Loss::regularizationLoss(const Layers::Dense &layer) const {
   float regularization{};
 
   if (layer.m_l1Weight > 0)

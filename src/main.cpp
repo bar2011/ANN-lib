@@ -106,26 +106,26 @@ void trainRegression() {
 
   auto trainData{loader->getTrainData()};
 
-  auto dense1{std::make_unique<ANN::Layer::Dense>(inputs, layer1Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense1{std::make_unique<ANN::Layers::Dense>(inputs, layer1Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation1{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout1{std::make_unique<ANN::Layer::Dropout>(0.1)};
+  auto dropout1{std::make_unique<ANN::Layers::Dropout>(0.1)};
 
-  auto dense2{std::make_unique<ANN::Layer::Dense>(layer1Neurons, layer2Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense2{std::make_unique<ANN::Layers::Dense>(layer1Neurons, layer2Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation2{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout2{std::make_unique<ANN::Layer::Dropout>(0.1)};
+  auto dropout2{std::make_unique<ANN::Layers::Dropout>(0.1)};
 
-  auto dense3{std::make_unique<ANN::Layer::Dense>(layer2Neurons, layer3Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense3{std::make_unique<ANN::Layers::Dense>(layer2Neurons, layer3Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation3{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto outputLayer{std::make_unique<ANN::Layer::Dense>(
+  auto outputLayer{std::make_unique<ANN::Layers::Dense>(
       layer3Neurons, outputNeurons, ANN::WeightInit::Xavier)};
 
   auto outputLoss{std::make_unique<ANN::Loss::MSE>()};
@@ -250,26 +250,26 @@ void trainBinaryLogisticRegression() {
 
   auto trainData{loader->getTrainData()};
 
-  auto dense1{std::make_unique<ANN::Layer::Dense>(inputs, layer1Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense1{std::make_unique<ANN::Layers::Dense>(inputs, layer1Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation1{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout1{std::make_unique<ANN::Layer::Dropout>(0.1)};
+  auto dropout1{std::make_unique<ANN::Layers::Dropout>(0.1)};
 
-  auto dense2{std::make_unique<ANN::Layer::Dense>(layer1Neurons, layer2Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense2{std::make_unique<ANN::Layers::Dense>(layer1Neurons, layer2Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation2{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout2{std::make_unique<ANN::Layer::Dropout>(0.1)};
+  auto dropout2{std::make_unique<ANN::Layers::Dropout>(0.1)};
 
-  auto dense3{std::make_unique<ANN::Layer::Dense>(layer2Neurons, layer3Neurons,
-                                                  ANN::WeightInit::He)};
+  auto dense3{std::make_unique<ANN::Layers::Dense>(layer2Neurons, layer3Neurons,
+                                                   ANN::WeightInit::He)};
 
   auto activation3{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto outputLayer{std::make_unique<ANN::Layer::Dense>(
+  auto outputLayer{std::make_unique<ANN::Layers::Dense>(
       layer3Neurons, outputNeurons, ANN::WeightInit::Xavier)};
 
   auto outputActivation{std::make_unique<ANN::Activation::Sigmoid>()};
@@ -404,22 +404,22 @@ void trainMNist() {
   constexpr float learningRateDecay{3e-4};
   constexpr float learningRateMomentum{0.3};
 
-  auto dense1{std::make_unique<ANN::Layer::Dense>(
+  auto dense1{std::make_unique<ANN::Layers::Dense>(
       imageRows * imageCols, layer1Neurons, ANN::WeightInit::He, 0, 0, 1e-5f,
       1e-5f)};
 
   auto activation1{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout1{std::make_unique<ANN::Layer::Dropout>(1e-1)};
+  auto dropout1{std::make_unique<ANN::Layers::Dropout>(1e-1)};
 
-  auto dense2{std::make_unique<ANN::Layer::Dense>(
+  auto dense2{std::make_unique<ANN::Layers::Dense>(
       layer1Neurons, layer2Neurons, ANN::WeightInit::He, 0, 0, 1e-5f, 1e-5f)};
 
   auto activation2{std::make_unique<ANN::Activation::LeakyReLU>(1e-2)};
 
-  auto dropout2{std::make_unique<ANN::Layer::Dropout>(5e-2)};
+  auto dropout2{std::make_unique<ANN::Layers::Dropout>(5e-2)};
 
-  auto outputLayer{std::make_unique<ANN::Layer::Dense>(
+  auto outputLayer{std::make_unique<ANN::Layers::Dense>(
       layer2Neurons, outputNeurons, ANN::WeightInit::He)};
 
   auto outputSoftmaxLoss{std::make_unique<ANN::Loss::CategoricalSoftmax>()};

@@ -9,7 +9,7 @@ void Adam::preUpdate() {
       std::max(m_startingLearningRate / (1 + m_decay * m_iteration), 1e-7f);
 }
 
-void Adam::updateParams(Layer::Dense &layer) const {
+void Adam::updateParams(Layers::Dense &layer) const {
   auto learningRate{m_learningRate};
   auto epsilon{m_epsilon};
   auto beta1{m_beta1};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../layer.h"
 #include "../modelDescriptors.h"
 
 #include "math/matrix.h"
@@ -23,9 +24,9 @@ namespace Loss {
 class Loss;
 }
 
-namespace Layer {
+namespace Layers {
 // Basic Dense layer class.
-class Dense {
+class Dense : public Layer {
 public:
   Dense() = delete;
 
@@ -51,19 +52,27 @@ public:
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
   // Returns output
-  std::shared_ptr<const Math::Matrix<float>>
+  virtual std::shared_ptr<const Math::Matrix<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs);
 
   // perform backward pass with given dvalues
   // dvalues = matrix of how each input of each batch impacts the output of the
   // network
   // saves gradients as member variables
-  std::shared_ptr<Math::Matrix<float>>
+  virtual std::shared_ptr<const Math::Matrix<float>>
   backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues);
 
-  std::shared_ptr<const Math::Matrix<float>> output() const { return m_output; }
+  virtual std::shared_ptr<const Math::Matrix<float>> output() const {
+    return m_output;
+  }
 
-  std::shared_ptr<Math::Matrix<float>> dinputs() const { return m_dinputs; }
+  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
+    return m_dinputs;
+  }
+
+  virtual bool isTrainable() const { return true; }
+
+  virtual std::string_view name() const { return "Dense"; }
 
   friend class Optimizers::Optimizer;
   friend class Optimizers::SGD;
@@ -104,5 +113,5 @@ private:
   float m_l2Weight{};
   float m_l2Bias{};
 };
-} // namespace Layer
+} // namespace Layers
 } // namespace ANN

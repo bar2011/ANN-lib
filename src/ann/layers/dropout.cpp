@@ -4,7 +4,7 @@
 #include "utils/parallel.h"
 
 namespace ANN {
-namespace Layer {
+namespace Layers {
 
 Dropout::Dropout(float dropout) : m_dropout{dropout} {};
 
@@ -51,8 +51,8 @@ Dropout::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-Dropout::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
+std::shared_ptr<const Math::Matrix<float>> Dropout::backward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(*dvalues, *m_mask,
                        [](float *din, const float *dval, const float *mask) {
                          *din = *dval * *mask;
@@ -60,5 +60,5 @@ Dropout::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
 
   return m_dinputs;
 }
-} // namespace Layer
+} // namespace Layers
 } // namespace ANN

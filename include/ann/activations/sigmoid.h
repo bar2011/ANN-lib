@@ -27,18 +27,24 @@ public:
 
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
-  std::shared_ptr<const Math::Matrix<float>>
+  virtual std::shared_ptr<const Math::Matrix<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs);
 
   // Compute dinputs gradient
-  std::shared_ptr<const Math::Matrix<float>>
-  backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues);
+  virtual std::shared_ptr<const Math::Matrix<float>>
+  backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues);
 
-  std::shared_ptr<const Math::Matrix<float>> output() const { return m_output; }
+  virtual std::shared_ptr<const Math::Matrix<float>> output() const {
+    return m_output;
+  }
 
-  std::shared_ptr<const Math::Matrix<float>> dinputs() const {
+  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
   }
+
+  virtual bool isTrainable() const { return false; }
+
+  virtual std::string_view name() const { return "Sigmoid"; }
 
 private:
   // No ownership of m_input by the class. Only a view.

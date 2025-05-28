@@ -6,7 +6,7 @@
 #include "math/random.h"
 
 namespace ANN {
-namespace Layer {
+namespace Layers {
 Dense::Dense(unsigned int inputNum, unsigned int neuronNum,
              WeightInit initMethod, float l1Weight, float l1Bias,
              float l2Weight, float l2Bias)
@@ -67,7 +67,7 @@ Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<Math::Matrix<float>>
+std::shared_ptr<const Math::Matrix<float>>
 Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   // Regular backprop
   *m_dweights = Math::dotTA<float>(*m_input, *dvalues, true, true);
@@ -115,5 +115,5 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
 
   return m_dinputs;
 }
-} // namespace Layer
+} // namespace Layers
 } // namespace ANN

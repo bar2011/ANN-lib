@@ -9,7 +9,7 @@ void RMSProp::preUpdate() {
       std::max(m_startingLearningRate / (1 + m_decay * m_iteration), 1e-7f);
 }
 
-void RMSProp::updateParams(Layer::Dense &layer) const {
+void RMSProp::updateParams(Layers::Dense &layer) const {
   auto learningRate{m_learningRate};
   auto epsilon{m_epsilon};
   auto rho{m_rho};

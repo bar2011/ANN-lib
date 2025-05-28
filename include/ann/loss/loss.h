@@ -6,7 +6,7 @@
 
 namespace ANN {
 // Forward declarations
-namespace Layer {
+namespace Layers {
 class Dense;
 }
 
@@ -21,7 +21,7 @@ public:
     return m_output;
   }
 
-  float regularizationLoss(const Layer::Dense &layer) const;
+  float regularizationLoss(const Layers::Dense &layer) const;
 
 protected:
   Loss() = default;

@@ -63,8 +63,8 @@ Softmax::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-Softmax::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
+std::shared_ptr<const Math::Matrix<float>> Softmax::backward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   // An estimation of all the operations in a single iteration
   size_t cost{dvalues->cols() * dvalues->cols() * 2};
 

@@ -13,7 +13,7 @@ public:
 
   void preUpdate();
 
-  void updateParams(Layer::Dense &layer) const;
+  void updateParams(Layers::Dense &layer) const;
 
   void postUpdate();
 

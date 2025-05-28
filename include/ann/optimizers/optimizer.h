@@ -9,7 +9,7 @@ class Optimizer {
 public:
   virtual void preUpdate() = 0;
 
-  virtual void updateParams(Layer::Dense &layer) const = 0;
+  virtual void updateParams(Layers::Dense &layer) const = 0;
 
   virtual void postUpdate() = 0;
 

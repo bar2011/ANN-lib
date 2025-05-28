@@ -40,7 +40,7 @@ ReLU::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
 }
 
 std::shared_ptr<const Math::Matrix<float>>
-ReLU::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
+ReLU::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(
       *dvalues, *m_output,
       [](float *din, const float *dval, const float *out) {

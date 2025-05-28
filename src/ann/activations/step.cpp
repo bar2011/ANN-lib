@@ -38,7 +38,7 @@ Step::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
 }
 
 std::shared_ptr<const Math::Matrix<float>>
-Step::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
+Step::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   // Auto initialized to 0 - no calculation needed
   return m_dinputs;
 }

@@ -40,8 +40,8 @@ Sigmoid::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-Sigmoid::backward(const std::shared_ptr<const Math::Matrix<float>> &dvalues) {
+std::shared_ptr<const Math::Matrix<float>> Sigmoid::backward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(
       *dvalues, *m_output,
       [](float *din, const float *dval, const float *out) {
