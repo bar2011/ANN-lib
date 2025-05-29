@@ -1,5 +1,9 @@
+#include "ann/modelDescriptors.h"
 #include "loaders/csv.h"
 #include "loaders/mnist.h"
+
+#include "ann/feedForwardModel.h"
+#include "ann/modelDescriptors.h"
 
 #include "math/matrixBase.h"
 #include "math/random.h"
@@ -73,7 +77,21 @@ void trainMNist();
 
 int main() {
   try {
-    trainRegression();
+    ANN::FeedForwardModelDescriptor modelDesc{
+        .inputs = 784,
+        .layers = {
+            ANN::Dense{.neurons = 32,
+                       .initMethod = ANN::WeightInit::He,
+                       .l2Weight = 1e-5f,
+                       .l2Bias = 1e-5f},
+            ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
+            ANN::Dense{.neurons = 16,
+                       .initMethod = ANN::WeightInit::He,
+                       .l2Weight = 1e-5f,
+                       .l2Bias = 1e-5f},
+            ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.05},
+            ANN::Dense{.neurons = 10, .initMethod = ANN::WeightInit::He}}};
+    auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc)};
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {

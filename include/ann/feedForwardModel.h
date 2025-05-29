@@ -65,6 +65,15 @@ public:
   Math::Matrix<float> predict(const Math::MatrixBase<float> &inputs) const;
 
 private:
+  // addLayer overloads (for unpacking LayerDescriptor)
+  void addLayer(Dense &, unsigned int &inputs);
+  void addLayer(Dropout &, unsigned int &inputs);
+  void addLayer(Step &, unsigned int &inputs);
+  void addLayer(ReLU &, unsigned int &inputs);
+  void addLayer(LeakyReLU &, unsigned int &inputs);
+  void addLayer(Sigmoid &, unsigned int &inputs);
+  void addLayer(Softmax &, unsigned int &inputs);
+
   unsigned int m_inputs{};
   std::vector<std::unique_ptr<Layer>> m_layers{};
 

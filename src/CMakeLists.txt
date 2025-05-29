@@ -1,6 +1,7 @@
 # Compile main library
 add_library(ANN SHARED
   "ann/ann.cpp"
+  "ann/feedForwardModel.cpp"
   "ann/layers/dense.cpp"
   "ann/layers/dropout.cpp"
   "ann/loss/MSE.cpp"

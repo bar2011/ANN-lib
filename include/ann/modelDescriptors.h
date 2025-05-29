@@ -17,6 +17,8 @@ struct Dense {
   float l1Bias{};
   float l2Weight{};
   float l2Bias{};
+
+  unsigned int inputs{}; // Used internally. No need to define.
 };
 
 // Dropout layer descriptor
