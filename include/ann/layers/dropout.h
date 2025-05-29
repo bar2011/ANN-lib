@@ -46,6 +46,8 @@ public:
 
   virtual std::string_view name() const { return "Dropout"; }
 
+  virtual Layer::Type type() const { return Layer::Type::Dropout; }
+
 private:
   std::shared_ptr<Math::Matrix<float>> m_output{
       std::make_shared<Math::Matrix<float>>()};

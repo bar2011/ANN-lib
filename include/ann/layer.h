@@ -9,6 +9,8 @@ namespace ANN {
 // Base layer class. Inherited by all layers and activations
 class Layer {
 public:
+  enum class Type { Dense, Dropout, Step, ReLU, LeakyReLU, Sigmoid, Softmax };
+
   virtual ~Layer() = default;
 
   // Function which forwards the given inputs, and returns the outputs
@@ -35,5 +37,8 @@ public:
 
   // Returns name of the layer (e.g. "Dense")
   virtual std::string_view name() const = 0;
+
+  // Returns layer type (e.g. Type::Dense)
+  virtual Type type() const = 0;
 };
 } // namespace ANN

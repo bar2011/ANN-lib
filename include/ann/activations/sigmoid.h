@@ -46,6 +46,8 @@ public:
 
   virtual std::string_view name() const { return "Sigmoid"; }
 
+  virtual Layer::Type type() const { return Layer::Type::Sigmoid; }
+
 private:
   // No ownership of m_input by the class. Only a view.
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};

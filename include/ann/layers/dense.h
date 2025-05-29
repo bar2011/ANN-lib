@@ -74,6 +74,8 @@ public:
 
   virtual std::string_view name() const { return "Dense"; }
 
+  virtual Layer::Type type() const { return Layer::Type::Dense; }
+
   friend class Optimizers::Optimizer;
   friend class Optimizers::SGD;
   friend class Optimizers::Adagrad;
