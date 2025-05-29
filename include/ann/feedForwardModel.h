@@ -74,13 +74,28 @@ private:
   void addLayer(Sigmoid &, unsigned int &inputs);
   void addLayer(Softmax &, unsigned int &inputs);
 
+  // setLoss overloads (for unpacking TrainingDescriptor
+  void setLoss(CategoricalCrossEntropyLoss &);
+  void setLoss(CategoricalCrossEntropySoftmaxLoss &);
+  void setLoss(BinaryCrossEntropyLoss &);
+  void setLoss(MeanSquaredErrorLoss &);
+  void setLoss(MeanAbsoluteErrorLoss &);
+
+  // setOptimizer overloads (for unpacking TrainingDescriptor
+  void setOptimizer(SGD &);
+  void setOptimizer(AdaGrad &);
+  void setOptimizer(RMSProp &);
+  void setOptimizer(Adam &);
+
   unsigned int m_inputs{};
   std::vector<std::unique_ptr<Layer>> m_layers{};
 
-  size_t m_batchSize{};
-  size_t m_epochs{};
   std::unique_ptr<LossVariant> m_loss{};
   std::unique_ptr<Optimizers::Optimizer> m_optimizer{};
+  size_t m_batchSize{};
+  size_t m_epochs{};
+  bool m_shuffleBatches{};
+  bool m_verbose{};
 
   // Is model data loaded
   bool m_isModelLoaded{false};

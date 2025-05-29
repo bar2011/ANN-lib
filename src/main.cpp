@@ -78,7 +78,7 @@ void trainMNist();
 int main() {
   try {
     ANN::FeedForwardModelDescriptor modelDesc{
-        .inputs = 784,
+        .inputs = 28 * 28,
         .layers = {
             ANN::Dense{.neurons = 32,
                        .initMethod = ANN::WeightInit::He,
@@ -91,7 +91,16 @@ int main() {
                        .l2Bias = 1e-5f},
             ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.05},
             ANN::Dense{.neurons = 10, .initMethod = ANN::WeightInit::He}}};
-    auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc)};
+
+    ANN::FeedForwardTrainingDescriptor trainDesc{
+        .loss = ANN::CategoricalCrossEntropySoftmaxLoss{},
+        .optimizer = ANN::Adam{.learningRate = 2e-2f, .decay = 3e-4f},
+        .batchSize = 64,
+        .epochs = 5,
+        .shuffleBatches = true,
+        .verbose = true};
+
+    auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {

@@ -7,9 +7,14 @@
 #include "ann/activations/sigmoid.h"
 #include "ann/activations/softmax.h"
 #include "ann/activations/step.h"
+
 #include "ann/layers/dense.h"
 #include "ann/layers/dropout.h"
 
+#include "ann/optimizers/adagrad.h"
+#include "ann/optimizers/adam.h"
+#include "ann/optimizers/rmsprop.h"
+#include "ann/optimizers/sgd.h"
 namespace ANN {
 FeedForwardModel::FeedForwardModel(ModelDesc modelDescriptor) {
   configure(modelDescriptor);
@@ -28,16 +33,27 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor) {
 
   m_inputs = modelDescriptor.inputs;
   unsigned int currentInputs{m_inputs};
-  for (auto &layer : modelDescriptor.layers)
-    std::visit([this, &currentInputs](auto &l) { addLayer(l, currentInputs); },
-               layer);
+  for (auto &layerVariant : modelDescriptor.layers)
+    std::visit(
+        [this, &currentInputs](auto &layer) { addLayer(layer, currentInputs); },
+        layerVariant);
 
   // Set that a model was loaded
   m_isModelLoaded = true;
 }
 
 void FeedForwardModel::configure(TrainDesc trainingDescriptor) {
-  
+  std::visit([this](auto &loss) { setLoss(loss); }, trainingDescriptor.loss);
+  std::visit([this](auto &opt) { setOptimizer(opt); },
+             trainingDescriptor.optimizer);
+
+  m_batchSize = trainingDescriptor.batchSize;
+  m_epochs = trainingDescriptor.epochs;
+  m_shuffleBatches = trainingDescriptor.shuffleBatches;
+  m_verbose = trainingDescriptor.verbose;
+
+  // Set that training configuration was loaded
+  m_isTrainLoaded = true;
 }
 
 void FeedForwardModel::configure(ModelDesc modelDescriptor,
@@ -69,5 +85,38 @@ void FeedForwardModel::addLayer(Sigmoid &, unsigned int &) {
 }
 void FeedForwardModel::addLayer(Softmax &, unsigned int &) {
   m_layers.push_back(std::make_unique<Activation::Softmax>());
+}
+
+void FeedForwardModel::setLoss(CategoricalCrossEntropyLoss &) {
+  m_loss = std::make_unique<LossVariant>(Loss::Categorical{});
+}
+void FeedForwardModel::setLoss(CategoricalCrossEntropySoftmaxLoss &) {
+  m_loss = std::make_unique<LossVariant>(Loss::CategoricalSoftmax{});
+}
+void FeedForwardModel::setLoss(BinaryCrossEntropyLoss &) {
+  m_loss = std::make_unique<LossVariant>(Loss::Binary{});
+}
+void FeedForwardModel::setLoss(MeanSquaredErrorLoss &) {
+  m_loss = std::make_unique<LossVariant>(Loss::MSE{});
+}
+void FeedForwardModel::setLoss(MeanAbsoluteErrorLoss &) {
+  m_loss = std::make_unique<LossVariant>(Loss::MAE{});
+}
+
+void FeedForwardModel::setOptimizer(SGD &sgd) {
+  m_optimizer = std::make_unique<Optimizers::SGD>(sgd.learningRate, sgd.decay,
+                                                  sgd.momentum);
+}
+void FeedForwardModel::setOptimizer(AdaGrad &adagrad) {
+  m_optimizer = std::make_unique<Optimizers::Adagrad>(
+      adagrad.learningRate, adagrad.decay, adagrad.epsilon);
+}
+void FeedForwardModel::setOptimizer(RMSProp &rmsprop) {
+  m_optimizer = std::make_unique<Optimizers::RMSProp>(
+      rmsprop.learningRate, rmsprop.decay, rmsprop.epsilon, rmsprop.rho);
+}
+void FeedForwardModel::setOptimizer(Adam &adam) {
+  m_optimizer = std::make_unique<Optimizers::Adam>(
+      adam.learningRate, adam.decay, adam.epsilon, adam.beta1, adam.beta2);
 }
 } // namespace ANN
