@@ -29,10 +29,20 @@ public:
   // saves inputs and outputs in member variables
   // inputs = inputs to softmax
   // correct = vector of correct indicies, one for each batch
-  // returns softmax output
-  std::shared_ptr<const Math::Matrix<float>>
+  // returns loss average for each batch
+  std::shared_ptr<const Math::Vector<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
           const std::shared_ptr<const Math::VectorBase<float>> &correct);
+
+  // perform forward pass with give batch
+  // saves inputs and outputs in member variables
+  // inputs = inputs to softmax
+  // correct = one-hot encoded matrix
+  // Note: optimally, use the other forward function. It's more optimized
+  // returns loss average for each batch
+  virtual std::shared_ptr<const Math::Vector<float>>
+  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+          const std::shared_ptr<const Math::MatrixBase<float>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
@@ -44,7 +54,7 @@ public:
   // Calculate average loss accross batches
   float mean() const;
 
-  std::shared_ptr<const Math::Matrix<float>> dinputs() const {
+  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
   }
 

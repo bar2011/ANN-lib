@@ -55,6 +55,19 @@ std::shared_ptr<const Math::Vector<float>> Categorical::forward(
   return m_output;
 }
 
+std::shared_ptr<const Math::Vector<float>> Categorical::forward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
+    const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
+  auto correctVector{std::make_shared<Math::Vector<float>>(correct->rows())};
+
+  for (size_t i{}; i < correct->rows(); ++i)
+    for (size_t j{}; j < correct->cols(); ++j)
+      if ((*correct)[i, (*correctVector)[i]] < (*correct)[i, j])
+        (*correctVector)[i] = j;
+
+  return forward(predictions, correctVector);
+}
+
 std::shared_ptr<const Math::Matrix<float>> Categorical::backward() {
   for (size_t i{}; i < m_predictions->rows(); ++i)
     for (size_t j{}; j < m_predictions->cols(); ++j) {

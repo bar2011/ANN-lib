@@ -24,7 +24,7 @@ CategoricalSoftmax::operator=(CategoricalSoftmax &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::forward(
+std::shared_ptr<const Math::Vector<float>> CategoricalSoftmax::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
     const std::shared_ptr<const Math::VectorBase<float>> &correct) {
   m_input = inputs;
@@ -77,7 +77,20 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::forward(
         (*lossOutput)[batch] = -std::log(val);
       });
 
-  return m_softmaxOutput;
+  return m_lossOutput;
+}
+
+std::shared_ptr<const Math::Vector<float>> CategoricalSoftmax::forward(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+    const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
+  auto correctVector{std::make_shared<Math::Vector<float>>(correct->rows())};
+
+  for (size_t i{}; i < correct->rows(); ++i)
+    for (size_t j{}; j < correct->cols(); ++j)
+      if ((*correct)[i, (*correctVector)[i]] < (*correct)[i, j])
+        (*correctVector)[i] = j;
+
+  return forward(inputs, correctVector);
 }
 
 std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::backward() {

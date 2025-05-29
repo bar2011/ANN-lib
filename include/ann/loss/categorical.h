@@ -34,14 +34,24 @@ public:
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
           const std::shared_ptr<const Math::VectorBase<float>> &correct);
 
+  // perform forward pass with give batch
+  // saves inputs and outputs in member variables
+  // predictions = output of ANN
+  // correct = one-hot encoded matrix
+  // Note: optimally, use the other forward function. It's more optimized
+  // returns average loss in each batch
+  virtual std::shared_ptr<const Math::Vector<float>>
+  forward(const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
+          const std::shared_ptr<const Math::MatrixBase<float>> &correct);
+
   // perform backward pass based on the given inputs and correct values in
   // forward pass
-  std::shared_ptr<const Math::Matrix<float>> backward();
+  virtual std::shared_ptr<const Math::Matrix<float>> backward();
 
   // Calculate average plain accuracy based on calculated
   float accuracy() const;
 
-  std::shared_ptr<const Math::Matrix<float>> dinputs() const {
+  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;
   }
 
