@@ -9,6 +9,8 @@ namespace ANN {
 // Base layer class. Inherited by all layers and activations
 class Layer {
 public:
+  virtual ~Layer() = default;
+
   // Function which forwards the given inputs, and returns the outputs
   // inputs dimensions - (batch_num, input_num)
   // outputs dimensions - (batch_num, neuron_num)

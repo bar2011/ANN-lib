@@ -7,6 +7,8 @@ namespace Optimizers {
 // Base optimizer class - only to be inherited, doesn't contain any logic
 class Optimizer {
 public:
+  virtual ~Optimizer() = default;
+
   virtual void preUpdate() = 0;
 
   virtual void updateParams(Layers::Dense &layer) const = 0;

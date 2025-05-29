@@ -30,9 +30,9 @@ public:
   // inputs = inputs to softmax
   // correct = vector of correct indicies, one for each batch
   // returns softmax output
-  std::shared_ptr<const Math::Matrix<float>> forward(
-      const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
-      const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct);
+  std::shared_ptr<const Math::Matrix<float>>
+  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
+          const std::shared_ptr<const Math::VectorBase<float>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
@@ -59,7 +59,7 @@ public:
 private:
   // No ownership of m_input by the class. Just a constant view.
   std::shared_ptr<const Math::MatrixBase<float>> m_input{};
-  std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
+  std::shared_ptr<const Math::VectorBase<float>> m_correct{};
 
   std::shared_ptr<Math::Matrix<float>> m_softmaxOutput{
       std::make_shared<Math::Matrix<float>>()};

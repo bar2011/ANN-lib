@@ -23,7 +23,7 @@ Categorical &Categorical::operator=(Categorical &&other) noexcept {
 
 std::shared_ptr<const Math::Vector<float>> Categorical::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-    const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
+    const std::shared_ptr<const Math::VectorBase<float>> &correct) {
   // Store arguments for later use by backpropagation
   m_predictions = predictions;
   m_correct = correct;

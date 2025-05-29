@@ -26,7 +26,7 @@ CategoricalSoftmax::operator=(CategoricalSoftmax &&other) noexcept {
 
 std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::forward(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
-    const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct) {
+    const std::shared_ptr<const Math::VectorBase<float>> &correct) {
   m_input = inputs;
   m_correct = correct;
 
@@ -92,7 +92,7 @@ std::shared_ptr<const Math::Matrix<float>> CategoricalSoftmax::backward() {
       cost, batches,
       [batches, &correct = m_correct, &dinputs = m_dinputs,
        softmaxOutput = m_softmaxOutput](size_t i) {
-        size_t correctIndex{(*correct)[i]};
+        size_t correctIndex{static_cast<size_t>((*correct)[i])};
         for (size_t j{}; j < dinputs->cols(); ++j)
           (*dinputs)[i, j] =
               ((*softmaxOutput)[i, j] - ((j == correctIndex) ? 1 : 0)) /

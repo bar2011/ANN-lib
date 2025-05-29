@@ -30,9 +30,9 @@ public:
   // predictions = output of ANN
   // correct = vector of correct indicies, one for each batch
   // returns average loss in each batch
-  std::shared_ptr<const Math::Vector<float>> forward(
-      const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-      const std::shared_ptr<const Math::VectorBase<unsigned short>> &correct);
+  std::shared_ptr<const Math::Vector<float>>
+  forward(const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
+          const std::shared_ptr<const Math::VectorBase<float>> &correct);
 
   // perform backward pass based on the given inputs and correct values in
   // forward pass
@@ -48,7 +48,7 @@ public:
 private:
   // No ownership of m_input and m_correct by the class. Just a constant view.
   std::shared_ptr<const Math::MatrixBase<float>> m_predictions{};
-  std::shared_ptr<const Math::VectorBase<unsigned short>> m_correct{};
+  std::shared_ptr<const Math::VectorBase<float>> m_correct{};
 
   std::shared_ptr<Math::Matrix<float>> m_dinputs{
       std::make_shared<Math::Matrix<float>>()};

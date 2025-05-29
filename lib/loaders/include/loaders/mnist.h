@@ -14,7 +14,7 @@ namespace Loaders {
 class MNist {
 public:
   // a type which contains a vector of labels and a matching vector of images
-  using DataPair = std::tuple<std::shared_ptr<Math::Vector<unsigned short>>,
+  using DataPair = std::tuple<std::shared_ptr<Math::Vector<float>>,
                               std::shared_ptr<Math::Matrix<float>>>;
 
   MNist(std::string_view trainingLabelsPath,
@@ -43,7 +43,7 @@ private:
   static DataPair loadImages(const std::string &labelsPath,
                              const std::string &imagesPath);
 
-  static std::shared_ptr<Math::Vector<unsigned short>>
+  static std::shared_ptr<Math::Vector<float>>
   loadLabelsFile(const std::string &labelsPath);
 
   static std::shared_ptr<Math::Matrix<float>>
