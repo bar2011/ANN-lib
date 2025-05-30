@@ -25,6 +25,7 @@ private:
   using TrainDesc = FeedForwardTrainingDescriptor;
 
   // Helper template for std::visit
+  // Credit: cppreference.com
   template <class... Ts> struct overloaded : Ts... {
     using Ts::operator()...;
   };
@@ -112,6 +113,10 @@ private:
 
   // Formats given time into string with units - ns, us, ms, or s
   static std::string formatTime(double seconds);
+
+  // Transforms given float one-hot encoded matrix into index matrix
+  std::shared_ptr<Math::Vector<float>>
+  argmaxFloat(const Math::MatrixBase<float> &m);
 
   unsigned int m_inputs{};
   std::vector<std::unique_ptr<Layer>> m_layers{};

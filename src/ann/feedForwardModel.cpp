@@ -78,6 +78,15 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor,
 
 void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
                              const Math::MatrixBase<float> &correct) {
+  // If loss is categorical, use more efficient route of converting correct from
+  // begin 1-hot encoded to a vector of indicies, and training on them
+  if (std::holds_alternative<Loss::Categorical>(*m_loss) ||
+      std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss)) {
+    auto correctVector{argmaxFloat(correct)};
+    train(inputs, *correctVector);
+    return;
+  }
+
   Utils::Timer epochTime{};   // Used to track time passed in each epoch
   Utils::Timer displayTime{}; // Used for displaying update messages
 
