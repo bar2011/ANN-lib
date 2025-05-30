@@ -103,8 +103,8 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
     for (size_t batch{}; batch < stepNum; ++batch) {
       auto batchData{inputs.view(batchSequence[batch] * m_batchSize,
                                  (batchSequence[batch] + 1) * m_batchSize)};
-      auto batchLabels{inputs.view(batchSequence[batch] * m_batchSize,
-                                   (batchSequence[batch] + 1) * m_batchSize)};
+      auto batchCorrect{correct.view(batchSequence[batch] * m_batchSize,
+                                     (batchSequence[batch] + 1) * m_batchSize)};
 
       // Forward pass
       for (size_t i{}; i < m_layers.size(); ++i) {
@@ -120,9 +120,9 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       std::shared_ptr<const Math::Matrix<float>> outputGradients{};
       // Loss forward + backward
       std::visit(
-          [&layers = m_layers, &batchLabels,
+          [&layers = m_layers, &batchCorrect,
            &outputGradients](Loss::Loss &loss) {
-            loss.forward(layers[layers.size() - 1]->output(), batchLabels);
+            loss.forward(layers[layers.size() - 1]->output(), batchCorrect);
             outputGradients = loss.backward();
           },
           *m_loss);
