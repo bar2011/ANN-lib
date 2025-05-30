@@ -176,13 +176,11 @@ void trainMNist() {
                      .l2Weight = 1e-5f,
                      .l2Bias = 1e-5f},
           ANN::LeakyReLU{.alpha = 1e-2f},
-          ANN::Dropout{.dropRate = 0.1},
           ANN::Dense{.neurons = 16,
                      .initMethod = ANN::WeightInit::He,
                      .l2Weight = 1e-5f,
                      .l2Bias = 1e-5f},
           ANN::LeakyReLU{.alpha = 1e-2f},
-          ANN::Dropout{.dropRate = 0.05},
           ANN::Dense{.neurons = 10, .initMethod = ANN::WeightInit::He},
       }};
 
