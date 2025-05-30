@@ -245,6 +245,8 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       }
     }
 
+    // Perform validation even if verbose is false
+    // TODO: save output to log file, so that always validating will make sense
     if (m_trainValidationRate > 0) {
       // forward validation
       auto valInputs{inputs.view(validationNum, inputs.rows())};
@@ -265,9 +267,11 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
                             },
                             [](auto &loss) { assert(false); }},
                  *m_loss);
-      std::cout << " - val loss: " << valLoss;
-      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
-        std::cout << " - val accuracy: " << valAccuracy;
+      if (m_verbose) {
+        std::cout << " - val loss: " << valLoss;
+        if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
+          std::cout << " - val accuracy: " << valAccuracy;
+      }
     }
     std::cout << '\n';
   }
