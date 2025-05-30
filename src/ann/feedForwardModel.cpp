@@ -1,6 +1,7 @@
 #include "ann/feedForwardModel.h"
 #include "ann/exception.h"
 #include "ann/layer.h"
+#include "ann/loss/categoricalSoftmax.h"
 #include "ann/loss/loss.h"
 #include "ann/modelDescriptors.h"
 
@@ -177,10 +178,26 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
             },
             *m_loss);
 
+        // Get accuracy only for classification losses (no regression accuracy)
+        std::stringstream accuracy{};
+        std::visit(
+            overloaded{[&accuracy](Loss::Categorical &l) {
+                         accuracy << "accuracy: " << l.accuracy() << " - ";
+                       },
+                       [&accuracy](Loss::CategoricalSoftmax &l) {
+                         accuracy << "accuracy: " << l.accuracy() << " - ";
+                       },
+                       [&accuracy](Loss::Binary &l) {
+                         accuracy << "accuracy: " << l.accuracy() << " - ";
+                       },
+                       [&accuracy](Loss::MSE &l) {},
+                       [&accuracy](Loss::MAE &l) {}},
+            *m_loss);
+
         std::cout << '\r' << batch + 1 << '/' << stepNum << '\t'
                   << static_cast<size_t>(epochTime.elapsed()) << "s "
-                  << formatTime(epochTime.elapsed() / (batch + 1))
-                  << "/step \tloss: " << dataLoss + regularizationLoss
+                  << formatTime(epochTime.elapsed() / (batch + 1)) << "/step \t"
+                  << accuracy.str() << "loss: " << dataLoss + regularizationLoss
                   << " (data loss: " << dataLoss
                   << ", reg loss: " << regularizationLoss
                   << ") - lr: " << m_optimizer->learningRate()

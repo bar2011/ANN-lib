@@ -24,6 +24,11 @@ private:
   using ModelDesc = FeedForwardModelDescriptor;
   using TrainDesc = FeedForwardTrainingDescriptor;
 
+  // Helper template for std::visit
+  template <class... Ts> struct overloaded : Ts... {
+    using Ts::operator()...;
+  };
+
 public:
   using LossVariant = std::variant<Loss::Categorical, Loss::CategoricalSoftmax,
                                    Loss::Binary, Loss::MSE, Loss::MAE>;
