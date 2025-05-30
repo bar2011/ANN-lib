@@ -1,6 +1,7 @@
 #include "ann/feedForwardModel.h"
 #include "ann/exception.h"
 #include "ann/layer.h"
+#include "ann/loss/categorical.h"
 #include "ann/loss/categoricalSoftmax.h"
 #include "ann/loss/loss.h"
 #include "ann/modelDescriptors.h"
@@ -26,6 +27,7 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <variant>
 
 namespace ANN {
 FeedForwardModel::FeedForwardModel(ModelDesc modelDescriptor) {
@@ -93,29 +95,18 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       std::cout << "\nEpoch " << epoch + 1 << ":\n";
 
     // Set up batch sequence
-    std::vector<size_t> batchSequence(stepNum);
-    std::iota(batchSequence.begin(), batchSequence.end(), 0);
-    if (m_shuffleBatches)
-      std::shuffle(batchSequence.begin(), batchSequence.end(),
-                   Math::Random::mt);
+    std::vector<size_t> batchSequence{createBatchSequence(stepNum)};
 
     epochTime.reset();
     for (size_t batch{}; batch < stepNum; ++batch) {
-      auto batchData{inputs.view(batchSequence[batch] * m_batchSize,
-                                 (batchSequence[batch] + 1) * m_batchSize)};
-      auto batchCorrect{correct.view(batchSequence[batch] * m_batchSize,
-                                     (batchSequence[batch] + 1) * m_batchSize)};
+      const auto batchData{
+          inputs.view(batchSequence[batch] * m_batchSize,
+                      (batchSequence[batch] + 1) * m_batchSize)};
+      const auto batchCorrect{
+          correct.view(batchSequence[batch] * m_batchSize,
+                       (batchSequence[batch] + 1) * m_batchSize)};
 
-      // Forward pass
-      for (size_t i{}; i < m_layers.size(); ++i) {
-        auto layerInputs{
-            (i == 0)
-                ? static_cast<std::shared_ptr<const Math::MatrixBase<float>>>(
-                      batchData)
-                : static_cast<std::shared_ptr<const Math::MatrixBase<float>>>(
-                      m_layers[i - 1]->output())};
-        m_layers[i]->forward(layerInputs);
-      }
+      forward(batchData);
 
       std::shared_ptr<const Math::Matrix<float>> outputGradients{};
       // Loss forward + backward
@@ -127,82 +118,13 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
           },
           *m_loss);
 
-      // Backward pass + optimization
-      m_optimizer->preUpdate();
-      // i-- in condition because i is size_t, thus will wrap to max if negative
-      for (size_t i{m_layers.size()}; i-- > 0;) {
-        auto currentDvalues{(i == m_layers.size() - 1)
-                                ? outputGradients
-                                : m_layers[i + 1]->dinputs()};
-        m_layers[i]->backward(currentDvalues);
-        if (m_layers[i]->isTrainable())
-          switch (m_layers[i]->type()) {
-          case Layer::Type::Dense: {
-            m_optimizer->updateParams(
-                dynamic_cast<Layers::Dense &>(*m_layers[i]));
-            break;
-          }
-          default:
-            break;
-          }
-      }
-      m_optimizer->postUpdate();
+      optimize(outputGradients);
 
       // Display information every about half second, or at the first/final
       // batch, only if verbose is true
       if (m_verbose && (displayTime.elapsed() >= 0.5 || batch + 1 == stepNum ||
                         batch == 0)) {
-        // Calculate loss to be displayed (only if verbose is true)
-        float dataLoss{};
-        float regularizationLoss{};
-        std::visit(
-            [&dataLoss, &regularizationLoss,
-             &layers = m_layers](Loss::Loss &loss) {
-              // Calculate data loss
-              dataLoss = loss.mean();
-              // Sum all regularization losses into the single variable
-              // i-- in condition because i is size_t, thus will wrap to max if
-              // negative
-              for (size_t i{layers.size()}; i-- > 0;) {
-                if (layers[i]->isTrainable())
-                  switch (layers[i]->type()) {
-                  case Layer::Type::Dense: {
-                    regularizationLoss += loss.regularizationLoss(
-                        dynamic_cast<Layers::Dense &>(*layers[i]));
-                    break;
-                  }
-                  default:
-                    break;
-                  }
-              }
-            },
-            *m_loss);
-
-        // Get accuracy only for classification losses (no regression accuracy)
-        std::stringstream accuracy{};
-        std::visit(
-            overloaded{[&accuracy](Loss::Categorical &l) {
-                         accuracy << "accuracy: " << l.accuracy() << " - ";
-                       },
-                       [&accuracy](Loss::CategoricalSoftmax &l) {
-                         accuracy << "accuracy: " << l.accuracy() << " - ";
-                       },
-                       [&accuracy](Loss::Binary &l) {
-                         accuracy << "accuracy: " << l.accuracy() << " - ";
-                       },
-                       [&accuracy](Loss::MSE &l) {},
-                       [&accuracy](Loss::MAE &l) {}},
-            *m_loss);
-
-        std::cout << '\r' << batch + 1 << '/' << stepNum << '\t'
-                  << static_cast<size_t>(epochTime.elapsed()) << "s "
-                  << formatTime(epochTime.elapsed() / (batch + 1)) << "/step \t"
-                  << accuracy.str() << "loss: " << dataLoss + regularizationLoss
-                  << " (data loss: " << dataLoss
-                  << ", reg loss: " << regularizationLoss
-                  << ") - lr: " << m_optimizer->learningRate()
-                  << "                 " << std::flush;
-
+        printUpdate(displayTime.elapsed(), epochTime.elapsed(), batch, stepNum);
         displayTime.reset();
       }
     }
@@ -270,6 +192,106 @@ void FeedForwardModel::setOptimizer(RMSProp &rmsprop) {
 void FeedForwardModel::setOptimizer(Adam &adam) {
   m_optimizer = std::make_unique<Optimizers::Adam>(
       adam.learningRate, adam.decay, adam.epsilon, adam.beta1, adam.beta2);
+}
+
+std::vector<size_t>
+FeedForwardModel::createBatchSequence(size_t stepNum) const {
+  std::vector<size_t> batchSequence(stepNum);
+  std::iota(batchSequence.begin(), batchSequence.end(), 0);
+  if (m_shuffleBatches)
+    std::shuffle(batchSequence.begin(), batchSequence.end(), Math::Random::mt);
+  return batchSequence;
+}
+
+void FeedForwardModel::forward(
+    std::shared_ptr<const Math::MatrixBase<float>> batchData) {
+  for (size_t i{}; i < m_layers.size(); ++i) {
+    auto layerInputs{(i == 0) ? batchData : m_layers[i - 1]->output()};
+    m_layers[i]->forward(layerInputs);
+  }
+}
+
+void FeedForwardModel::optimize(
+    std::shared_ptr<const Math::MatrixBase<float>> outputGradients) {
+  m_optimizer->preUpdate();
+  // i-- in condition because i is size_t, thus will wrap to max if negative
+  for (size_t i{m_layers.size()}; i-- > 0;) {
+    auto currentDvalues{(i == m_layers.size() - 1)
+                            ? outputGradients
+                            : m_layers[i + 1]->dinputs()};
+    m_layers[i]->backward(currentDvalues);
+    if (m_layers[i]->isTrainable())
+      switch (m_layers[i]->type()) {
+      case Layer::Type::Dense: {
+        m_optimizer->updateParams(dynamic_cast<Layers::Dense &>(*m_layers[i]));
+        break;
+      }
+      default:
+        break;
+      }
+  }
+  m_optimizer->postUpdate();
+}
+
+void FeedForwardModel::printUpdate(double displayTime, double epochTime,
+                                   size_t currentBatch, size_t stepNum) const {
+  // Calculate loss to be displayed (only if verbose is true)
+  float dataLoss{};
+  float regularizationLoss{};
+  calculateLoss(dataLoss, regularizationLoss);
+
+  // Get accuracy only for classification losses (no regression accuracy)
+  std::stringstream accuracy{};
+  calculateAccuracy(accuracy);
+
+  std::cout << '\r' << currentBatch + 1 << '/' << stepNum << '\t'
+            << static_cast<size_t>(epochTime) << "s "
+            << formatTime(epochTime / (currentBatch + 1)) << "/step \t"
+            << accuracy.str() << "loss: " << dataLoss + regularizationLoss
+            << " (data loss: " << dataLoss
+            << ", reg loss: " << regularizationLoss
+            << ") - lr: " << m_optimizer->learningRate() << "                 "
+            << std::flush;
+}
+
+void FeedForwardModel::calculateLoss(float &dataLoss,
+                                     float &regularizationLoss) const {
+  std::visit(
+      [&dataLoss, &regularizationLoss, &layers = m_layers](Loss::Loss &loss) {
+        // Calculate data loss
+        dataLoss = loss.mean();
+        // Sum all regularization losses into the single variable
+        // i-- in condition because i is size_t, thus will wrap to max if
+        // negative
+        for (size_t i{layers.size()}; i-- > 0;) {
+          if (layers[i]->isTrainable())
+            switch (layers[i]->type()) {
+            case Layer::Type::Dense: {
+              regularizationLoss += loss.regularizationLoss(
+                  dynamic_cast<Layers::Dense &>(*layers[i]));
+              break;
+            }
+            default:
+              break;
+            }
+        }
+      },
+      *m_loss);
+}
+
+void FeedForwardModel::calculateAccuracy(std::stringstream &accuracy) const {
+  std::visit(overloaded{[&accuracy](Loss::Categorical &l) {
+                          accuracy << "accuracy: " << l.accuracy() << " - ";
+                        },
+                        [&accuracy](Loss::CategoricalSoftmax &l) {
+                          accuracy << "accuracy: " << l.accuracy() << " - ";
+                        },
+                        [&accuracy](Loss::Binary &l) {
+                          accuracy << "accuracy: " << l.accuracy() << " - ";
+                        },
+                        [&accuracy](Loss::MSE &l) {},
+                        [&accuracy](Loss::MAE &l) {}},
+             *m_loss);
 }
 
 std::string FeedForwardModel::formatTime(double seconds) {

@@ -72,6 +72,7 @@ public:
   Math::Matrix<float> predict(const Math::MatrixBase<float> &inputs) const;
 
 private:
+  // CONFIG FUNCTIONS
   // addLayer overloads (for unpacking LayerDescriptor)
   void addLayer(Dense &, unsigned int &inputs);
   void addLayer(Dropout &, unsigned int &inputs);
@@ -93,6 +94,21 @@ private:
   void setOptimizer(AdaGrad &);
   void setOptimizer(RMSProp &);
   void setOptimizer(Adam &);
+
+  // TRAINING FUNCTIONS
+  std::vector<size_t> createBatchSequence(size_t stepNum) const;
+  // Forwards batchData through layers (not loss)
+  void forward(std::shared_ptr<const Math::MatrixBase<float>> batchData);
+  // Performs backward pass accross all layers, and optimizes trainable layers
+  // Inputs - matrix of gradients for the final layer in the network
+  void optimize(std::shared_ptr<const Math::MatrixBase<float>> outputGradients);
+
+  // Shows info about current network progression
+  void printUpdate(double displayTime, double epochTime, size_t currentBatch,
+                   size_t stepNum) const;
+  void calculateLoss(float &dataLoss, float &regularizationLoss) const;
+  // Get formatted accuracy (if exists). In format for usage by printUpdate()
+  void calculateAccuracy(std::stringstream &accuracy) const;
 
   // Formats given time into string with units - ns, us, ms, or s
   static std::string formatTime(double seconds);
