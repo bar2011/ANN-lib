@@ -64,6 +64,7 @@ void FeedForwardModel::configure(TrainDesc trainingDescriptor) {
 
   m_batchSize = trainingDescriptor.batchSize;
   m_epochs = trainingDescriptor.epochs;
+  m_trainValidationRate = trainingDescriptor.trainValidationRate;
   m_shuffleBatches = trainingDescriptor.shuffleBatches;
   m_verbose = trainingDescriptor.verbose;
 
@@ -91,7 +92,13 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
   Utils::Timer epochTime{};   // Used to track time passed in each epoch
   Utils::Timer displayTime{}; // Used for displaying update messages
 
-  const size_t stepNum{inputs.rows() / m_batchSize};
+  const size_t validationNum{static_cast<size_t>(
+      std::ceil(inputs.rows() * (1 - m_trainValidationRate)))};
+
+  auto inputsTraining{inputs.view(0, validationNum)};
+  auto correctTraining{correct.view(0, validationNum)};
+
+  const size_t stepNum{inputsTraining->rows() / m_batchSize};
 
   // Save std::cout config to later restore it
   const auto coutFlags{std::cout.flags()};
@@ -110,11 +117,11 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
     epochTime.reset();
     for (size_t batch{}; batch < stepNum; ++batch) {
       const auto batchData{
-          inputs.view(batchSequence[batch] * m_batchSize,
-                      (batchSequence[batch] + 1) * m_batchSize)};
+          inputsTraining->view(batchSequence[batch] * m_batchSize,
+                               (batchSequence[batch] + 1) * m_batchSize)};
       const auto batchCorrect{
-          correct.view(batchSequence[batch] * m_batchSize,
-                       (batchSequence[batch] + 1) * m_batchSize)};
+          correctTraining->view(batchSequence[batch] * m_batchSize,
+                                (batchSequence[batch] + 1) * m_batchSize)};
 
       forward(batchData);
 
@@ -138,6 +145,24 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
         displayTime.reset();
       }
     }
+
+    if (m_trainValidationRate > 0) {
+      // forward validation
+      auto valInputs{inputs.view(validationNum, inputs.rows())};
+      auto valCorrect{correct.view(validationNum, inputs.rows())};
+      forward(valInputs);
+      float valLoss{};
+      std::visit(
+          [&layers = m_layers, &valCorrect, &valLoss](Loss::Loss &loss) {
+            loss.forward(layers[layers.size() - 1]->output(), valCorrect);
+            valLoss = loss.mean();
+          },
+          *m_loss);
+      std::cout << " - val loss: " << valLoss;
+      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
+        std::cout << " - val accuracy: " << valAccuracy;
+    }
+
     std::cout << '\n';
   }
 
@@ -159,7 +184,13 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
   Utils::Timer epochTime{};   // Used to track time passed in each epoch
   Utils::Timer displayTime{}; // Used for displaying update messages
 
-  const size_t stepNum{inputs.rows() / m_batchSize};
+  const size_t validationNum{static_cast<size_t>(
+      std::ceil(inputs.rows() * (1 - m_trainValidationRate)))};
+
+  auto inputsTraining{inputs.view(0, validationNum)};
+  auto correctTraining{correct.view(0, validationNum)};
+
+  const size_t stepNum{inputsTraining->rows() / m_batchSize};
 
   // Save std::cout config to later restore it
   const auto coutFlags{std::cout.flags()};
@@ -178,8 +209,8 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
     epochTime.reset();
     for (size_t batch{}; batch < stepNum; ++batch) {
       const auto batchData{
-          inputs.view(batchSequence[batch] * m_batchSize,
-                      (batchSequence[batch] + 1) * m_batchSize)};
+          inputsTraining->view(batchSequence[batch] * m_batchSize,
+                               (batchSequence[batch] + 1) * m_batchSize)};
       const auto batchCorrect{
           correct.view(batchSequence[batch] * m_batchSize,
                        (batchSequence[batch] + 1) * m_batchSize)};
@@ -212,6 +243,31 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
         printUpdate(displayTime.elapsed(), epochTime.elapsed(), batch, stepNum);
         displayTime.reset();
       }
+    }
+
+    if (m_trainValidationRate > 0) {
+      // forward validation
+      auto valInputs{inputs.view(validationNum, inputs.rows())};
+      auto valCorrect{correct.view(validationNum, inputs.rows())};
+      forward(valInputs);
+      float valLoss{};
+      std::visit(overloaded{[&layers = m_layers, &valCorrect,
+                             &valLoss](Loss::Categorical &loss) {
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           valCorrect);
+                              valLoss = loss.mean();
+                            },
+                            [&layers = m_layers, &valCorrect,
+                             &valLoss](Loss::CategoricalSoftmax &loss) {
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           valCorrect);
+                              valLoss = loss.mean();
+                            },
+                            [](auto &loss) { assert(false); }},
+                 *m_loss);
+      std::cout << " - val loss: " << valLoss;
+      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
+        std::cout << " - val accuracy: " << valAccuracy;
     }
     std::cout << '\n';
   }
@@ -327,7 +383,9 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
 
   // Get accuracy only for classification losses (no regression accuracy)
   std::stringstream accuracy{};
-  calculateAccuracy(accuracy);
+  if (float val{calculateAccuracy()}; val != -1)
+    accuracy << std::fixed << std::setprecision(4) << "accuracy: " << val
+             << " - ";
 
   std::cout << '\r' << currentBatch + 1 << '/' << stepNum << '\t'
             << static_cast<size_t>(epochTime) << "s "
@@ -335,8 +393,7 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
             << accuracy.str() << "loss: " << dataLoss + regularizationLoss
             << " (data loss: " << dataLoss
             << ", reg loss: " << regularizationLoss
-            << ") - lr: " << m_optimizer->learningRate() << "                 "
-            << std::flush;
+            << ") - lr: " << m_optimizer->learningRate() << std::flush;
 }
 
 void FeedForwardModel::calculateLoss(float &dataLoss,
@@ -364,20 +421,16 @@ void FeedForwardModel::calculateLoss(float &dataLoss,
       *m_loss);
 }
 
-void FeedForwardModel::calculateAccuracy(std::stringstream &accuracy) const {
-  accuracy << std::fixed << std::setprecision(4);
-  std::visit(overloaded{[&accuracy](Loss::Categorical &l) {
-                          accuracy << "accuracy: " << l.accuracy() << " - ";
-                        },
-                        [&accuracy](Loss::CategoricalSoftmax &l) {
-                          accuracy << "accuracy: " << l.accuracy() << " - ";
-                        },
-                        [&accuracy](Loss::Binary &l) {
-                          accuracy << "accuracy: " << l.accuracy() << " - ";
-                        },
-                        [&accuracy](Loss::MSE &l) {},
-                        [&accuracy](Loss::MAE &l) {}},
-             *m_loss);
+float FeedForwardModel::calculateAccuracy() const {
+  float accuracy{-1};
+  std::visit(
+      overloaded{
+          [&accuracy](Loss::Categorical &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::CategoricalSoftmax &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::Binary &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::MSE &l) {}, [&accuracy](Loss::MAE &l) {}},
+      *m_loss);
+  return accuracy;
 }
 
 std::shared_ptr<Math::Vector<float>>

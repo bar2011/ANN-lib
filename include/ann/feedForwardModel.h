@@ -109,7 +109,7 @@ private:
                    size_t stepNum) const;
   void calculateLoss(float &dataLoss, float &regularizationLoss) const;
   // Get formatted accuracy (if exists). In format for usage by printUpdate()
-  void calculateAccuracy(std::stringstream &accuracy) const;
+  float calculateAccuracy() const;
 
   // Formats given time into string with units - ns, us, ms, or s
   static std::string formatTime(double seconds);
@@ -125,6 +125,7 @@ private:
   std::unique_ptr<Optimizers::Optimizer> m_optimizer{};
   size_t m_batchSize{};
   size_t m_epochs{};
+  float m_trainValidationRate{};
   bool m_shuffleBatches{};
   bool m_verbose{};
 

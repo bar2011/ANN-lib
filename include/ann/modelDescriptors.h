@@ -96,7 +96,10 @@ struct FeedForwardTrainingDescriptor {
   OptimizerDescriptor optimizer{SGD{}};
   size_t batchSize{32};
   size_t epochs{10};
+  // How much of the training data will be reserved to validation
+  float trainValidationRate{0.05};
   bool shuffleBatches{true};
+  // If true, prints update messages every ~0.5s
   bool verbose{true};
 };
 } // namespace ANN

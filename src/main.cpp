@@ -191,6 +191,7 @@ void trainMNist() {
       .optimizer = ANN::Adam{.learningRate = 2e-2f, .decay = 3e-4f},
       .batchSize = 64,
       .epochs = 5,
+      .trainValidationRate = 0.05,
       .shuffleBatches = true,
       .verbose = true,
   };
