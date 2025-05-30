@@ -40,6 +40,19 @@ Sigmoid::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
+std::shared_ptr<Math::Matrix<float>> Sigmoid::predict(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
+  auto output{
+      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
+
+  output->transform(
+      *inputs,
+      [](float *out, const float *in) { *out = 1 / (1 + std::exp(-*in)); },
+      std::nullopt, 55);
+
+  return output;
+}
+
 std::shared_ptr<const Math::Matrix<float>> Sigmoid::backward(
     const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(

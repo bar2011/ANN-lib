@@ -61,10 +61,15 @@ Dense &Dense::operator=(Dense &&other) {
 std::shared_ptr<const Math::Matrix<float>>
 Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   m_input = inputs; // Store input for later use by backward pass
-  m_output = std::make_shared<Math::Matrix<float>>(
-      Math::dot(*inputs, *m_weights, true, true) + *m_biases);
+  m_output = predict(inputs);
 
   return m_output;
+}
+
+std::shared_ptr<Math::Matrix<float>> Dense::predict(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
+  return std::make_shared<Math::Matrix<float>>(
+      Math::dot(*inputs, *m_weights, true, true) + *m_biases);
 }
 
 std::shared_ptr<const Math::Matrix<float>>

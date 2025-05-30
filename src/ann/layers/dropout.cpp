@@ -51,6 +51,26 @@ Dropout::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
+std::shared_ptr<Math::Matrix<float>> Dropout::predict(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
+  auto output =
+      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+
+  auto dropoutBatch{
+      [&inputs, &output, &mask = m_mask, dropout = m_dropout](size_t batch) {
+        for (size_t i{}; i < inputs->cols(); ++i) {
+          // Mask is normalized bernoulli output (to control mean output sum)
+          float mask{Math::Random::getBernoulli(1 - dropout) / (1 - dropout)};
+          (*output)[batch, i] = (*inputs)[batch, i] * mask;
+        }
+      }};
+
+  Utils::Parallel::dynamicParallelFor(inputs->cols() * 7, inputs->rows(),
+                                      dropoutBatch);
+
+  return output;
+}
+
 std::shared_ptr<const Math::Matrix<float>> Dropout::backward(
     const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(*dvalues, *m_mask,

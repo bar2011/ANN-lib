@@ -42,6 +42,21 @@ std::shared_ptr<const Math::Matrix<float>> LeakyReLU::forward(
   return m_output;
 }
 
+std::shared_ptr<Math::Matrix<float>> LeakyReLU::predict(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
+  auto output{
+      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
+
+  output->transform(
+      *inputs,
+      [alpha = m_alpha](float *out, const float *in) {
+        *out = (*in > 0) ? *in : (alpha * *in);
+      },
+      std::nullopt, 2);
+
+  return output;
+}
+
 std::shared_ptr<const Math::Matrix<float>> LeakyReLU::backward(
     const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(

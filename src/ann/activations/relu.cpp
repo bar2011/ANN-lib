@@ -39,6 +39,17 @@ ReLU::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
+std::shared_ptr<Math::Matrix<float>> ReLU::predict(
+    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
+  auto output{
+      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
+  output->transform(
+      *inputs, [](float *out, const float *in) { *out = std::max(0.0f, *in); },
+      std::nullopt, 1);
+
+  return output;
+}
+
 std::shared_ptr<const Math::Matrix<float>>
 ReLU::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
   m_dinputs->transform(
