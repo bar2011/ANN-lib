@@ -11,6 +11,8 @@ template <typename T> class Vector;
 
 template <typename T> class Matrix;
 
+template <typename T> class MatrixView;
+
 // Base matrix class - pure virtual interface, can't be instantiated. only to
 // inherit for other classes
 template <typename T> class MatrixBase {
@@ -37,6 +39,13 @@ public:
   virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
 
   virtual const std::vector<T> &data() const = 0;
+
+  // Returns a view of a range of rows from the matrix.
+  // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
+  // endRow is exclusive. The view includes all columns in each row.
+  // Throws if endRow > row count or startRow >= endRow.
+  virtual std::shared_ptr<MatrixView<T>> view(size_t startRow,
+                                              size_t endRow) const = 0;
 
   // Transposes the matrix. Returns the transposed one.
   // Note: the returned matrix has complete ownership on its values

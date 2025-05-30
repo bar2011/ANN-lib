@@ -88,6 +88,22 @@ std::unique_ptr<Math::Vector<size_t>> MatrixView<T>::argmaxCol() const {
 }
 
 template <typename T>
+std::shared_ptr<MatrixView<T>> MatrixView<T>::view(size_t startRow,
+                                                   size_t endRow) const {
+  if (startRow >= endRow)
+    throw Math::Exception{"Math::MatrixView<T>::view(size_t, size_t) const",
+                          "Start row ahead of the end row"};
+  if (endRow > m_rows)
+    throw Math::Exception{"Math::MatrixView<T>::view(size_t, size_t) const",
+                          "End row is outside the matrix's bound"};
+
+  // Can't use make_shared because the constructor is private
+  return std::shared_ptr<MatrixView<T>>{
+      new MatrixView<T>{m_start + startRow * m_cols,
+                        m_start + endRow - startRow, m_cols, m_data}};
+}
+
+template <typename T>
 std::shared_ptr<Matrix<T>>
 MatrixView<T>::transpose(size_t chunkSize,
                          std::optional<bool> parallelize) const {
