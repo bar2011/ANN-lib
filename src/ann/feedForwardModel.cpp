@@ -280,6 +280,7 @@ void FeedForwardModel::calculateLoss(float &dataLoss,
 }
 
 void FeedForwardModel::calculateAccuracy(std::stringstream &accuracy) const {
+  accuracy << std::fixed << std::setprecision(4);
   std::visit(overloaded{[&accuracy](Loss::Categorical &l) {
                           accuracy << "accuracy: " << l.accuracy() << " - ";
                         },

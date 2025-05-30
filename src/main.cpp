@@ -77,7 +77,7 @@ void trainMNist();
 
 int main() {
   try {
-    trainRegression();
+    trainBinaryLogisticRegression();
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
