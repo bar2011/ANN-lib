@@ -24,6 +24,7 @@
 #include "utils/timer.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
@@ -126,6 +127,81 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
             outputGradients = loss.backward();
           },
           *m_loss);
+
+      optimize(outputGradients);
+
+      // Display information every about half second, or at the first/final
+      // batch, only if verbose is true
+      if (m_verbose && (displayTime.elapsed() >= 0.5 || batch + 1 == stepNum ||
+                        batch == 0)) {
+        printUpdate(displayTime.elapsed(), epochTime.elapsed(), batch, stepNum);
+        displayTime.reset();
+      }
+    }
+    std::cout << '\n';
+  }
+
+  // Restore previous std::cout config
+  std::cout.flags(coutFlags);
+  std::cout.precision(coutPrecision);
+}
+
+void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
+                             const Math::VectorBase<float> &correct) {
+  // If loss isn't categorical, throw exception
+  if (!std::holds_alternative<Loss::Categorical>(*m_loss) &&
+      !std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss))
+    throw ANN::Exception{
+        "ANN::FeedForwardModel::train(const Math::MatrixBase<float>&, const "
+        "Math::VectorBase<float>&)",
+        "Can't train on vector when loss isn't categorical"};
+
+  Utils::Timer epochTime{};   // Used to track time passed in each epoch
+  Utils::Timer displayTime{}; // Used for displaying update messages
+
+  const size_t stepNum{inputs.rows() / m_batchSize};
+
+  // Save std::cout config to later restore it
+  const auto coutFlags{std::cout.flags()};
+  const auto coutPrecision{std::cout.precision()};
+
+  // Set up floating point printing for training updates
+  std::cout << std::fixed << std::setprecision(4);
+
+  for (size_t epoch{}; epoch < m_epochs; ++epoch) {
+    if (m_verbose)
+      std::cout << "\nEpoch " << epoch + 1 << ":\n";
+
+    // Set up batch sequence
+    std::vector<size_t> batchSequence{createBatchSequence(stepNum)};
+
+    epochTime.reset();
+    for (size_t batch{}; batch < stepNum; ++batch) {
+      const auto batchData{
+          inputs.view(batchSequence[batch] * m_batchSize,
+                      (batchSequence[batch] + 1) * m_batchSize)};
+      const auto batchCorrect{
+          correct.view(batchSequence[batch] * m_batchSize,
+                       (batchSequence[batch] + 1) * m_batchSize)};
+
+      forward(batchData);
+
+      std::shared_ptr<const Math::Matrix<float>> outputGradients{};
+      // Loss forward + backward
+      std::visit(overloaded{[&layers = m_layers, &batchCorrect,
+                             &outputGradients](Loss::Categorical &loss) {
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           batchCorrect);
+                              outputGradients = loss.backward();
+                            },
+                            [&layers = m_layers, &batchCorrect,
+                             &outputGradients](Loss::CategoricalSoftmax &loss) {
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           batchCorrect);
+                              outputGradients = loss.backward();
+                            },
+                            [](auto &loss) { assert(false); }},
+                 *m_loss);
 
       optimize(outputGradients);
 
@@ -302,6 +378,20 @@ void FeedForwardModel::calculateAccuracy(std::stringstream &accuracy) const {
                         [&accuracy](Loss::MSE &l) {},
                         [&accuracy](Loss::MAE &l) {}},
              *m_loss);
+}
+
+std::shared_ptr<Math::Vector<float>>
+FeedForwardModel::argmaxFloat(const Math::MatrixBase<float> &m) {
+  // Make a vector of the indicies of the biggest values in each row
+  // i.e. the correct index in each batch
+  auto max{std::make_shared<Math::Vector<float>>(m.rows())};
+
+  for (size_t i{}; i < m.rows(); ++i)
+    for (size_t j{}; j < m.cols(); ++j)
+      if (m[i, (*max)[i]] < m[i, j])
+        (*max)[i] = j;
+
+  return max;
 }
 
 std::string FeedForwardModel::formatTime(double seconds) {
