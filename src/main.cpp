@@ -77,30 +77,50 @@ void trainMNist();
 
 int main() {
   try {
+    constexpr unsigned short inputs{20};
+    constexpr unsigned short outputs{3};
+    constexpr unsigned int batchSize{64};
+    constexpr unsigned int trainingSize{50'000};
+    constexpr unsigned int testingSize{10'000};
+
+    auto loader{std::make_unique<Loaders::CSV>(
+        "data/regression-train-data.csv", "data/regression-train-labels.csv",
+        "data/regression-test-data.csv", "data/regression-test-labels.csv",
+        batchSize, trainingSize, testingSize, inputs, outputs)};
+
+    auto trainData{loader->getTrainData()};
+
     ANN::FeedForwardModelDescriptor modelDesc{
-        .inputs = 28 * 28,
-        .layers = {
-            ANN::Dense{.neurons = 32,
+        .inputs = inputs,
+        .layers = {ANN::Dense{
+                       .neurons = 64,
                        .initMethod = ANN::WeightInit::He,
-                       .l2Weight = 1e-5f,
-                       .l2Bias = 1e-5f},
-            ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
-            ANN::Dense{.neurons = 16,
+                   },
+                   ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
+                   ANN::Dense{
+                       .neurons = 64,
                        .initMethod = ANN::WeightInit::He,
-                       .l2Weight = 1e-5f,
-                       .l2Bias = 1e-5f},
-            ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.05},
-            ANN::Dense{.neurons = 10, .initMethod = ANN::WeightInit::He}}};
+                   },
+                   ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
+                   ANN::Dense{
+                       .neurons = 32,
+                       .initMethod = ANN::WeightInit::He,
+                   },
+                   ANN::LeakyReLU{.alpha = 1e-2},
+                   ANN::Dense{.neurons = outputs,
+                              .initMethod = ANN::WeightInit::Xavier}}};
 
     ANN::FeedForwardTrainingDescriptor trainDesc{
-        .loss = ANN::CategoricalCrossEntropySoftmaxLoss{},
-        .optimizer = ANN::Adam{.learningRate = 2e-2f, .decay = 3e-4f},
-        .batchSize = 64,
+        .loss = ANN::MeanSquaredErrorLoss{},
+        .optimizer = ANN::Adam{.learningRate = 2e-3f, .decay = 1e-3f},
+        .batchSize = batchSize,
         .epochs = 5,
         .shuffleBatches = true,
         .verbose = true};
 
     auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
+
+    model->train(*trainData.first, *trainData.second);
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {

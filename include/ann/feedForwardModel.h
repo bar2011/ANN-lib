@@ -34,19 +34,21 @@ public:
 
   FeedForwardModel(ModelDesc modelDescriptor, TrainDesc trainingDescriptor);
 
-  // Loads given descriptor into configuration
+  // Loads given model descriptor into configuration
   // Throws if passed in model has an empty layers array
   void configure(ModelDesc modelDescriptor);
 
+  // Loads given training descriptor into configuration
   void configure(TrainDesc trainingDescriptor);
 
+  // Loads given descriptors into configuration
   void configure(ModelDesc modelDescriptor, TrainDesc trainingDescriptor);
 
   // Train network based on given inputs
   // inputs dims - (X, input_num)
   // correct dims - (X, output_num)
-  // X / batch_num = steps per epoch
-  // For categorical cross-entropy loss, throws if 'correct' isn't 1-hot encoded
+  // X / batch_size = steps per epoch
+  // For categorical cross-entropy loss, `correct` should be one=hot encoded
   void train(const Math::MatrixBase<float> &inputs,
              const Math::MatrixBase<float> &correct);
 
@@ -54,7 +56,7 @@ public:
   // correct - vector of correct output index for the corresponding inputs
   // inputs dims - (X, input_num)
   // correct dims - (X)
-  // X / batch_num = steps per epoch
+  // X / batch_size = steps per epoch
   // throws if loss isn't categorical cross-entropy
   void train(const Math::MatrixBase<float> &inputs,
              const Math::VectorBase<float> &correct);
@@ -86,6 +88,9 @@ private:
   void setOptimizer(AdaGrad &);
   void setOptimizer(RMSProp &);
   void setOptimizer(Adam &);
+
+  // Formats given time into string with units - ns, us, ms, or s
+  static std::string formatTime(double seconds);
 
   unsigned int m_inputs{};
   std::vector<std::unique_ptr<Layer>> m_layers{};
