@@ -52,7 +52,7 @@ public:
   float accuracy() const;
 
   // Calculate average loss accross batches
-  float mean() const;
+  virtual float mean() const;
 
   virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
     return m_dinputs;

@@ -17,9 +17,9 @@ namespace Loss {
 class Loss {
 public:
   // Calculate average loss from calculated output derived from member function
-  float mean();
+  virtual float mean() const;
 
-  std::shared_ptr<const Math::Vector<float>> getOutput() const {
+  virtual std::shared_ptr<const Math::Vector<float>> output() const {
     return m_output;
   }
 

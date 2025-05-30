@@ -6,7 +6,7 @@
 
 namespace ANN {
 namespace Loss {
-float Loss::mean() {
+float Loss::mean() const {
   float outputSum{};
 
   for (size_t i{}; i < m_output->size(); ++i)
