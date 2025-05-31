@@ -1,0 +1,79 @@
+[MODEL] # This is the start of the layer configuration
+
+inputs = 100 # Number of inputs to the first layer. needs to be > 0
+
+# When settings a layer, you first declare its type, and the type cannot change afterwards.
+# You declare a type with the format "layer.[layer num].type = [type]"
+# With [layer num] starting at 0 and incrementing.
+# You have to declare a layer's type before its configuration.
+# [type] can be one of the following (case sensitive):
+# dense, dropout, step, sigmoid, relu, leaky_relu, softmax.
+# The following are examples of every type and all its possible configurations
+# configuration not marked as required is optional.
+
+layers.1.type = dense
+layers.1.neurons = 64 # required. neurons ∈ ℕ
+layers.1.init_method = he # defaults to "random". one of "random", "he", "xavier"
+layers.1.l1_weight = 1e-4 # defaults to 0. l1 regularization to apply on weights
+layers.1.l1_bias = 2e-4 # defaults to 0. l1 regularization to apply on biases
+layers.1.l2_weight = 3e-4 # defaults to 0. l2 regularization to apply on weights
+layers.1.l2_bias = 4e-4 # defaults to 0. l2 regularization to apply on biases
+
+layers.2.type = dropout
+layers.2.drop_rate = 0.2 # required. percentage of neurons to drop. drop_rate ∈ [0.0, 1.0]
+
+layers.3.type = step
+
+layers.4.type = sigmoid
+
+layers.5.type = relu
+
+layers.6.type = leaky_relu
+layers.6.alpha = 1e-2 # required. negative value slope.
+
+layers.7.type = softmax
+
+[TRAINING] # This is the start of the training configuration
+
+# loss.type can be one of the following:
+# * categorical_cross_entropy
+# * categorical_cross_entropy_softmax
+# * binary_cross_entropy
+# * mean_squared_error
+# * mean_absolute_error
+loss.type = categorical_cross_entropy # required
+
+# optimizer.type can be one of the following:
+# sgd, adagrad, rmsprop, adam
+# all optimizer configurations are floating point values.
+# possible configuration
+# sgd:
+#     learning_rate - default 1e-2
+#     decay - default 0
+#     momentum - default 0
+# adagrad:
+#     learning_rate - default 1e-2
+#     decay - default 0
+#     epsilon - default 1e-7
+# rmsprop:
+#     learning_rate - default 1e-3
+#     decay - default 0
+#     epsilon - default 1e-7
+#     rho - default 0.9
+# adam:
+#     learning_rate - default 1e-3
+#     decay - default 0
+#     epsilon - default 1e-7
+#     beta1 - default 0.9
+#     beta2 - default 0.999
+optimizer.type = sgd # required
+optimizer.learning_rate = 0.5
+optimizer.decay = 1e-3
+optimizer.momentum = 0.2
+
+batch_size = 64 # default 32. batch_size ∈ ℕ
+epochs = 5 # default 10. epochs ∈ Z+
+# percentage of training data to be reserved to validation
+train_validation_rate = 0.02 # default 0.05. train_validation_rate ∈ <0.0, 1.0>.
+shuffle_batches = false # default true. should model shuffle batch order in each epoch during training.
+verbose = false # default true. if true, prints update messages during training about model progress.
