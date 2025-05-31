@@ -22,6 +22,7 @@
 
 #include "math/random.h"
 #include "utils/timer.h"
+#include "utils/variants.h"
 
 #include <algorithm>
 #include <cassert>
@@ -81,7 +82,7 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor,
 void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
                              const Math::MatrixBase<float> &correct) {
   // If loss is categorical, use more efficient route of converting correct from
-  // begin 1-hot encoded to a vector of indicies, and training on them
+  // begin 1-hot encoded to a vector of indices, and training on them
   if (std::holds_alternative<Loss::Categorical>(*m_loss) ||
       std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss)) {
     auto correctVector{argmaxFloat(correct)};
@@ -219,20 +220,20 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
 
       std::shared_ptr<const Math::Matrix<float>> outputGradients{};
       // Loss forward + backward
-      std::visit(overloaded{[&layers = m_layers, &batchCorrect,
-                             &outputGradients](Loss::Categorical &loss) {
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           batchCorrect);
-                              outputGradients = loss.backward();
-                            },
-                            [&layers = m_layers, &batchCorrect,
-                             &outputGradients](Loss::CategoricalSoftmax &loss) {
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           batchCorrect);
-                              outputGradients = loss.backward();
-                            },
-                            [](auto &loss) { assert(false); }},
-                 *m_loss);
+      std::visit(
+          Utils::overloaded{
+              [&layers = m_layers, &batchCorrect,
+               &outputGradients](Loss::Categorical &loss) {
+                loss.forward(layers[layers.size() - 1]->output(), batchCorrect);
+                outputGradients = loss.backward();
+              },
+              [&layers = m_layers, &batchCorrect,
+               &outputGradients](Loss::CategoricalSoftmax &loss) {
+                loss.forward(layers[layers.size() - 1]->output(), batchCorrect);
+                outputGradients = loss.backward();
+              },
+              [](auto &loss) { assert(false); }},
+          *m_loss);
 
       optimize(outputGradients);
 
@@ -253,20 +254,20 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       auto valCorrect{correct.view(validationNum, inputs.rows())};
       forward(valInputs);
       float valLoss{};
-      std::visit(overloaded{[&layers = m_layers, &valCorrect,
-                             &valLoss](Loss::Categorical &loss) {
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           valCorrect);
-                              valLoss = loss.mean();
-                            },
-                            [&layers = m_layers, &valCorrect,
-                             &valLoss](Loss::CategoricalSoftmax &loss) {
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           valCorrect);
-                              valLoss = loss.mean();
-                            },
-                            [](auto &loss) { assert(false); }},
-                 *m_loss);
+      std::visit(
+          Utils::overloaded{
+              [&layers = m_layers, &valCorrect,
+               &valLoss](Loss::Categorical &loss) {
+                loss.forward(layers[layers.size() - 1]->output(), valCorrect);
+                valLoss = loss.mean();
+              },
+              [&layers = m_layers, &valCorrect,
+               &valLoss](Loss::CategoricalSoftmax &loss) {
+                loss.forward(layers[layers.size() - 1]->output(), valCorrect);
+                valLoss = loss.mean();
+              },
+              [](auto &loss) { assert(false); }},
+          *m_loss);
       if (m_verbose) {
         std::cout << " - val loss: " << valLoss;
         if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
@@ -312,19 +313,18 @@ FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
   // Layer forward
   forward(inputs.view());
   // Loss forward
-  std::visit(overloaded{[&layers = m_layers, &correct,
-                         &averageLoss](Loss::Categorical &loss) {
-                          averageLoss =
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           correct.view());
-                        },
-                        [&layers = m_layers, &correct,
-                         &averageLoss](Loss::CategoricalSoftmax &loss) {
-                          averageLoss =
-                              loss.forward(layers[layers.size() - 1]->output(),
-                                           correct.view());
-                        },
-                        [](auto &loss) { assert(false); }},
+  std::visit(Utils::overloaded{
+                 [&layers = m_layers, &correct,
+                  &averageLoss](Loss::Categorical &loss) {
+                   averageLoss = loss.forward(
+                       layers[layers.size() - 1]->output(), correct.view());
+                 },
+                 [&layers = m_layers, &correct,
+                  &averageLoss](Loss::CategoricalSoftmax &loss) {
+                   averageLoss = loss.forward(
+                       layers[layers.size() - 1]->output(), correct.view());
+                 },
+                 [](auto &loss) { assert(false); }},
              *m_loss);
   return averageLoss;
 }
@@ -381,7 +381,7 @@ void FeedForwardModel::calculateLoss(float *dataLoss,
 float FeedForwardModel::calculateAccuracy() const {
   float accuracy{-1};
   std::visit(
-      overloaded{
+      Utils::overloaded{
           [&accuracy](Loss::Categorical &l) { accuracy = l.accuracy(); },
           [&accuracy](Loss::CategoricalSoftmax &l) { accuracy = l.accuracy(); },
           [&accuracy](Loss::Binary &l) { accuracy = l.accuracy(); },
@@ -511,7 +511,7 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
 
 std::shared_ptr<Math::Vector<float>>
 FeedForwardModel::argmaxFloat(const Math::MatrixBase<float> &m) {
-  // Make a vector of the indicies of the biggest values in each row
+  // Make a vector of the indices of the biggest values in each row
   // i.e. the correct index in each batch
   auto max{std::make_shared<Math::Vector<float>>(m.rows())};
 

@@ -28,7 +28,7 @@ public:
   // perform forward pass with give batch
   // saves inputs and outputs in member variables
   // inputs = inputs to softmax
-  // correct = vector of correct indicies, one for each batch
+  // correct = vector of correct indices, one for each batch
   // returns loss average for each batch
   std::shared_ptr<const Math::Vector<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,

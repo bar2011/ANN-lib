@@ -26,7 +26,7 @@ public:
   // Get view of the entire vector
   std::shared_ptr<VectorView<T>> view() const;
 
-  // Returns a view of a range of indicies from the vector
+  // Returns a view of a range of indices from the vector
   // Included values are in the range of [start, end)
   // Throws if end > size or start >= end
   std::shared_ptr<VectorView<T>> view(size_t start, size_t end) const;

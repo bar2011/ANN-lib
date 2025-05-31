@@ -24,12 +24,6 @@ private:
   using ModelDesc = FeedForwardModelDescriptor;
   using TrainDesc = FeedForwardTrainingDescriptor;
 
-  // Helper template for std::visit
-  // Credit: cppreference.com
-  template <class... Ts> struct overloaded : Ts... {
-    using Ts::operator()...;
-  };
-
 public:
   using LossVariant = std::variant<Loss::Categorical, Loss::CategoricalSoftmax,
                                    Loss::Binary, Loss::MSE, Loss::MAE>;
@@ -39,6 +33,14 @@ public:
   FeedForwardModel(ModelDesc modelDescriptor);
 
   FeedForwardModel(ModelDesc modelDescriptor, TrainDesc trainingDescriptor);
+
+  // Delete copy constructor/assignment
+  FeedForwardModel(const FeedForwardModel &) = delete;
+  FeedForwardModel &operator=(const FeedForwardModel &) = delete;
+
+  // Use move constructor/assignment
+  FeedForwardModel(FeedForwardModel &&) = default;
+  FeedForwardModel &operator=(FeedForwardModel &&) = default;
 
   // Loads given model descriptor into configuration
   // Throws if passed in model has an empty layers array
@@ -54,7 +56,7 @@ public:
   // inputs dims - (X, input_num)
   // correct dims - (X, output_num)
   // X / batch_size = steps per epoch
-  // For categorical cross-entropy loss, `correct` should be one=hot encoded
+  // For categorical cross-entropy loss, `correct` should be one-hot encoded
   void train(const Math::MatrixBase<float> &inputs,
              const Math::MatrixBase<float> &correct);
 
@@ -76,7 +78,7 @@ public:
            const Math::MatrixBase<float> &correct);
 
   // Evaluate input batch for categorical loss
-  // correct - vector of correct indicies for each batch output
+  // correct - vector of correct indices for each batch output
   // Returns average loss per batch
   // For more information, mean loss and accuracy (if supported) can be acquired
   // via corresponding member functions
@@ -86,10 +88,10 @@ public:
            const Math::VectorBase<float> &correct);
 
   // Predict single input
-  std::unique_ptr<Math::Vector<float>>
+  [[nodiscard]] std::unique_ptr<Math::Vector<float>>
   predict(const Math::VectorBase<float> &inputs) const;
   // Predict input batch
-  std::shared_ptr<Math::MatrixBase<float>>
+  [[nodiscard]] std::shared_ptr<Math::MatrixBase<float>>
   predict(const Math::MatrixBase<float> &inputs) const;
 
   // Gives current saved loss in the model. Puts it into given pointers.
@@ -99,7 +101,7 @@ public:
 
   // Get current saved accuracy (if exists).
   // If loss class doesn't support it, returns -1
-  float calculateAccuracy() const;
+  [[nodiscard]] float calculateAccuracy() const;
 
 private:
   // CONFIG FUNCTIONS
