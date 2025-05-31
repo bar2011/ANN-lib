@@ -74,6 +74,15 @@ public:
   std::shared_ptr<Math::MatrixBase<float>>
   predict(const Math::MatrixBase<float> &inputs) const;
 
+  // Gives current saved loss in the model. Puts it into given pointers.
+  // If either of them are null pointers, loss for the corresponding one won't
+  // be calculated.
+  void calculateLoss(float *dataLoss, float *regularizationLoss = {}) const;
+
+  // Get current saved accuracy (if exists).
+  // If loss class doesn't support it, returns -1
+  float calculateAccuracy() const;
+
 private:
   // CONFIG FUNCTIONS
   // addLayer overloads (for unpacking LayerDescriptor)
@@ -109,9 +118,6 @@ private:
   // Shows info about current network progression
   void printUpdate(double displayTime, double epochTime, size_t currentBatch,
                    size_t stepNum) const;
-  void calculateLoss(float &dataLoss, float &regularizationLoss) const;
-  // Get formatted accuracy (if exists). In format for usage by printUpdate()
-  float calculateAccuracy() const;
 
   // Formats given time into string with units - ns, us, ms, or s
   static std::string formatTime(double seconds);

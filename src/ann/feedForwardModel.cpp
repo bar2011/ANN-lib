@@ -302,6 +302,46 @@ FeedForwardModel::predict(const Math::MatrixBase<float> &inputs) const {
   return output;
 }
 
+void FeedForwardModel::calculateLoss(float *dataLoss,
+                                     float *regularizationLoss) const {
+  std::visit(
+      [&dataLoss, &regularizationLoss, &layers = m_layers](Loss::Loss &loss) {
+        // Calculate data loss
+        if (dataLoss)
+          *dataLoss = loss.mean();
+        // Sum all regularization losses into the single variable
+        // i-- in condition because i is size_t, thus will wrap to max if
+        // negative
+        if (regularizationLoss) {
+          for (size_t i{layers.size()}; i-- > 0;) {
+            if (layers[i]->isTrainable())
+              switch (layers[i]->type()) {
+              case Layer::Type::Dense: {
+                *regularizationLoss += loss.regularizationLoss(
+                    dynamic_cast<Layers::Dense &>(*layers[i]));
+                break;
+              }
+              default:
+                break;
+              }
+          }
+        }
+      },
+      *m_loss);
+}
+
+float FeedForwardModel::calculateAccuracy() const {
+  float accuracy{-1};
+  std::visit(
+      overloaded{
+          [&accuracy](Loss::Categorical &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::CategoricalSoftmax &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::Binary &l) { accuracy = l.accuracy(); },
+          [&accuracy](Loss::MSE &l) {}, [&accuracy](Loss::MAE &l) {}},
+      *m_loss);
+  return accuracy;
+}
+
 void FeedForwardModel::addLayer(Dense &dense, unsigned int &inputs) {
   m_layers.push_back(std::make_unique<Layers::Dense>(
       inputs, dense.neurons, dense.initMethod, dense.l1Weight, dense.l1Bias,
@@ -404,7 +444,7 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
   // Calculate loss to be displayed (only if verbose is true)
   float dataLoss{};
   float regularizationLoss{};
-  calculateLoss(dataLoss, regularizationLoss);
+  calculateLoss(&dataLoss, &regularizationLoss);
 
   // Get accuracy only for classification losses (no regression accuracy)
   std::stringstream accuracy{};
@@ -419,43 +459,6 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
             << " (data loss: " << dataLoss
             << ", reg loss: " << regularizationLoss
             << ") - lr: " << m_optimizer->learningRate() << std::flush;
-}
-
-void FeedForwardModel::calculateLoss(float &dataLoss,
-                                     float &regularizationLoss) const {
-  std::visit(
-      [&dataLoss, &regularizationLoss, &layers = m_layers](Loss::Loss &loss) {
-        // Calculate data loss
-        dataLoss = loss.mean();
-        // Sum all regularization losses into the single variable
-        // i-- in condition because i is size_t, thus will wrap to max if
-        // negative
-        for (size_t i{layers.size()}; i-- > 0;) {
-          if (layers[i]->isTrainable())
-            switch (layers[i]->type()) {
-            case Layer::Type::Dense: {
-              regularizationLoss += loss.regularizationLoss(
-                  dynamic_cast<Layers::Dense &>(*layers[i]));
-              break;
-            }
-            default:
-              break;
-            }
-        }
-      },
-      *m_loss);
-}
-
-float FeedForwardModel::calculateAccuracy() const {
-  float accuracy{-1};
-  std::visit(
-      overloaded{
-          [&accuracy](Loss::Categorical &l) { accuracy = l.accuracy(); },
-          [&accuracy](Loss::CategoricalSoftmax &l) { accuracy = l.accuracy(); },
-          [&accuracy](Loss::Binary &l) { accuracy = l.accuracy(); },
-          [&accuracy](Loss::MSE &l) {}, [&accuracy](Loss::MAE &l) {}},
-      *m_loss);
-  return accuracy;
 }
 
 std::shared_ptr<Math::Vector<float>>
