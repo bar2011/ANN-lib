@@ -67,6 +67,24 @@ public:
   void train(const Math::MatrixBase<float> &inputs,
              const Math::VectorBase<float> &correct);
 
+  // Evaluate input batch
+  // Returns average loss per batch
+  // For more information, mean loss and accuracy (if supported) can be acquired
+  // via corresponding member functions
+  std::shared_ptr<const Math::Vector<float>>
+  evaluate(const Math::MatrixBase<float> &inputs,
+           const Math::MatrixBase<float> &correct);
+
+  // Evaluate input batch for categorical loss
+  // correct - vector of correct indicies for each batch output
+  // Returns average loss per batch
+  // For more information, mean loss and accuracy (if supported) can be acquired
+  // via corresponding member functions
+  // throws if loss isn't categorical / categoricalSoftmax
+  std::shared_ptr<const Math::Vector<float>>
+  evaluate(const Math::MatrixBase<float> &inputs,
+           const Math::VectorBase<float> &correct);
+
   // Predict single input
   std::unique_ptr<Math::Vector<float>>
   predict(const Math::VectorBase<float> &inputs) const;

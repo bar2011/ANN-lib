@@ -281,6 +281,54 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
   std::cout.precision(coutPrecision);
 }
 
+std::shared_ptr<const Math::Vector<float>>
+FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
+                           const Math::MatrixBase<float> &correct) {
+  std::shared_ptr<const Math::Vector<float>> averageLoss{};
+  // Layer forward
+  forward(inputs.view());
+  // Loss forward
+  std::visit(
+      [&layers = m_layers, &correct, &averageLoss](Loss::Loss &loss) {
+        averageLoss =
+            loss.forward(layers[layers.size() - 1]->output(), correct.view());
+      },
+      *m_loss);
+  return averageLoss;
+}
+
+std::shared_ptr<const Math::Vector<float>>
+FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
+                           const Math::VectorBase<float> &correct) {
+  // If loss isn't categorical, throw exception
+  if (!std::holds_alternative<Loss::Categorical>(*m_loss) &&
+      !std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss))
+    throw ANN::Exception{
+        "ANN::FeedForwardModel::evaluate(const Math::MatrixBase<float>&, const "
+        "Math::VectorBase<float>&)",
+        "Can't evalute on vector when loss isn't categorical"};
+
+  std::shared_ptr<const Math::Vector<float>> averageLoss{};
+  // Layer forward
+  forward(inputs.view());
+  // Loss forward
+  std::visit(overloaded{[&layers = m_layers, &correct,
+                         &averageLoss](Loss::Categorical &loss) {
+                          averageLoss =
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           correct.view());
+                        },
+                        [&layers = m_layers, &correct,
+                         &averageLoss](Loss::CategoricalSoftmax &loss) {
+                          averageLoss =
+                              loss.forward(layers[layers.size() - 1]->output(),
+                                           correct.view());
+                        },
+                        [](auto &loss) { assert(false); }},
+             *m_loss);
+  return averageLoss;
+}
+
 std::unique_ptr<Math::Vector<float>>
 FeedForwardModel::predict(const Math::VectorBase<float> &inputs) const {
   auto inputsMatrix{std::make_shared<Math::Matrix<float>>(
