@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <functional>
 #include <thread>
-#include <vector>
 
 namespace Utils {
 namespace Parallel {
