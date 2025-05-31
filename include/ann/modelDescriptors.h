@@ -17,12 +17,10 @@ struct Dense {
   float l1Bias{};
   float l2Weight{};
   float l2Bias{};
-
-  unsigned int inputs{}; // Used internally. No need to define.
 };
 
 // Dropout layer descriptor
-// dropRate ∈ [0.0, 1.0]
+// dropRate ∈ <0.0, 1.0>
 struct Dropout {
   float dropRate{};
 };
@@ -34,13 +32,13 @@ struct Sigmoid {};
 struct ReLU {};
 
 struct LeakyReLU {
-  float alpha{1e-2f};
+  float alpha{};
 };
 
 struct Softmax {};
 
-using LayerDescriptor =
-    std::variant<Dense, Dropout, Step, Sigmoid, ReLU, LeakyReLU, Softmax>;
+using LayerDescriptor = std::variant<std::monostate, Dense, Dropout, Step,
+                                     Sigmoid, ReLU, LeakyReLU, Softmax>;
 
 struct FeedForwardModelDescriptor {
   unsigned int inputs{};
@@ -58,7 +56,7 @@ struct MeanSquaredErrorLoss {};
 struct MeanAbsoluteErrorLoss {};
 
 using LossDescriptor =
-    std::variant<CategoricalCrossEntropyLoss,
+    std::variant<std::monostate, CategoricalCrossEntropyLoss,
                  CategoricalCrossEntropySoftmaxLoss, BinaryCrossEntropyLoss,
                  MeanSquaredErrorLoss, MeanAbsoluteErrorLoss>;
 
@@ -89,11 +87,12 @@ struct Adam {
   float beta2{0.999f};
 };
 
-using OptimizerDescriptor = std::variant<SGD, AdaGrad, RMSProp, Adam>;
+using OptimizerDescriptor =
+    std::variant<std::monostate, SGD, AdaGrad, RMSProp, Adam>;
 
 struct FeedForwardTrainingDescriptor {
   LossDescriptor loss{};
-  OptimizerDescriptor optimizer{SGD{}};
+  OptimizerDescriptor optimizer{};
   size_t batchSize{32};
   size_t epochs{10};
   // How much of the training data will be reserved to validation

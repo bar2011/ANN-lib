@@ -50,17 +50,37 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor) {
   m_inputs = modelDescriptor.inputs;
   unsigned int currentInputs{m_inputs};
   for (auto &layerVariant : modelDescriptor.layers)
-    std::visit(
-        [this, &currentInputs](auto &layer) { addLayer(layer, currentInputs); },
-        layerVariant);
+    std::visit(Utils::overloaded{[](std::monostate &) {
+                                   throw ANN::Exception{
+                                       "ANN::FeedForwardModel::configure("
+                                       "FeedForwardModelDescriptor)",
+                                       "Empty layer provided."};
+                                 },
+                                 [this, &currentInputs](auto &layer) {
+                                   addLayer(layer, currentInputs);
+                                 }},
+               layerVariant);
 
   // Set that a model was loaded
   m_isModelLoaded = true;
 }
 
 void FeedForwardModel::configure(TrainDesc trainingDescriptor) {
-  std::visit([this](auto &loss) { setLoss(loss); }, trainingDescriptor.loss);
-  std::visit([this](auto &opt) { setOptimizer(opt); },
+  std::visit(Utils::overloaded{[](std::monostate &) {
+                                 throw ANN::Exception{
+                                     "ANN::FeedForwardModel::configure("
+                                     "FeedForwardTrainingDescriptor)",
+                                     "Empty loss provided."};
+                               },
+                               [this](auto &loss) { setLoss(loss); }},
+             trainingDescriptor.loss);
+  std::visit(Utils::overloaded{[](std::monostate &) {
+                                 throw ANN::Exception{
+                                     "ANN::FeedForwardModel::configure("
+                                     "FeedForwardTrainingDescriptor)",
+                                     "Empty optimizer provided."};
+                               },
+                               [this](auto &opt) { setOptimizer(opt); }},
              trainingDescriptor.optimizer);
 
   m_batchSize = trainingDescriptor.batchSize;
