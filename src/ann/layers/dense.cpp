@@ -66,9 +66,9 @@ Dense::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<Math::Matrix<float>> Dense::predict(
+std::unique_ptr<Math::Matrix<float>> Dense::predict(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
-  return std::make_shared<Math::Matrix<float>>(
+  return std::make_unique<Math::Matrix<float>>(
       Math::dot(*inputs, *m_weights, true, true) + *m_biases);
 }
 

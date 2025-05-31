@@ -58,7 +58,7 @@ public:
   // perform forward pass with given batch
   // saves inputs and outputs in member variables
   // Returns output
-  virtual std::shared_ptr<Math::Matrix<float>>
+  virtual std::unique_ptr<Math::Matrix<float>>
   predict(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const;
 
   // perform backward pass with given dvalues

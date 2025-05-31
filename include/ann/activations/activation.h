@@ -17,7 +17,7 @@ public:
   virtual std::shared_ptr<const Math::Matrix<float>>
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) = 0;
 
-  virtual std::shared_ptr<Math::Matrix<float>> predict(
+  virtual std::unique_ptr<Math::Matrix<float>> predict(
       const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const = 0;
 
   // Compute dinputs gradient

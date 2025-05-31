@@ -37,10 +37,10 @@ Step::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<Math::Matrix<float>> Step::predict(
+std::unique_ptr<Math::Matrix<float>> Step::predict(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
   auto output{
-      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
+      std::make_unique<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
   output->transform(
       *inputs, [](float *out, const float *in) { *out = ((*out > 0) ? 1 : 0); },
       std::nullopt, 1);

@@ -44,6 +44,9 @@ public:
   forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
           const std::shared_ptr<const Math::MatrixBase<float>> &correct);
 
+  std::unique_ptr<Math::Matrix<float>> predictSoftmax(
+      const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const;
+
   // perform backward pass based on the given inputs and correct values in
   // forward pass
   std::shared_ptr<const Math::Matrix<float>> backward();

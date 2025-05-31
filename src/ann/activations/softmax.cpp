@@ -63,15 +63,15 @@ Softmax::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<Math::Matrix<float>> Softmax::predict(
+std::unique_ptr<Math::Matrix<float>> Softmax::predict(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
   auto output{
-      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
+      std::make_unique<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
 
   // An estimation of all the operations in a single iteration
   size_t cost{55 * inputs->cols()};
 
-  auto calculateBatch{[inputs, output](size_t batch) {
+  auto calculateBatch{[&inputs, &output](size_t batch) {
     // max value in batch (for exponentiated values to not explode)
     float maxValue = (*inputs)[batch, 0];
     for (size_t i{1}; i < inputs->cols(); ++i)
@@ -92,7 +92,7 @@ std::shared_ptr<Math::Matrix<float>> Softmax::predict(
       (*output)[batch, i] /= normalBase;
   }};
 
-  Utils::Parallel::dynamicParallelFor(cost, m_output->rows(), calculateBatch);
+  Utils::Parallel::dynamicParallelFor(cost, output->rows(), calculateBatch);
 
   return output;
 }

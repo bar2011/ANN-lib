@@ -68,9 +68,11 @@ public:
              const Math::VectorBase<float> &correct);
 
   // Predict single input
-  Math::Vector<float> predict(const Math::VectorBase<float> &inputs) const;
+  std::unique_ptr<Math::Vector<float>>
+  predict(const Math::VectorBase<float> &inputs) const;
   // Predict input batch
-  Math::Matrix<float> predict(const Math::MatrixBase<float> &inputs) const;
+  std::shared_ptr<Math::MatrixBase<float>>
+  predict(const Math::MatrixBase<float> &inputs) const;
 
 private:
   // CONFIG FUNCTIONS

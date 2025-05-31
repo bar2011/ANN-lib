@@ -24,7 +24,7 @@ public:
   // inputs dimensions - (batch_num, input_num)
   // outputs dimensions - (batch_num, neuron_num)
   // Doesn't save inputs and outputs for backprop
-  virtual std::shared_ptr<Math::Matrix<float>> predict(
+  virtual std::unique_ptr<Math::Matrix<float>> predict(
       const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const = 0;
 
   // Function which runs backprop on the given dvalues, and returns the

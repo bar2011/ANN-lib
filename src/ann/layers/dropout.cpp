@@ -51,10 +51,10 @@ Dropout::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
   return m_output;
 }
 
-std::shared_ptr<Math::Matrix<float>> Dropout::predict(
+std::unique_ptr<Math::Matrix<float>> Dropout::predict(
     const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
   auto output =
-      std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+      std::make_unique<Math::Matrix<float>>(inputs->rows(), inputs->cols());
 
   auto dropoutBatch{
       [&inputs, &output, &mask = m_mask, dropout = m_dropout](size_t batch) {
