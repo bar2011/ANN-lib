@@ -26,7 +26,7 @@ void trainMNist();
 
 int main() {
   try {
-    trainMNist();
+    trainRegression();
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
@@ -83,16 +83,14 @@ void trainRegression() {
   model->train(*trainData.first, *trainData.second);
 
   auto [testData, testLabels]{loader->getTest()};
-  // dense1->forward(std::move(testData));
-  // activation1->forward(dense1->output());
-  // dense2->forward(activation1->output());
-  // activation2->forward(dense2->output());
-  // dense3->forward(activation2->output());
-  // activation3->forward(dense3->output());
-  // outputLayer->forward(activation3->output());
-  // outputLoss->forward(outputLayer->output(), std::move(testLabels));
-  //
-  // std::cout << "Test loss: " << outputLoss->mean() << '\n';
+
+  model->evaluate(*testData, *testLabels);
+  float dataLoss{};
+  model->calculateLoss(&dataLoss);
+  float accuracy{model->calculateAccuracy()};
+  std::cout << "\nTest loss: " << dataLoss << '\n';
+  if (accuracy != -1)
+    std::cout << "Test accuracy: " << accuracy << "\n\n";
 }
 
 void trainBinaryLogisticRegression() {
@@ -142,19 +140,15 @@ void trainBinaryLogisticRegression() {
 
   model->train(*trainData.first, *trainData.second);
 
-  // auto [testData, testLabels]{loader->getTest()};
-  // dense1->forward(std::move(testData));
-  // activation1->forward(dense1->output());
-  // dense2->forward(activation1->output());
-  // activation2->forward(dense2->output());
-  // dense3->forward(activation2->output());
-  // activation3->forward(dense3->output());
-  // outputLayer->forward(activation3->output());
-  // outputActivation->forward(outputLayer->output());
-  // outputLoss->forward(outputActivation->output(), std::move(testLabels));
-  //
-  // std::cout << "Test loss: " << outputLoss->mean()
-  //           << "\nTest accuracy: " << outputLoss->accuracy() << '\n';
+  auto [testData, testLabels]{loader->getTest()};
+
+  model->evaluate(*testData, *testLabels);
+  float dataLoss{};
+  model->calculateLoss(&dataLoss);
+  float accuracy{model->calculateAccuracy()};
+  std::cout << "\nTest loss: " << dataLoss << '\n';
+  if (accuracy != -1)
+    std::cout << "Test accuracy: " << accuracy << "\n\n";
 }
 
 void trainMNist() {
@@ -197,20 +191,12 @@ void trainMNist() {
   auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
 
   model->train(*trainingImages, *trainingLabels);
-  auto pred{model->predict(*testingImages->view(0, 1)->asVector())->data()};
 
-  printMatrixImage(testingImages->view(0, 1)->reshape(28, 28));
-  std::cout << "Prediction: "
-            << std::max_element(pred.begin(), pred.end()) - pred.begin()
-            << "\nActual: " << (*testingLabels)[0] << '\n';
-
-  // dense1->forward(testingImages);
-  // activation1->forward(dense1->output());
-  // dense2->forward(activation1->output());
-  // activation2->forward(dense2->output());
-  // outputLayer->forward(activation2->output());
-  // outputSoftmaxLoss->forward(outputLayer->output(), testingLabels);
-  //
-  // std::cout << "Test loss: " << outputSoftmaxLoss->mean()
-  //           << "\nTest accuracy: " << outputSoftmaxLoss->accuracy() << '\n';
+  model->evaluate(*testingImages, *testingLabels);
+  float dataLoss{};
+  model->calculateLoss(&dataLoss);
+  float accuracy{model->calculateAccuracy()};
+  std::cout << "\nTest loss: " << dataLoss << '\n';
+  if (accuracy != -1)
+    std::cout << "Test accuracy: " << accuracy << "\n\n";
 }
