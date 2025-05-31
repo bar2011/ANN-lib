@@ -1,0 +1,39 @@
+[MODEL]
+
+inputs = 784
+
+layers.1.type = dense
+layers.1.neurons = 32
+layers.1.init_method = he
+layers.1.l2_weight = 1e-5
+layers.1.l2_bias = 1e-5
+
+layers.2.type = leaky_relu
+layers.2.alpha = 1e-2
+
+layers.3.type = dense
+layers.3.neurons = 16
+layers.3.init_method = he
+layers.3.l2_weight = 1e-5
+layers.3.l2_bias = 1e-5
+
+layers.4.type = leaky_relu
+layers.4.alpha = 1e-2
+
+layers.5.type = dense
+layers.5.neurons = 10
+layers.5.init_method = he
+
+[TRAINING]
+
+loss.type = categorical_cross_entropy_softmax
+
+optimizer.type = adam
+optimizer.learning_rate = 2e-2
+optimizer.decay = 3e-4
+
+batch_size = 64
+epochs = 2
+train_validation_rate = 0.05
+shuffle_batches = true
+verbose = true

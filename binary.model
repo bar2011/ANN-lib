@@ -1,0 +1,50 @@
+[MODEL]
+
+inputs = 50
+
+layers.1.type = dense
+layers.1.neurons = 64
+layers.1.init_method = he
+
+layers.2.type = leaky_relu
+layers.2.alpha = 1e-2
+
+layers.3.type = dropout
+layers.3.drop_rate = 0.1
+
+layers.4.type = dense
+layers.4.neurons = 64
+layers.4.init_method = he
+
+layers.5.type = leaky_relu
+layers.5.alpha = 1e-2
+
+layers.6.type = dropout
+layers.6.drop_rate = 0.1
+
+layers.7.type = dense
+layers.7.neurons = 32
+layers.7.init_method = he
+
+layers.8.type = leaky_relu
+layers.8.alpha = 1e-2
+
+layers.9.type = dense
+layers.9.neurons = 7
+layers.9.init_method = xavier
+
+layers.10.type = sigmoid
+
+[TRAINING]
+
+loss.type = binary_cross_entropy
+
+optimizer.type = adam
+optimizer.learning_rate = 2e-3
+optimizer.decay = 1e-3
+
+batch_size = 64
+epochs = 5
+train_validation_rate = 0.05
+shuffle_batches = true
+verbose = true
