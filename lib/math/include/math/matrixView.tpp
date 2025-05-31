@@ -89,6 +89,12 @@ std::unique_ptr<Math::Vector<size_t>> MatrixView<T>::argmaxCol() const {
 }
 
 template <typename T>
+std::shared_ptr<MatrixView<T>> MatrixView<T>::view() const {
+  return std::shared_ptr<MatrixView<T>>(
+      new MatrixView<T>{m_start, m_rows, m_cols, m_data});
+}
+
+template <typename T>
 std::shared_ptr<MatrixView<T>> MatrixView<T>::view(size_t startRow,
                                                    size_t endRow) const {
   if (startRow >= endRow)

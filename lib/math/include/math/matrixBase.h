@@ -44,6 +44,9 @@ public:
 
   virtual std::unique_ptr<Math::VectorView<T>> asVector() = 0;
 
+  // Returns a view of the entire matrix
+  virtual std::shared_ptr<Math::MatrixView<T>> view() const = 0;
+
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.

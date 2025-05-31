@@ -3,6 +3,8 @@
 #include "math/exception.h"
 #include "vectorView.h"
 
+#include <memory>
+
 namespace Math {
 template <typename T> const T &VectorView<T>::operator[](size_t index) const {
   return m_data[m_start + index];
@@ -14,6 +16,12 @@ template <typename T> const T &VectorView<T>::at(size_t index) const {
                           "Given index out of bounds"};
 
   return m_data[m_start + index];
+}
+
+template <typename T>
+std::shared_ptr<VectorView<T>> VectorView<T>::view() const {
+  return std::shared_ptr<VectorView<T>>(
+      new VectorView<T>{m_start, size(), m_data});
 }
 
 template <typename T>

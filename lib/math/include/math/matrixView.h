@@ -41,6 +41,9 @@ public:
   // Returns a vector containing the index of the biggest value in each column
   std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
 
+  // Returns a view of the entire matrix
+  std::shared_ptr<Math::MatrixView<T>> view() const;
+
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.

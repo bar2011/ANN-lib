@@ -16,6 +16,9 @@ public:
   // Single item access - WITH BOUNDS CHECKING
   virtual const T &at(size_t index) const = 0;
 
+  // Returns a view of the entire vector
+  virtual std::shared_ptr<VectorView<T>> view() const = 0;
+
   // Returns a view of a range of indicies from the vector
   // Included values are in the range of [start, end)
   // Throws if end > size or start >= end

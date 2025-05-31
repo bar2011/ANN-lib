@@ -99,7 +99,7 @@ template <typename T> const T &Vector<T>::at(size_t index) const {
 }
 
 template <typename T> std::shared_ptr<VectorView<T>> Vector<T>::view() const {
-  return std::make_shared<VectorView<T>>(0, m_data.size(), m_data);
+  return std::shared_ptr<VectorView<T>>(new VectorView<T>{0, size(), m_data});
 }
 
 template <typename T>

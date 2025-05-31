@@ -227,7 +227,8 @@ Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
 };
 
 template <typename T> std::shared_ptr<MatrixView<T>> Matrix<T>::view() const {
-  return std::make_shared<MatrixView<T>>(0, m_rows, m_cols, m_data);
+  return std::shared_ptr<MatrixView<T>>(
+      new MatrixView<T>{0, m_rows, m_cols, m_data});
 }
 
 template <typename T>
