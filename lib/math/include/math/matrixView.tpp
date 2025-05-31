@@ -1,6 +1,7 @@
 #pragma once
 
 #include "exception.h"
+#include "math/vectorView.h"
 #include "matrixView.h"
 
 #include "utils/parallel.h"
@@ -124,5 +125,11 @@ MatrixView<T>::transpose(size_t chunkSize,
       parallelize);
 
   return result;
+}
+
+template <typename T>
+std::unique_ptr<Math::VectorView<T>> MatrixView<T>::asVector() {
+  return std::unique_ptr<Math::VectorView<T>>{
+      new Math::VectorView<T>{m_start, m_rows * m_cols, m_data}};
 }
 } // namespace Math

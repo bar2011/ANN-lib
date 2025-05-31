@@ -53,6 +53,8 @@ public:
   transpose(size_t chunkSize = 4,
             std::optional<bool> parallelize = std::nullopt) const;
 
+  virtual std::unique_ptr<Math::VectorView<T>> asVector();
+
   friend Matrix<T>;
 
 private:

@@ -34,7 +34,7 @@ public:
   Matrix(const size_t rows, const size_t cols, std::vector<T> &&data);
 
   // Copy constructor
-  Matrix(const Matrix &other);
+  Matrix(const MatrixBase<T> &other);
 
   // Move constructor
   Matrix(Matrix &&other) noexcept;
@@ -115,11 +115,17 @@ public:
   // Returns a vector containing the index of the biggest value in each column
   std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
 
+  // Returns a vector which contains the same data as the matrix (same pointer),
+  // so that when the vector is changed, the matrix is changed
+  std::unique_ptr<Math::VectorView<T>> asVector();
+
   // Getters
   size_t rows() const { return m_rows; }
   size_t cols() const { return m_cols; }
   std::vector<T> &data() { return m_data; };
   const std::vector<T> &data() const { return m_data; }
+
+  friend class Vector<T>;
 
 private:
   std::vector<T> m_data{};

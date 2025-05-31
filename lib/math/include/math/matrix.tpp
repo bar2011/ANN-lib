@@ -38,9 +38,9 @@ Matrix<T>::Matrix(const size_t rows, const size_t cols)
     : m_data(rows * cols), m_rows{rows}, m_cols{cols} {};
 
 template <typename T>
-Matrix<T>::Matrix(const Matrix &other)
-    : m_data(other.m_data.size()), m_rows{other.m_rows}, m_cols{other.m_cols} {
-  std::copy_n(other.m_data.begin(), m_rows * m_cols, m_data.begin());
+Matrix<T>::Matrix(const MatrixBase<T> &other)
+    : m_data(other.data().size()), m_rows{other.rows()}, m_cols{other.cols()} {
+  std::copy_n(other.data().begin(), m_rows * m_cols, m_data.begin());
 }
 
 template <typename T>
@@ -291,5 +291,11 @@ std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxCol() const {
         (*maxCol)[j] = i;
 
   return maxCol;
+}
+
+template <typename T>
+std::unique_ptr<Math::VectorView<T>> Matrix<T>::asVector() {
+  return std::unique_ptr<Math::VectorView<T>>{
+      new Math::VectorView<T>{0, m_rows * m_cols, m_data}};
 }
 }; // namespace Math

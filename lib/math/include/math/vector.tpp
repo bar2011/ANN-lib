@@ -29,6 +29,12 @@ Vector<T>::Vector(Vector &&other) noexcept : m_data{std::move(other.m_data)} {
   other.m_data.resize(0);
 }
 
+template <typename T>
+Vector<T>::Vector(Matrix<T> &&other) noexcept
+    : m_data{std::move(other.m_data)} {
+  other.m_data.resize(0);
+}
+
 template <typename T> Vector<T> &Vector<T>::operator=(const Vector &other) {
   if (&other != this) {
     m_data.size() = other.m_data.size();

@@ -9,6 +9,9 @@
 #include <vector>
 
 namespace Math {
+
+template <typename T> class Matrix;
+
 // Simple vector class with access to mathematical operations
 // T = the data type the vector holds
 template <typename T> class Vector : public VectorBase<T> {
@@ -30,6 +33,9 @@ public:
 
   // Move constructor
   Vector(Vector &&other) noexcept;
+
+  // Move constructor from a matrix
+  Vector(Matrix<T> &&other) noexcept;
 
   // Copy assignment
   Vector &operator=(const Vector &other);

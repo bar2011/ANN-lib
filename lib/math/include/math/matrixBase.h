@@ -9,6 +9,8 @@ namespace Math {
 
 template <typename T> class Vector;
 
+template <typename T> class VectorView;
+
 template <typename T> class Matrix;
 
 template <typename T> class MatrixView;
@@ -39,6 +41,8 @@ public:
   virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
 
   virtual const std::vector<T> &data() const = 0;
+
+  virtual std::unique_ptr<Math::VectorView<T>> asVector() = 0;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
