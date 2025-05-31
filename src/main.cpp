@@ -1,9 +1,6 @@
-#include "ann/modelDescriptors.h"
+#include "ann/modelLoader.h"
 #include "loaders/csv.h"
 #include "loaders/mnist.h"
-
-#include "ann/feedForwardModel.h"
-#include "ann/modelDescriptors.h"
 
 #include "math/matrixBase.h"
 
@@ -26,7 +23,26 @@ void trainMNist();
 
 int main() {
   try {
-    trainRegression();
+    // 0 - mnist
+    // 1 - binary
+    // 2 - regression
+    int mode{};
+    std::cout
+        << "Which model to run? (0 - mnist, 1 - binary, 2 - regression)\n";
+    std::cin >> mode;
+    switch (mode) {
+    case 0:
+      trainMNist();
+      break;
+    case 1:
+      trainBinaryLogisticRegression();
+      break;
+    case 2:
+      trainRegression();
+      break;
+    default:
+      std::cout << "I expected better of you.\n";
+    }
   } catch (std::runtime_error &e) {
     std::cout << "An error occured: " << e.what() << '\n';
   } catch (...) {
@@ -50,35 +66,7 @@ void trainRegression() {
 
   auto trainData{loader->getTrainData()};
 
-  ANN::FeedForwardModelDescriptor modelDesc{
-      .inputs = inputs,
-      .layers = {ANN::Dense{
-                     .neurons = 64,
-                     .initMethod = ANN::WeightInit::He,
-                 },
-                 ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
-                 ANN::Dense{
-                     .neurons = 64,
-                     .initMethod = ANN::WeightInit::He,
-                 },
-                 ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
-                 ANN::Dense{
-                     .neurons = 32,
-                     .initMethod = ANN::WeightInit::He,
-                 },
-                 ANN::LeakyReLU{.alpha = 1e-2},
-                 ANN::Dense{.neurons = outputs,
-                            .initMethod = ANN::WeightInit::Xavier}}};
-
-  ANN::FeedForwardTrainingDescriptor trainDesc{
-      .loss = ANN::MeanSquaredErrorLoss{},
-      .optimizer = ANN::Adam{.learningRate = 2e-3f, .decay = 1e-3f},
-      .batchSize = batchSize,
-      .epochs = 5,
-      .shuffleBatches = true,
-      .verbose = true};
-
-  auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
+  auto model{ANN::ModelLoader::loadFeedForward("regression.model")};
 
   model->train(*trainData.first, *trainData.second);
 
@@ -107,36 +95,7 @@ void trainBinaryLogisticRegression() {
 
   auto trainData{loader->getTrainData()};
 
-  ANN::FeedForwardModelDescriptor modelDesc{
-      .inputs = inputs,
-      .layers = {
-          ANN::Dense{
-              .neurons = 64,
-              .initMethod = ANN::WeightInit::He,
-          },
-          ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
-          ANN::Dense{
-              .neurons = 64,
-              .initMethod = ANN::WeightInit::He,
-          },
-          ANN::LeakyReLU{.alpha = 1e-2}, ANN::Dropout{.dropRate = 0.1},
-          ANN::Dense{
-              .neurons = 32,
-              .initMethod = ANN::WeightInit::He,
-          },
-          ANN::LeakyReLU{.alpha = 1e-2},
-          ANN::Dense{.neurons = outputs, .initMethod = ANN::WeightInit::Xavier},
-          ANN::Sigmoid{}}};
-
-  ANN::FeedForwardTrainingDescriptor trainDesc{
-      .loss = ANN::BinaryCrossEntropyLoss{},
-      .optimizer = ANN::Adam{.learningRate = 2e-3f, .decay = 1e-3f},
-      .batchSize = batchSize,
-      .epochs = 5,
-      .shuffleBatches = true,
-      .verbose = true};
-
-  auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
+  auto model{ANN::ModelLoader::loadFeedForward("binary.model")};
 
   model->train(*trainData.first, *trainData.second);
 
@@ -162,33 +121,8 @@ void trainMNist() {
   auto testingImages{std::get<1>(data[1])};
   auto testingLabels{std::get<0>(data[1])};
 
-  ANN::FeedForwardModelDescriptor modelDesc{
-      .inputs = 28 * 28,
-      .layers = {
-          ANN::Dense{.neurons = 32,
-                     .initMethod = ANN::WeightInit::He,
-                     .l2Weight = 1e-5f,
-                     .l2Bias = 1e-5f},
-          ANN::LeakyReLU{.alpha = 1e-2f},
-          ANN::Dense{.neurons = 16,
-                     .initMethod = ANN::WeightInit::He,
-                     .l2Weight = 1e-5f,
-                     .l2Bias = 1e-5f},
-          ANN::LeakyReLU{.alpha = 1e-2f},
-          ANN::Dense{.neurons = 10, .initMethod = ANN::WeightInit::He},
-      }};
-
-  ANN::FeedForwardTrainingDescriptor trainDesc{
-      .loss = ANN::CategoricalCrossEntropySoftmaxLoss{},
-      .optimizer = ANN::Adam{.learningRate = 2e-2f, .decay = 3e-4f},
-      .batchSize = 64,
-      .epochs = 2,
-      .trainValidationRate = 0.05,
-      .shuffleBatches = true,
-      .verbose = true,
-  };
-
-  auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
+  auto model{ANN::ModelLoader::loadFeedForward("mnist.model")};
+  std::cout << "Loaded successfully.\n";
 
   model->train(*trainingImages, *trainingLabels);
 
@@ -199,4 +133,6 @@ void trainMNist() {
   std::cout << "\nTest loss: " << dataLoss << '\n';
   if (accuracy != -1)
     std::cout << "Test accuracy: " << accuracy << "\n\n";
+
+  std::cout << "Trained successfully.\n";
 }
