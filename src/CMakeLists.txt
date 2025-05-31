@@ -2,6 +2,7 @@
 add_library(ANN SHARED
   "ann/ann.cpp"
   "ann/feedForwardModel.cpp"
+  "ann/modelLoader.cpp"
   "ann/layers/dense.cpp"
   "ann/layers/dropout.cpp"
   "ann/loss/MSE.cpp"
