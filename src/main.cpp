@@ -197,6 +197,12 @@ void trainMNist() {
   auto model{std::make_unique<ANN::FeedForwardModel>(modelDesc, trainDesc)};
 
   model->train(*trainingImages, *trainingLabels);
+  auto pred{model->predict(*testingImages->view(0, 1)->asVector())->data()};
+
+  printMatrixImage(testingImages->view(0, 1)->reshape(28, 28));
+  std::cout << "Prediction: "
+            << std::max_element(pred.begin(), pred.end()) - pred.begin()
+            << "\nActual: " << (*testingLabels)[0] << '\n';
 
   // dense1->forward(testingImages);
   // activation1->forward(dense1->output());

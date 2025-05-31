@@ -281,6 +281,27 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
   std::cout.precision(coutPrecision);
 }
 
+std::unique_ptr<Math::Vector<float>>
+FeedForwardModel::predict(const Math::VectorBase<float> &inputs) const {
+  auto inputsMatrix{std::make_shared<Math::Matrix<float>>(
+      1, inputs.size(), inputs.data().data())};
+  auto prediction{
+      std::make_unique<Math::Vector<float>>(*predict(*inputsMatrix))};
+  return prediction;
+}
+
+std::shared_ptr<Math::MatrixBase<float>>
+FeedForwardModel::predict(const Math::MatrixBase<float> &inputs) const {
+  std::shared_ptr<Math::Matrix<float>> output{};
+  for (size_t i{}; i < m_layers.size(); ++i)
+    output = m_layers[i]->predict(
+        (i == 0) ? std::make_shared<Math::Matrix<float>>(inputs) : output);
+
+  if (auto loss = std::get_if<Loss::CategoricalSoftmax>(m_loss.get()))
+    return loss->predictSoftmax(output);
+  return output;
+}
+
 void FeedForwardModel::addLayer(Dense &dense, unsigned int &inputs) {
   m_layers.push_back(std::make_unique<Layers::Dense>(
       inputs, dense.neurons, dense.initMethod, dense.l1Weight, dense.l1Bias,
