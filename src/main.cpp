@@ -68,14 +68,14 @@ void trainRegression() {
 
   auto model{ANN::ModelLoader::loadFeedForward("regression.model")};
 
-  model->train(trainData.first, trainData.second);
+  model.train(trainData.first, trainData.second);
 
   auto [testData, testLabels]{loader->getTest()};
 
-  model->evaluate(testData, testLabels);
+  model.evaluate(testData, testLabels);
   float dataLoss{};
-  model->calculateLoss(&dataLoss);
-  float accuracy{model->calculateAccuracy()};
+  model.calculateLoss(&dataLoss);
+  float accuracy{model.calculateAccuracy()};
   std::cout << "\nTest loss: " << dataLoss << '\n';
   if (accuracy != -1)
     std::cout << "Test accuracy: " << accuracy << "\n\n";
@@ -97,14 +97,14 @@ void trainBinaryLogisticRegression() {
 
   auto model{ANN::ModelLoader::loadFeedForward("binary.model")};
 
-  model->train(trainData.first, trainData.second);
+  model.train(trainData.first, trainData.second);
 
   auto [testData, testLabels]{loader->getTest()};
 
-  model->evaluate(testData, testLabels);
+  model.evaluate(testData, testLabels);
   float dataLoss{};
-  model->calculateLoss(&dataLoss);
-  float accuracy{model->calculateAccuracy()};
+  model.calculateLoss(&dataLoss);
+  float accuracy{model.calculateAccuracy()};
   std::cout << "\nTest loss: " << dataLoss << '\n';
   if (accuracy != -1)
     std::cout << "Test accuracy: " << accuracy << "\n\n";
@@ -128,19 +128,19 @@ void trainMNist() {
   //
   // std::cout << "Loaded parameters successfully.\n";
 
-  model->train(trainingImages, trainingLabels, "mnist.log");
+  model.train(trainingImages, trainingLabels, "mnist.log");
 
-  model->evaluate(testingImages, testingLabels);
+  model.evaluate(testingImages, testingLabels);
   float dataLoss{};
-  model->calculateLoss(&dataLoss);
-  float accuracy{model->calculateAccuracy()};
+  model.calculateLoss(&dataLoss);
+  float accuracy{model.calculateAccuracy()};
   std::cout << "\nTest loss: " << dataLoss << '\n';
   if (accuracy != -1)
     std::cout << "Test accuracy: " << accuracy << "\n\n";
 
   std::cout << "Trained successfully.\n";
 
-  model->saveParams("mnist.data");
+  model.saveParams("mnist.data");
 
   std::cout << "Saved successfully.\n";
 }
