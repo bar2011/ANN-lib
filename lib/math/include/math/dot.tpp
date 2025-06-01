@@ -4,6 +4,7 @@
 
 #include "exception.h"
 #include "matrix.h"
+#include "utils/exceptions.h"
 #include "vector.h"
 
 #include "utils/parallel.h"
@@ -17,7 +18,7 @@ T dot(const VectorBase<T> &va, const VectorBase<T> &vb,
       std::optional<bool> parallelize) {
   if (va.size() != vb.size())
     throw Math::Exception{
-        "Math::dot(const VectorBase<T>&, const VectorBase<T>&, bool)",
+        CURRENT_FUNCTION,
         "Can't calculate the dot product of two differently sized vectors"};
   T result{};
 
@@ -52,7 +53,7 @@ Vector<T> dot(const MatrixBase<T> &m, const VectorBase<T> &v,
               std::optional<bool> parallelize) {
   if (m.cols() != v.size())
     throw Math::Exception{
-        "Math::dot(const MatrixBase<T>&, const VectorBase<T>&, bool)",
+        CURRENT_FUNCTION,
         "Can't calculate the dot product of a matrix and vector where the "
         "matrix's columns isn't as the vector's size"};
 
@@ -79,7 +80,7 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
               std::optional<bool> optimizeCache) {
   if (ma.cols() != mb.rows())
     throw Math::Exception{
-        "Math::dot(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
+        CURRENT_FUNCTION,
         "Can't compute the dot product of two matrices where the first "
         "matrix's col number isn't the same as the second matrix's row number"};
 
@@ -111,7 +112,7 @@ Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 std::optional<bool> optimizeCache) {
   if (ma.rows() != mb.rows())
     throw Math::Exception{
-        "Math::TA(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
+        CURRENT_FUNCTION,
         "Can't compute the \"transposed\" dot product of two matrices where "
         "the first matrix's row number isn't the same as the second matrix's "
         "row number"};
@@ -144,7 +145,7 @@ Matrix<T> dotTB(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                 std::optional<bool> parallelize) {
   if (ma.cols() != mb.cols())
     throw Math::Exception{
-        "Math::dotTB(const MatrixBase<T>&, const MatrixBase<T>&, bool)",
+        CURRENT_FUNCTION,
         "Can't compute the \"transposed\" dot product of two matrices where "
         "the first matrix's col number isn't the same as the second matrix's "
         "col number"};

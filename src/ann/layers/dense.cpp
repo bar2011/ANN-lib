@@ -6,6 +6,7 @@
 #include "math/linear.h"
 #include "math/matrix.h"
 #include "math/random.h"
+#include "utils/exceptions.h"
 
 namespace ANN {
 namespace Layers {
@@ -126,18 +127,16 @@ Dense::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
 void Dense::loadWeights(std::shared_ptr<Math::Matrix<float>> weights) {
   if (weights->rows() != m_weights->rows() ||
       weights->cols() != m_weights->cols())
-    throw ANN::Exception{
-        "ANN::Layers::Dense::loadWeights(std::shared_ptr<Math::Matrix<float>>)",
-        "Given weights don't match saved weights' dimensions"};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Given weights don't match saved weights' dimensions"};
 
   *m_weights = std::move(*weights);
 }
 
 void Dense::loadBiases(std::shared_ptr<Math::Vector<float>> biases) {
   if (biases->size() != m_biases->size())
-    throw ANN::Exception{
-        "ANN::Layers::Dense::loadBiases(std::shared_ptr<Math::Matrix<float>>)",
-        "Given biases don't match saved biases' size"};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Given biases don't match saved biases' size"};
 
   *m_biases = std::move(*biases);
 }

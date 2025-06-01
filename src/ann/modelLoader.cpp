@@ -2,6 +2,7 @@
 #include "ann/exception.h"
 #include "ann/feedForwardModel.h"
 #include "ann/modelDescriptors.h"
+#include "utils/exceptions.h"
 #include "utils/variants.h"
 
 #include <algorithm>
@@ -13,11 +14,9 @@
 namespace ANN {
 std::unique_ptr<FeedForwardModel>
 ModelLoader::loadFeedForward(const std::string &path) {
-  constexpr auto context{
-      "ANN::ModelLoader::loadFeedForward(const std::string&)"};
   std::ifstream file{path};
   if (!file.is_open())
-    throw ANN::Exception{context, "Unable to open file " + path};
+    throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file " + path};
 
   FeedForwardModelDescriptor modelDesc{};
   FeedForwardTrainingDescriptor trainDesc{};
@@ -46,8 +45,9 @@ ModelLoader::loadFeedForward(const std::string &path) {
       mode = 2;
       continue;
     } else if (mode == 0)
-      throw ANN::Exception{
-          context, "Expected [MODEL] or [TRAINING]. From line " + lineNumStr};
+      throw ANN::Exception{CURRENT_FUNCTION,
+                           "Expected [MODEL] or [TRAINING]. From line " +
+                               lineNumStr};
 
     std::string key, val;
     split(line, '=', key, val, lineNumStr);
@@ -57,8 +57,9 @@ ModelLoader::loadFeedForward(const std::string &path) {
       if (key == "inputs") {
         int inputs{parseStrictInt(val, lineNumStr)};
         if (inputs <= 0)
-          throw ANN::Exception{
-              context, "Input number needs to be > 0. From line " + lineNumStr};
+          throw ANN::Exception{CURRENT_FUNCTION,
+                               "Input number needs to be > 0. From line " +
+                                   lineNumStr};
         modelDesc.inputs = inputs;
         continue;
       }
@@ -75,7 +76,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
 
         // Throw if layerNum is bigger by at least two then current layer number
         if (layerNum > modelDesc.layers.size() + 1)
-          throw ANN::Exception{context,
+          throw ANN::Exception{CURRENT_FUNCTION,
                                "Can't define layer " + layerNumStr +
                                    " when there has been " +
                                    std::to_string(modelDesc.layers.size()) +
@@ -83,14 +84,14 @@ ModelLoader::loadFeedForward(const std::string &path) {
 
         // Throw if the first occurance of a layer number isn't with "type"
         if (layerNum == modelDesc.layers.size() + 1 && config != "type")
-          throw ANN::Exception{context,
+          throw ANN::Exception{CURRENT_FUNCTION,
                                "Unknown layer type. Please declare it before "
                                "any other configuration. From line " +
                                    lineNumStr};
 
         // Throw if an already existing layer's type has been changed
         if (layerNum <= modelDesc.layers.size() && config == "type")
-          throw ANN::Exception{context,
+          throw ANN::Exception{CURRENT_FUNCTION,
                                "A layer's type cannot be changed after its "
                                "initial setting. From line " +
                                    lineNumStr};
@@ -114,7 +115,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
             modelDesc.layers.push_back(Softmax{});
           else
             throw ANN::Exception{
-                context,
+                CURRENT_FUNCTION,
                 "Unknown layer type provided '" + val +
                     "'. Supported types are: 'dense', 'dropout', 'step', "
                     "'sigmoid', 'relu', 'leaky_relu', 'softmax'. From line " +
@@ -133,8 +134,9 @@ ModelLoader::loadFeedForward(const std::string &path) {
         continue;
       }
 
-      throw ANN::Exception{
-          context, "Expected 'inputs' or 'layers...'. From line " + lineNumStr};
+      throw ANN::Exception{CURRENT_FUNCTION,
+                           "Expected 'inputs' or 'layers...'. From line " +
+                               lineNumStr};
     } else if (mode == 2) {
       if (key.starts_with("loss.")) {
         // Erase "loss." from key start
@@ -153,7 +155,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
             trainDesc.loss = MeanAbsoluteErrorLoss{};
           else
             throw ANN::Exception{
-                context,
+                CURRENT_FUNCTION,
                 "Unknown loss type provided '" + val +
                     "'. Supported type are: 'categorical_cross_entropy', "
                     "'categorical_cross_entropy_softmax', "
@@ -164,9 +166,10 @@ ModelLoader::loadFeedForward(const std::string &path) {
         }
 
         throw ANN::Exception{
-            context, "Unknown loss configuration provided '" + key +
-                         "'. Supported configurations are: 'type'. From line " +
-                         lineNumStr};
+            CURRENT_FUNCTION,
+            "Unknown loss configuration provided '" + key +
+                "'. Supported configurations are: 'type'. From line " +
+                lineNumStr};
         continue;
       }
       if (key.starts_with("optimizer.")) {
@@ -183,7 +186,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
           else if (val == "adam")
             trainDesc.optimizer = Adam{};
           else
-            throw ANN::Exception{context,
+            throw ANN::Exception{CURRENT_FUNCTION,
                                  "Unknown optimizer type provided '" + val +
                                      "'. Supported type are: 'sgd', 'adagrad', "
                                      "'rmsprop', 'adam'. From line " +
@@ -194,7 +197,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
         std::visit(Utils::overloaded{
                        [&lineNumStr](std::monostate &) {
                          throw ANN::Exception{
-                             context,
+                             CURRENT_FUNCTION,
                              "optimizer.type must be declared before any "
                              "further settings. From line " +
                                  lineNumStr};
@@ -209,16 +212,17 @@ ModelLoader::loadFeedForward(const std::string &path) {
       if (key == "batch_size") {
         trainDesc.batchSize = parseStrictInt(val, lineNumStr);
         if (trainDesc.batchSize <= 0)
-          throw ANN::Exception{context, "Batch size must be a natural number "
-                                        "(integer greater then 0). From line " +
-                                            lineNumStr};
+          throw ANN::Exception{CURRENT_FUNCTION,
+                               "Batch size must be a natural number "
+                               "(integer greater then 0). From line " +
+                                   lineNumStr};
         continue;
       }
       if (key == "epochs") {
         trainDesc.epochs = parseStrictInt(val, lineNumStr);
         if (trainDesc.epochs < 0)
           throw ANN::Exception{
-              context,
+              CURRENT_FUNCTION,
               "Epochs must be a non-negative integer. From line " + lineNumStr};
         continue;
       }
@@ -226,9 +230,10 @@ ModelLoader::loadFeedForward(const std::string &path) {
         trainDesc.trainValidationRate = parseStrictFloat(val, lineNumStr);
         if (trainDesc.trainValidationRate <= 0 ||
             trainDesc.trainValidationRate >= 1)
-          throw ANN::Exception{context, "train_validation_rate must be between "
-                                        "0 and 1 (not including). From line " +
-                                            lineNumStr};
+          throw ANN::Exception{CURRENT_FUNCTION,
+                               "train_validation_rate must be between "
+                               "0 and 1 (not including). From line " +
+                                   lineNumStr};
         continue;
       }
       if (key == "shuffle_batches") {
@@ -240,7 +245,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
         continue;
       }
 
-      throw ANN::Exception{context,
+      throw ANN::Exception{CURRENT_FUNCTION,
                            "Expected 'loss...', 'optimizer...', 'batch_size', "
                            "'epochs', 'train_validation_rate', "
                            "'shuffle_batches', or 'verbose'. From line " +
@@ -254,23 +259,31 @@ ModelLoader::loadFeedForward(const std::string &path) {
     if (std::holds_alternative<Dense>(layer)) {
       Dense &dense{std::get<Dense>(layer)};
       if (dense.neurons == 0)
-        throw ANN::Exception{context,
-                             "Required config 'neurons' in layer number " +
-                                 std::to_string(i + 1) + " has not been set."};
+        throw ANN::Exception{
+            CURRENT_FUNCTION,
+            "Required configuration 'neurons' in layer number " +
+                std::to_string(i + 1) + " has not been set."};
     } else if (std::holds_alternative<Dropout>(layer)) {
       Dropout &dropout{std::get<Dropout>(layer)};
       if (dropout.dropRate == 0)
-        throw ANN::Exception{context,
-                             "Required config 'drop_rate' in layer number " +
-                                 std::to_string(i + 1) + " has not been set."};
+        throw ANN::Exception{
+            CURRENT_FUNCTION,
+            "Required configuration 'drop_rate' in layer number " +
+                std::to_string(i + 1) + " has not been set."};
     } else if (std::holds_alternative<LeakyReLU>(layer)) {
       LeakyReLU &leakyReLU{std::get<LeakyReLU>(layer)};
       if (leakyReLU.alpha == 0)
-        throw ANN::Exception{context,
-                             "Required config 'alpha' in layer number " +
+        throw ANN::Exception{CURRENT_FUNCTION,
+                             "Required configuration 'alpha' in layer number " +
                                  std::to_string(i + 1) + " has not been set."};
     }
   }
+
+  // Check if input number has been set
+  if (modelDesc.inputs == 0)
+    throw ANN::Exception{
+        CURRENT_FUNCTION,
+        "Required model configuration 'inputs' has not been set."};
 
   return std::make_unique<FeedForwardModel>(modelDesc, trainDesc);
 }
@@ -278,13 +291,10 @@ ModelLoader::loadFeedForward(const std::string &path) {
 void ModelLoader::configLayer(Dense &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  constexpr auto context{
-      "ANN::ModelLoader::configLayer(Dense&, const "
-      "std::string&, const std::string&, const std::string&)"};
   if (config == "neurons") {
     int neurons{parseStrictInt(value, lineNumStr)};
     if (neurons <= 0)
-      throw ANN::Exception{context,
+      throw ANN::Exception{CURRENT_FUNCTION,
                            "Dense layer neuron num must be a natual number "
                            "(integer greater then 0). From line " +
                                lineNumStr};
@@ -298,7 +308,7 @@ void ModelLoader::configLayer(Dense &layer, const std::string &config,
     else if (value == "xavier")
       layer.initMethod = WeightInit::Xavier;
     else
-      throw ANN::Exception{context,
+      throw ANN::Exception{CURRENT_FUNCTION,
                            "Unknown weight initalizer. Allowed initializers "
                            "are: 'random', 'he', and 'xavier'. From line " +
                                lineNumStr};
@@ -317,75 +327,68 @@ void ModelLoader::configLayer(Dense &layer, const std::string &config,
     return;
   }
   throw ANN::Exception{
-      context, "Unknown dense configuration provided '" + config +
-                   "'. Allowed configurations "
-                   "are: 'neurons', 'init_method', 'l1_weight', 'l1_bias', "
-                   "'l2_weight', 'l2_bias'. From line " +
-                   lineNumStr};
+      CURRENT_FUNCTION,
+      "Unknown dense configuration provided '" + config +
+          "'. Allowed configurations "
+          "are: 'neurons', 'init_method', 'l1_weight', 'l1_bias', "
+          "'l2_weight', 'l2_bias'. From line " +
+          lineNumStr};
 }
 void ModelLoader::configLayer(Dropout &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  constexpr auto context{
-      "ANN::ModelLoader::configLayer(Dropout&, const "
-      "std::string&, const std::string&, const std::string&)"};
   if (config == "drop_rate") {
     layer.dropRate = parseStrictFloat(value, lineNumStr);
     if (layer.dropRate < 0 || layer.dropRate > 1)
-      throw ANN::Exception{context, "Invalid drop rate provided. Needs to be "
-                                    "between 0 and 1 (including). From line " +
-                                        lineNumStr};
+      throw ANN::Exception{CURRENT_FUNCTION,
+                           "Invalid drop rate provided. Needs to be "
+                           "between 0 and 1 (including). From line " +
+                               lineNumStr};
     return;
   }
   throw ANN::Exception{
-      context, "Unknown dropout configuration provided '" + config +
-                   "'. Allowed configurations are: 'drop_rate'. From line " +
-                   lineNumStr};
+      CURRENT_FUNCTION,
+      "Unknown dropout configuration provided '" + config +
+          "'. Allowed configurations are: 'drop_rate'. From line " +
+          lineNumStr};
 }
 void ModelLoader::configLayer(Step &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  throw ANN::Exception{"ANN::ModelLoader::configLayer(Step&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "No step configuration supported. From line " +
                            lineNumStr};
 }
 void ModelLoader::configLayer(Sigmoid &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  throw ANN::Exception{"ANN::ModelLoader::configLayer(Sigmoid&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "No sigmoid configuration supported. From line " +
                            lineNumStr};
 }
 void ModelLoader::configLayer(ReLU &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  throw ANN::Exception{"ANN::ModelLoader::configLayer(ReLU&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "No relu configuration supported. From line " +
                            lineNumStr};
 }
 void ModelLoader::configLayer(LeakyReLU &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  constexpr auto context{
-      "ANN::ModelLoader::configLayer(LeakyReLU&, const "
-      "std::string&, const std::string&, const std::string&)"};
   if (config == "alpha") {
     layer.alpha = parseStrictFloat(value, lineNumStr);
     return;
   }
   throw ANN::Exception{
-      context, "Unknown leaky relu configuration provided '" + config +
-                   "'. Allowed configurations are: 'alpha'. From line " +
-                   lineNumStr};
+      CURRENT_FUNCTION,
+      "Unknown leaky relu configuration provided '" + config +
+          "'. Allowed configurations are: 'alpha'. From line " + lineNumStr};
 }
 void ModelLoader::configLayer(Softmax &layer, const std::string &config,
                               const std::string &value,
                               const std::string &lineNumStr) {
-  throw ANN::Exception{"ANN::ModelLoader::configLayer(Softmax&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "No softmax configuration supported. From line " +
                            lineNumStr};
 }
@@ -405,8 +408,7 @@ void ModelLoader::configOptimizer(SGD &optimizer, const std::string &config,
     optimizer.momentum = parseStrictFloat(value, lineNumStr);
     return;
   }
-  throw ANN::Exception{"ANN::ModelLoader::configOptimizer(SGD&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "Unknown SGD configuration provided '" + config +
                            "'. Allowed configurations are: 'learning_rate', "
                            "'decay', 'momentum'. From line " +
@@ -427,8 +429,7 @@ void ModelLoader::configOptimizer(AdaGrad &optimizer, const std::string &config,
     optimizer.epsilon = parseStrictFloat(value, lineNumStr);
     return;
   }
-  throw ANN::Exception{"ANN::ModelLoader::configOptimizer(AdaGrad&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "Unknown AdaGrad configuration provided '" + config +
                            "'. Allowed configurations are: 'learning_rate', "
                            "'decay', 'epsilon'. From line " +
@@ -453,8 +454,7 @@ void ModelLoader::configOptimizer(RMSProp &optimizer, const std::string &config,
     optimizer.rho = parseStrictFloat(value, lineNumStr);
     return;
   }
-  throw ANN::Exception{"ANN::ModelLoader::configOptimizer(RMSProp&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "Unknown RMSProp configuration provided '" + config +
                            "'. Allowed configurations are: 'learning_rate', "
                            "'decay', 'epsilon', 'rho'. From line " +
@@ -483,8 +483,7 @@ void ModelLoader::configOptimizer(Adam &optimizer, const std::string &config,
     optimizer.beta2 = parseStrictFloat(value, lineNumStr);
     return;
   }
-  throw ANN::Exception{"ANN::ModelLoader::configOptimizer(Adam&, const "
-                       "std::string&, const std::string&, const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "Unknown Adam configuration provided '" + config +
                            "'. Allowed configurations are: 'learning_rate', "
                            "'decay', 'epsilon', 'beta1', 'beta2'. From line " +
@@ -513,10 +512,8 @@ void ModelLoader::split(std::string_view str, char c, std::string &left,
                         std::string &right, const std::string &lineNumStr) {
   auto foundC{str.find(c)};
   if (foundC == std::string::npos)
-    throw ANN::Exception{"ANN::ModelLoader::split(std::string_view, char, "
-                         "std::string&, std::string &, const std::string&)",
-                         "Expected '" + std::string{1, c} + "'. From line " +
-                             lineNumStr};
+    throw ANN::Exception{CURRENT_FUNCTION, "Expected '" + std::string{1, c} +
+                                               "'. From line " + lineNumStr};
 
   left = str.substr(0, foundC);
   right = str.substr(foundC + 1);
@@ -526,21 +523,18 @@ void ModelLoader::split(std::string_view str, char c, std::string &left,
 
 int ModelLoader::parseStrictInt(const std::string &str,
                                 const std::string &lineNumStr) {
-  constexpr auto context{"ANN::ModelLoader::parseStrictInt(const std::string&, "
-                         "const std::string&)"};
-
   size_t pos{};
   int val{};
 
   try {
     val = std::stoi(str, &pos);
   } catch (...) {
-    throw ANN::Exception{context,
+    throw ANN::Exception{CURRENT_FUNCTION,
                          "Expected an integer value. From line " + lineNumStr};
   };
 
   if (pos != str.size())
-    throw ANN::Exception{context,
+    throw ANN::Exception{CURRENT_FUNCTION,
                          "Expected an integer value. From line " + lineNumStr};
 
   return val;
@@ -548,22 +542,21 @@ int ModelLoader::parseStrictInt(const std::string &str,
 
 float ModelLoader::parseStrictFloat(const std::string &str,
                                     const std::string &lineNumStr) {
-  constexpr auto context{"ANN::ModelLoader::parseStrictFloat(const "
-                         "std::string&, const std::string&)"};
-
   size_t pos{};
   float val{};
 
   try {
     val = std::stof(str, &pos);
   } catch (...) {
-    throw ANN::Exception{
-        context, "Expected a floating point value. From line " + lineNumStr};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Expected a floating point value. From line " +
+                             lineNumStr};
   };
 
   if (pos != str.size())
-    throw ANN::Exception{
-        context, "Expected a floating point value. From line " + lineNumStr};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Expected a floating point value. From line " +
+                             lineNumStr};
 
   return val;
 }
@@ -574,8 +567,7 @@ bool ModelLoader::parseStrictBool(const std::string &str,
     return true;
   if (str == "false")
     return false;
-  throw ANN::Exception{"ANN::ModelLoader::parseStrictFloat(const std::string&, "
-                       "const std::string&)",
+  throw ANN::Exception{CURRENT_FUNCTION,
                        "Expected a boolean value. From line " + lineNumStr};
 }
 } // namespace ANN

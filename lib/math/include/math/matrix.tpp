@@ -2,6 +2,7 @@
 
 #include "exception.h"
 #include "matrix.h"
+#include "utils/exceptions.h"
 #include "vector.h"
 #include "vectorView.h"
 
@@ -28,9 +29,8 @@ template <typename T>
 Matrix<T>::Matrix(const size_t rows, const size_t cols, std::vector<T> &&data)
     : m_data{std::move(data)}, m_rows{rows}, m_cols{cols} {
   if (m_data.size() != m_rows * m_cols)
-    throw Math::Exception{
-        "Math::Matrix<T>(const size_t, const size_t, std::vector<T>&&)",
-        "Given vector doesn't match rows * cols"};
+    throw Math::Exception{CURRENT_FUNCTION,
+                          "Given vector doesn't match rows * cols"};
 }
 
 template <typename T>
@@ -85,8 +85,7 @@ void Matrix<T>::transform(const MatrixBase<T> &m,
                           std::function<void(T *, const T *)> gen,
                           std::optional<bool> parallelize, size_t cost) {
   if (m.rows() != rows() || m.cols() != cols())
-    throw Math::Exception{"Math::Matrix<T>::transform(const MatrixBase<T>&, "
-                          "std::function<void(T*,const T*)>",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Can't transform matrices with different dimensions"};
   Utils::Parallel::dynamicParallelFor(
       cost, m_data.size(),
@@ -99,10 +98,8 @@ void Matrix<T>::transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
                           std::optional<bool> parallelize, size_t cost) {
   if (ma.rows() != rows() || ma.cols() != cols() || mb.rows() != rows() ||
       mb.cols() != cols())
-    throw Math::Exception{
-        "Math::Matrix<T>::transform(const MatrixBase<T>&, const MatrixBase<T>&"
-        "std::function<void(T*,const T*)>",
-        "Can't transform matrices with different dimensions"};
+    throw Math::Exception{CURRENT_FUNCTION,
+                          "Can't transform matrices with different dimensions"};
   Utils::Parallel::dynamicParallelFor(
       cost, m_data.size(), [&gen, &data = m_data, &ma, &mb](size_t i) {
         gen(&data[i], &ma.data()[i], &mb.data()[i]);
@@ -111,8 +108,7 @@ void Matrix<T>::transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
 
 template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
   if (v.size() != cols())
-    throw Math::Exception{"Math::Matrix<T>::insertRow(const Vector<T>&)",
-                          "Invalid size for added row"};
+    throw Math::Exception{CURRENT_FUNCTION, "Invalid size for added row"};
 
   ++m_rows;
   m_data.insert(m_data.end(), v.m_data.begin(), v.m_data.end());
@@ -160,10 +156,10 @@ const T &Matrix<T>::operator[](const size_t row, const size_t col) const {
 
 template <typename T> T &Matrix<T>::at(const size_t row, const size_t col) {
   if (row >= m_rows)
-    throw Math::Exception{"Math::Matrix<T>::at(const size_t, const size_t)",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid row number: out of bounds"};
   if (col >= m_cols)
-    throw Math::Exception{"Math::Matrix<T>::at(const size_t, const size_t)",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
@@ -172,13 +168,11 @@ template <typename T> T &Matrix<T>::at(const size_t row, const size_t col) {
 template <typename T>
 const T &Matrix<T>::at(const size_t row, const size_t col) const {
   if (row >= m_rows)
-    throw Math::Exception{
-        "Math::Matrix<T>::at(const size_t, const size_t) const",
-        "Invalid row number: out of bounds"};
+    throw Math::Exception{CURRENT_FUNCTION,
+                          "Invalid row number: out of bounds"};
   if (col >= m_cols)
-    throw Math::Exception{
-        "Math::Matrix<T>::at(const size_t, const size_t) const",
-        "Invalid column number: out of bounds"};
+    throw Math::Exception{CURRENT_FUNCTION,
+                          "Invalid column number: out of bounds"};
 
   return m_data[row * m_cols + col];
 }
@@ -197,7 +191,7 @@ Matrix<T>::operator[](const size_t row) const {
 template <typename T>
 const std::shared_ptr<VectorView<T>> Matrix<T>::at(const size_t row) {
   if (row >= m_rows)
-    throw Math::Exception{"Math::Matrix<T>::at(const size_t)",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid row number: out of bounds"};
 
   return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
@@ -207,7 +201,7 @@ template <typename T>
 const std::shared_ptr<const VectorView<T>>
 Matrix<T>::at(const size_t row) const {
   if (row >= m_rows)
-    throw Math::Exception{"Math::Matrix<T>::at(const size_t) const",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid row number: out of bounds"};
 
   return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
@@ -216,9 +210,7 @@ Matrix<T>::at(const size_t row) const {
 template <typename T>
 Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
   if (rows * cols != m_rows * m_cols)
-    throw Math::Exception{
-        "Math::Matrix<T>::reshape(const size_t, const size_t)",
-        "Reshape dimension mismatch"};
+    throw Math::Exception{CURRENT_FUNCTION, "Reshape dimension mismatch"};
 
   m_rows = rows;
   m_cols = cols;
@@ -235,10 +227,9 @@ template <typename T>
 std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
                                                size_t endRow) const {
   if (startRow >= endRow)
-    throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
-                          "Start row ahead of the end row"};
+    throw Math::Exception{CURRENT_FUNCTION, "Start row ahead of the end row"};
   if (endRow > m_rows)
-    throw Math::Exception{"Math::Matrix<T>::view(size_t, size_t) const",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "End row is outside the matrix's bound"};
 
   // Can't use make_shared because the constructor is private
@@ -248,7 +239,7 @@ std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
 
 template <typename T> std::pair<size_t, size_t> Matrix<T>::argmax() const {
   if (rows() == 0 || cols() == 0)
-    throw Math::Exception{"Math::Matrix<T>::argmax() const",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Can't get the maximum of an empty matrix"};
 
   auto maxIndex{std::pair{0uz, 0uz}};
@@ -265,7 +256,7 @@ template <typename T> std::pair<size_t, size_t> Matrix<T>::argmax() const {
 template <typename T>
 std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxRow() const {
   if (rows() == 0 || cols() == 0)
-    throw Math::Exception{"Math::Matrix<T>::argmaxRow() const",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Can't get the maximum of an empty matrix"};
 
   auto maxRow{std::make_unique<Math::Vector<size_t>>(rows())};
@@ -281,7 +272,7 @@ std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxRow() const {
 template <typename T>
 std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxCol() const {
   if (rows() == 0 || cols() == 0)
-    throw Math::Exception{"Math::Matrix<T>::argmaxCol() const",
+    throw Math::Exception{CURRENT_FUNCTION,
                           "Can't get the maximum of an empty matrix"};
 
   auto maxCol{std::make_unique<Math::Vector<size_t>>(cols())};

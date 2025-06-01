@@ -4,6 +4,7 @@
 
 #include "exception.h"
 #include "matrix.h"
+#include "utils/exceptions.h"
 #include "vector.h"
 
 #include "utils/parallel.h"
@@ -15,9 +16,8 @@ namespace Math {
 template <typename T>
 Vector<T> operator+(const VectorBase<T> &a, const VectorBase<T> &b) {
   if (a.size() != b.size())
-    throw Math::Exception{
-        "Math::operator+(VectorBase<T>, const VectorBase<T>&)",
-        "Unable to add two vectors of different sizes"};
+    throw Math::Exception{CURRENT_FUNCTION,
+                          "Unable to add two vectors of different sizes"};
 
   Vector<T> result(a.size());
   std::transform(a.begin(), a.end(), b.begin(), result.begin(), std::plus<T>());
@@ -46,7 +46,7 @@ Matrix<T> operator+(const MatrixBase<T> &m, const VectorBase<T> &v) {
     };
   else
     throw Math::Exception{
-        "Math::operator+(const MatrixBase<T>&, const VectorBase<T>&)",
+        CURRENT_FUNCTION,
         "Can't add matrix and vector where their sizes don't match for row or "
         "column wise addition"};
 

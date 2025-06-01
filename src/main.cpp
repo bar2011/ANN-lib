@@ -124,9 +124,9 @@ void trainMNist() {
   auto model{ANN::ModelLoader::loadFeedForward("mnist.model")};
   std::cout << "Loaded model successfully.\n";
 
-  model->loadParams("mnist.data");
-
-  std::cout << "Loaded parameters successfully.\n";
+  // model->loadParams("mnist.data");
+  //
+  // std::cout << "Loaded parameters successfully.\n";
 
   model->train(*trainingImages, *trainingLabels);
 

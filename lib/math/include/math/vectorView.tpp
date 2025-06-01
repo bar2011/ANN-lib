@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/exception.h"
+#include "utils/exceptions.h"
 #include "vectorView.h"
 
 #include <memory>
@@ -12,8 +13,7 @@ template <typename T> const T &VectorView<T>::operator[](size_t index) const {
 
 template <typename T> const T &VectorView<T>::at(size_t index) const {
   if (index >= m_size || index + m_start >= m_data.size())
-    throw Math::Exception{"VectorView<T>::at(size_t) const",
-                          "Given index out of bounds"};
+    throw Math::Exception{CURRENT_FUNCTION, "Given index out of bounds"};
 
   return m_data[m_start + index];
 }
@@ -29,12 +29,12 @@ std::shared_ptr<VectorView<T>> VectorView<T>::view(size_t start,
                                                    size_t end) const {
   if (end > m_data.size() - m_start)
     throw Math::Exception{
-        "VectorView<T>::view(size_t, size_t) const",
+        CURRENT_FUNCTION,
         "Unable to create view of vector.\nGiven end is outside of "
         "the vector."};
   if (start >= end)
     throw Math::Exception{
-        "VectorView<T>::view(size_t, size_t) const",
+        CURRENT_FUNCTION,
         "Unable to create view of vector.\nGiven start is after "
         "the given end."};
 

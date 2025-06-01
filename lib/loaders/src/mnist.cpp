@@ -1,6 +1,7 @@
 #include "loaders/mnist.h"
 
 #include "loaders/exception.h"
+#include "utils/exceptions.h"
 
 #include <array>
 #include <fstream>
@@ -31,7 +32,7 @@ MNist::loadLabelsFile(const std::string &labelsPath) {
   unsigned int magicNumber{readU32(labelsFile, labelsPath)};
   if (magicNumber != 2049)
     throw Loaders::Exception{
-        "Loaders::MNist::loadLabelsFile(const std::string&)",
+        CURRENT_FUNCTION,
         "Invalid file format for image label file: " + labelsPath +
             "\n Magic number mismatch (expected 2049)"};
 
@@ -46,7 +47,7 @@ MNist::loadLabelsFile(const std::string &labelsPath) {
         unsigned char byte{};
         if (!labelsFile.read(reinterpret_cast<char *>(&byte), 1))
           throw Loaders::Exception{
-              "Loaders::MNist::loadImagesFile(const std::string&)",
+              CURRENT_FUNCTION,
               "Can't read file " + labelsPath +
                   ": file size smaller then needed to read all images."};
         *item = static_cast<float>(byte);
@@ -64,9 +65,8 @@ MNist::loadImagesFile(const std::string &imagesPath) {
   unsigned int magicNumber{readU32(imagesFile, imagesPath)};
   if (magicNumber != 2051)
     throw Loaders::Exception{
-        "Loaders::MNist::loadImagesFile(const std::string&)",
-        "Invalid file format for images file: " + imagesPath +
-            "\n Magic number mismatch (expected 2051)"};
+        CURRENT_FUNCTION, "Invalid file format for images file: " + imagesPath +
+                              "\n Magic number mismatch (expected 2051)"};
 
   // Number of images
   unsigned int size{readU32(imagesFile, imagesPath)};
@@ -84,7 +84,7 @@ MNist::loadImagesFile(const std::string &imagesPath) {
         unsigned char byte{};
         if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))
           throw Loaders::Exception{
-              "Loaders::MNist::loadImagesFile(const std::string&)",
+              CURRENT_FUNCTION,
               "Can't read file " + imagesPath +
                   ": file size smaller then needed to read all images."};
         *item = static_cast<float>(byte) / 255.0f;
@@ -97,9 +97,8 @@ MNist::loadImagesFile(const std::string &imagesPath) {
 unsigned int MNist::readU32(std::ifstream &file, const std::string &filename) {
   std::array<char, 4> bytes{};
   if (!file.read(bytes.begin(), 4))
-    throw Loaders::Exception{
-        "Loaders::MNist::readU32(std::ifstream&, const std::string&)",
-        "Can't read file " + filename + ": reached end"};
+    throw Loaders::Exception{CURRENT_FUNCTION,
+                             "Can't read file " + filename + ": reached end"};
   unsigned int value{
       static_cast<unsigned int>(static_cast<unsigned char>(bytes[3]) |
                                 (static_cast<unsigned char>(bytes[2]) << 8) |

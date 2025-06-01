@@ -1,6 +1,7 @@
 #include "loaders/csv.h"
 
 #include "loaders/exception.h"
+#include "utils/exceptions.h"
 
 #include <sstream>
 
@@ -22,7 +23,7 @@ CSV::getTrainBatch(size_t batchNum) {
   for (size_t i{}; i < batchNum * m_batchSize; ++i)
     if (!std::getline(m_trainDataFile, line) ||
         !std::getline(m_trainLabelsFile, line))
-      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+      throw Loaders::Exception{CURRENT_FUNCTION,
                                "Reached EOF before got to start of batch"};
 
   std::vector<float> dataVector{};
@@ -34,26 +35,24 @@ CSV::getTrainBatch(size_t batchNum) {
 
   for (size_t batch{}; batch < m_batchSize; ++batch) {
     if (!std::getline(m_trainDataFile, line))
-      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+      throw Loaders::Exception{CURRENT_FUNCTION,
                                "Reached EOF while reading batch data"};
 
     std::istringstream ssData{line};
     for (size_t i{}; i < m_features; ++i) {
       if (!std::getline(ssData, token, ','))
-        throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
-                                 "Data field missing"};
+        throw Loaders::Exception{CURRENT_FUNCTION, "Data field missing"};
       dataVector.push_back(std::stof(token));
     }
 
     if (!std::getline(m_trainLabelsFile, line))
-      throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
+      throw Loaders::Exception{CURRENT_FUNCTION,
                                "Reached EOF while reading batch labels"};
 
     std::istringstream ssLabels{line};
     for (size_t i{}; i < m_targets; ++i) {
       if (!std::getline(ssLabels, token, ','))
-        throw Loaders::Exception{"Loaders::CSV::getTrainBatch(size_t)",
-                                 "Label field missing"};
+        throw Loaders::Exception{CURRENT_FUNCTION, "Label field missing"};
       labelsVector.push_back(std::stof(token));
     }
   }
@@ -87,26 +86,24 @@ CSV::getTrainData() {
 
   for (size_t batch{}; batch < m_trainSize; ++batch) {
     if (!std::getline(m_trainDataFile, line))
-      throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+      throw Loaders::Exception{CURRENT_FUNCTION,
                                "Reached EOF while reading data"};
 
     std::istringstream ssData{line};
     for (size_t i{}; i < m_features; ++i) {
       if (!std::getline(ssData, token, ','))
-        throw Loaders::Exception{"Loaders::CSV::getTrainData()",
-                                 "Data field missing"};
+        throw Loaders::Exception{CURRENT_FUNCTION, "Data field missing"};
       dataVector.push_back(std::stof(token));
     }
 
     if (!std::getline(m_trainLabelsFile, line))
-      throw Loaders::Exception{"Loaders::CSV::getTrainData()",
+      throw Loaders::Exception{CURRENT_FUNCTION,
                                "Reached EOF while reading labels"};
 
     std::istringstream ssLabels{line};
     for (size_t i{}; i < m_targets; ++i) {
       if (!std::getline(ssLabels, token, ','))
-        throw Loaders::Exception{"Loaders::CSV::getTrainData()",
-                                 "Label field missing"};
+        throw Loaders::Exception{CURRENT_FUNCTION, "Label field missing"};
       labelsVector.push_back(std::stof(token));
     }
   }
@@ -134,8 +131,7 @@ CSV::getTest() {
         float f{};
         if (!(testDataFile >> f))
           throw Loaders::Exception{
-              "Loaders::CSV::getTest()",
-              "Reached EOF before got to end of test data"};
+              CURRENT_FUNCTION, "Reached EOF before got to end of test data"};
 
         // Skip comma/newline after data if exists
         if (!testDataFile.get())
@@ -149,8 +145,7 @@ CSV::getTest() {
         float f{};
         if (!(testLabelsFile >> f))
           throw Loaders::Exception{
-              "Loaders::CSV::getTest()",
-              "Reached EOF before got to end of test labels"};
+              CURRENT_FUNCTION, "Reached EOF before got to end of test labels"};
 
         // Skip comma/newline after data if exists
         if (!testLabelsFile.get())

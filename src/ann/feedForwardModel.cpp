@@ -21,6 +21,7 @@
 #include "ann/optimizers/sgd.h"
 
 #include "math/random.h"
+#include "utils/exceptions.h"
 #include "utils/timer.h"
 #include "utils/variants.h"
 
@@ -44,17 +45,15 @@ FeedForwardModel::FeedForwardModel(ModelDesc modelDescriptor,
 
 void FeedForwardModel::configure(ModelDesc modelDescriptor) {
   if (modelDescriptor.layers.size() == 0)
-    throw ANN::Exception{
-        "ANN::FeedForwardModel::configure(FeedForwardModelDescriptor)",
-        "Can't configure model with an empty layer array"};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Can't configure model with an empty layer array"};
 
   m_inputs = modelDescriptor.inputs;
   unsigned int currentInputs{m_inputs};
   for (auto &layerVariant : modelDescriptor.layers)
     std::visit(Utils::overloaded{[](std::monostate &) {
                                    throw ANN::Exception{
-                                       "ANN::FeedForwardModel::configure("
-                                       "FeedForwardModelDescriptor)",
+                                       CURRENT_FUNCTION,
                                        "Empty layer provided."};
                                  },
                                  [this, &currentInputs](auto &layer) {
@@ -68,17 +67,14 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor) {
 
 void FeedForwardModel::configure(TrainDesc trainingDescriptor) {
   std::visit(Utils::overloaded{[](std::monostate &) {
-                                 throw ANN::Exception{
-                                     "ANN::FeedForwardModel::configure("
-                                     "FeedForwardTrainingDescriptor)",
-                                     "Empty loss provided."};
+                                 throw ANN::Exception{CURRENT_FUNCTION,
+                                                      "Empty loss provided."};
                                },
                                [this](auto &loss) { setLoss(loss); }},
              trainingDescriptor.loss);
   std::visit(Utils::overloaded{[](std::monostate &) {
                                  throw ANN::Exception{
-                                     "ANN::FeedForwardModel::configure("
-                                     "FeedForwardTrainingDescriptor)",
+                                     CURRENT_FUNCTION,
                                      "Empty optimizer provided."};
                                },
                                [this](auto &opt) { setOptimizer(opt); }},
@@ -103,12 +99,9 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor,
 void FeedForwardModel::saveParams(const std::string &path) const {
   static_assert(sizeof(float) == 4, "Assumes float is 4 bytes.");
 
-  constexpr auto context{
-      "ANN::FeedForwardModel::saveParams(const std::string&) const"};
-
   std::ofstream file{path, std::ios::binary};
   if (!file)
-    throw ANN::Exception{context, "Unable to open file"};
+    throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file"};
 
   for (auto &layer : m_layers) {
     if (layer->isTrainable())
@@ -132,12 +125,9 @@ void FeedForwardModel::saveParams(const std::string &path) const {
 void FeedForwardModel::loadParams(const std::string &path) const {
   static_assert(sizeof(float) == 4, "Assumes float is 4 bytes.");
 
-  constexpr auto context{
-      "ANN::FeedForwardModel::saveParams(const std::string&) const"};
-
   std::ifstream file{path, std::ios::binary};
   if (!file)
-    throw ANN::Exception{context, "Unable to open file"};
+    throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file"};
 
   for (auto &layer : m_layers) {
     if (layer->isTrainable())
@@ -270,10 +260,8 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
   // If loss isn't categorical, throw exception
   if (!std::holds_alternative<Loss::Categorical>(*m_loss) &&
       !std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss))
-    throw ANN::Exception{
-        "ANN::FeedForwardModel::train(const Math::MatrixBase<float>&, const "
-        "Math::VectorBase<float>&)",
-        "Can't train on vector when loss isn't categorical"};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Can't train on vector when loss isn't categorical"};
 
   Utils::Timer epochTime{};   // Used to track time passed in each epoch
   Utils::Timer displayTime{}; // Used for displaying update messages
@@ -397,10 +385,8 @@ FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
   // If loss isn't categorical, throw exception
   if (!std::holds_alternative<Loss::Categorical>(*m_loss) &&
       !std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss))
-    throw ANN::Exception{
-        "ANN::FeedForwardModel::evaluate(const Math::MatrixBase<float>&, const "
-        "Math::VectorBase<float>&)",
-        "Can't evalute on vector when loss isn't categorical"};
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Can't evalute on vector when loss isn't categorical"};
 
   std::shared_ptr<const Math::Vector<float>> averageLoss{};
   // Layer forward
