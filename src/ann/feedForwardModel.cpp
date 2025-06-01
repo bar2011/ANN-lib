@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -47,6 +48,11 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor) {
   if (modelDescriptor.layers.empty())
     throw ANN::Exception{CURRENT_FUNCTION,
                          "Can't configure model with an empty layer array"};
+  if (modelDescriptor.inputs <= 0)
+    throw ANN::Exception{
+        CURRENT_FUNCTION,
+        "Can't configure model with a non-positive input number " +
+            std::to_string(modelDescriptor.inputs)};
 
   m_inputs = modelDescriptor.inputs;
   unsigned int currentInputs{m_inputs};
@@ -66,6 +72,10 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor) {
 }
 
 void FeedForwardModel::configure(TrainDesc trainingDescriptor) {
+  if (trainingDescriptor.batchSize <= 0 || trainingDescriptor.epochs <= 0)
+    throw ANN::Exception{
+        CURRENT_FUNCTION,
+        "Can't configure model with non-positive batchSize or epoch number"};
   std::visit(Utils::overloaded{[](std::monostate &) {
                                  throw ANN::Exception{CURRENT_FUNCTION,
                                                       "Empty loss provided."};
@@ -103,6 +113,12 @@ void FeedForwardModel::saveParams(const std::string &path) const {
   if (!file)
     throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file"};
 
+  static constexpr char magicVal[]{"MAGICVALUE"};
+
+  if (!file.write(magicVal, sizeof(magicVal))) // Magic value
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Error on writing magic value to file"};
+
   for (auto &layer : m_layers)
     layer->saveParams(file);
 }
@@ -113,6 +129,14 @@ void FeedForwardModel::loadParams(const std::string &path) {
   std::ifstream file{path, std::ios::binary};
   if (!file)
     throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file"};
+
+  static constexpr char magicVal[]{"MAGICVALUE"};
+
+  char readMagicValue[sizeof(magicVal)]{};
+  file.read(readMagicValue, sizeof(magicVal));
+  if (!file || strcmp(readMagicValue, magicVal) != 0)
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Magic value didn't match. File might be corrupted"};
 
   for (auto &layer : m_layers)
     layer->loadParams(file);
