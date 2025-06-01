@@ -68,6 +68,19 @@ public:
   virtual std::shared_ptr<const Math::Matrix<float>>
   backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues);
 
+  // Loads weights/biases into layer.
+  // Given parameters will be invalid after the function is called
+  void loadWeights(std::shared_ptr<Math::Matrix<float>> weights);
+  void loadBiases(std::shared_ptr<Math::Vector<float>> biases);
+
+  std::shared_ptr<Math::MatrixView<float>> weights() const {
+    return m_weights->view();
+  }
+
+  std::shared_ptr<Math::VectorView<float>> biases() const {
+    return m_biases->view();
+  }
+
   virtual std::shared_ptr<const Math::Matrix<float>> output() const {
     return m_output;
   }

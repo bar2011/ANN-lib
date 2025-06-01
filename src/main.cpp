@@ -122,7 +122,11 @@ void trainMNist() {
   auto testingLabels{std::get<0>(data[1])};
 
   auto model{ANN::ModelLoader::loadFeedForward("mnist.model")};
-  std::cout << "Loaded successfully.\n";
+  std::cout << "Loaded model successfully.\n";
+
+  model->loadParams("mnist.data");
+
+  std::cout << "Loaded parameters successfully.\n";
 
   model->train(*trainingImages, *trainingLabels);
 
@@ -135,4 +139,8 @@ void trainMNist() {
     std::cout << "Test accuracy: " << accuracy << "\n\n";
 
   std::cout << "Trained successfully.\n";
+
+  model->saveParams("mnist.data");
+
+  std::cout << "Saved successfully.\n";
 }

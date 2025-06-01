@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
@@ -97,6 +98,78 @@ void FeedForwardModel::configure(ModelDesc modelDescriptor,
                                  TrainDesc trainingDescriptor) {
   configure(modelDescriptor);
   configure(trainingDescriptor);
+}
+
+void FeedForwardModel::saveParams(const std::string &path) const {
+  static_assert(sizeof(float) == 4, "Assumes float is 4 bytes.");
+
+  constexpr auto context{
+      "ANN::FeedForwardModel::saveParams(const std::string&) const"};
+
+  std::ofstream file{path, std::ios::binary};
+  if (!file)
+    throw ANN::Exception{context, "Unable to open file"};
+
+  for (auto &layer : m_layers) {
+    if (layer->isTrainable())
+      switch (layer->type()) {
+      case Layer::Type::Dense: {
+        auto dense{dynamic_cast<Layers::Dense *>(layer.get())};
+        auto weights{dense->weights()};
+        auto biases{dense->biases()};
+        for (float weight : weights->data())
+          file.write(reinterpret_cast<const char *>(&weight), sizeof(weight));
+        for (float bias : biases->data())
+          file.write(reinterpret_cast<const char *>(&bias), sizeof(bias));
+        break;
+      }
+      default:
+        break;
+      }
+  }
+}
+
+void FeedForwardModel::loadParams(const std::string &path) const {
+  static_assert(sizeof(float) == 4, "Assumes float is 4 bytes.");
+
+  constexpr auto context{
+      "ANN::FeedForwardModel::saveParams(const std::string&) const"};
+
+  std::ifstream file{path, std::ios::binary};
+  if (!file)
+    throw ANN::Exception{context, "Unable to open file"};
+
+  for (auto &layer : m_layers) {
+    if (layer->isTrainable())
+      switch (layer->type()) {
+      case Layer::Type::Dense: {
+        auto dense{dynamic_cast<Layers::Dense *>(layer.get())};
+
+        auto currentWeights{dense->weights()};
+        auto loadedWeights{std::make_shared<Math::Matrix<float>>(
+            currentWeights->rows(), currentWeights->cols())};
+        loadedWeights->fill(
+            [&file](float *f) {
+              file.read(reinterpret_cast<char *>(f), sizeof(*f));
+            },
+            false);
+        dense->loadWeights(loadedWeights);
+
+        auto currentBiases{dense->biases()};
+        auto loadedBiases{
+            std::make_shared<Math::Vector<float>>(currentBiases->size())};
+        loadedBiases->fill(
+            [&file](float *f) {
+              file.read(reinterpret_cast<char *>(f), sizeof(*f));
+            },
+            false);
+        dense->loadBiases(loadedBiases);
+        break;
+      }
+      default:
+        break;
+      }
+  }
 }
 
 void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,

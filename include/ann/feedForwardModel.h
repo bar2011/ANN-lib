@@ -52,6 +52,14 @@ public:
   // Loads given descriptors into configuration
   void configure(ModelDesc modelDescriptor, TrainDesc trainingDescriptor);
 
+  // Saves trainable parameters (weights, biases, etc.) to given file in binary
+  // format
+  void saveParams(const std::string &path) const;
+
+  // Loads trainable parameters (weights, biases, etc.) from given file
+  // Note: Expects format to be the same format as saveParams()
+  void loadParams(const std::string &path) const;
+
   // Train network based on given inputs
   // inputs dims - (X, input_num)
   // correct dims - (X, output_num)

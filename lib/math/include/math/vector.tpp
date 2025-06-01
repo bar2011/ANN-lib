@@ -37,7 +37,7 @@ Vector<T>::Vector(Matrix<T> &&other) noexcept
 
 template <typename T> Vector<T> &Vector<T>::operator=(const Vector &other) {
   if (&other != this) {
-    m_data.size() = other.m_data.size();
+    m_data.resize(other.m_data.size());
     m_data.resize(other.m_data.size());
     std::copy_n(other.m_data.begin(), m_data.size(), m_data.begin());
   }
@@ -46,9 +46,9 @@ template <typename T> Vector<T> &Vector<T>::operator=(const Vector &other) {
 
 template <typename T> Vector<T> &Vector<T>::operator=(Vector &&other) noexcept {
   if (&other != this) {
+    m_data.resize(other.m_data.size());
     m_data = std::move(other.m_data);
-    m_data.size() = other.m_data.size();
-    other.m_data.size() = 0;
+    other.m_data.resize(0);
   }
   return *this;
 }
