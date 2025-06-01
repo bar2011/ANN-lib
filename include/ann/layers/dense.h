@@ -70,6 +70,8 @@ public:
   void loadWeights(Math::Matrix<float> &weights);
   void loadBiases(Math::Vector<float> &biases);
 
+  virtual void saveParams(std::ofstream &file) const;
+  virtual void loadParams(std::ifstream &file);
 
   const Math::Matrix<float> &weights() const { return m_weights; }
   const Math::Vector<float> &biases() const { return m_biases; }

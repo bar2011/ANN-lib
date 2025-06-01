@@ -8,6 +8,8 @@
 #include "math/random.h"
 #include "utils/exceptions.h"
 
+#include <fstream>
+
 namespace ANN {
 namespace Layers {
 Dense::Dense(unsigned int inputNum, unsigned int neuronNum,
@@ -132,6 +134,31 @@ void Dense::loadBiases(Math::Vector<float> &biases) {
 
   m_biases = std::move(biases);
 }
+
+void Dense::saveParams(std::ofstream &file) const {
+  for (const float &weight : m_weights.data())
+    if (!file.write(reinterpret_cast<const char *>(&weight), sizeof(weight)))
+      throw ANN::Exception{CURRENT_FUNCTION, "Error while saving weights"};
+
+  for (const float &bias : m_biases.data())
+    if (!file.write(reinterpret_cast<const char *>(&bias), sizeof(bias)))
+      throw ANN::Exception{CURRENT_FUNCTION, "Error while saving biases"};
+}
+
+void Dense::loadParams(std::ifstream &file) {
+  m_weights.fill(
+      [&file](float *f) {
+        if (!file.read(reinterpret_cast<char *>(f), sizeof(*f)))
+          throw ANN::Exception{CURRENT_FUNCTION, "Error while reading weights"};
+      },
+      false);
+
+  m_biases.fill(
+      [&file](float *f) {
+        if (!file.read(reinterpret_cast<char *>(f), sizeof(*f)))
+          throw ANN::Exception{CURRENT_FUNCTION, "Error while reading biases"};
+      },
+      false);
 }
 } // namespace Layers
 } // namespace ANN
