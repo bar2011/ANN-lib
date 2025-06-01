@@ -138,7 +138,9 @@ private:
   // TRAINING FUNCTIONS
   std::vector<size_t> createBatchSequence(size_t stepNum) const;
   // Forwards batchData through layers (not loss)
-  void forward(std::shared_ptr<const Math::MatrixBase<float>> batchData);
+  // If training = false, doesn't go through dropout layers
+  void forward(std::shared_ptr<const Math::MatrixBase<float>> batchData,
+               bool training = true);
   // Performs backward pass accross all layers, and optimizes trainable layers
   // Inputs - matrix of gradients for the final layer in the network
   void optimize(std::shared_ptr<const Math::MatrixBase<float>> outputGradients);

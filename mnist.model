@@ -17,12 +17,15 @@ layers.3.init_method = he
 layers.3.l2_weight = 1e-5
 layers.3.l2_bias = 1e-5
 
-layers.4.type = leaky_relu
-layers.4.alpha = 1e-2
+layers.4.type = dropout
+layers.4.drop_rate = 0.2
 
-layers.5.type = dense
-layers.5.neurons = 10
-layers.5.init_method = he
+layers.5.type = leaky_relu
+layers.5.alpha = 1e-2
+
+layers.6.type = dense
+layers.6.neurons = 10
+layers.6.init_method = he
 
 [TRAINING]
 

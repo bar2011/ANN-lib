@@ -244,7 +244,7 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       // forward validation
       auto valInputs{inputs.view(validationNum, inputs.rows())};
       auto valCorrect{correct.view(validationNum, inputs.rows())};
-      forward(valInputs);
+      forward(valInputs, false);
       float valLoss{};
       std::visit(
           [&layers = m_layers, &valCorrect, &valLoss](Loss::Loss &loss) {
@@ -380,7 +380,7 @@ FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
                            const Math::MatrixBase<float> &correct) {
   std::shared_ptr<const Math::Vector<float>> averageLoss{};
   // Layer forward
-  forward(inputs.view());
+  forward(inputs.view(), false);
   // Loss forward
   std::visit(
       [&layers = m_layers, &correct, &averageLoss](Loss::Loss &loss) {
@@ -404,7 +404,7 @@ FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
 
   std::shared_ptr<const Math::Vector<float>> averageLoss{};
   // Layer forward
-  forward(inputs.view());
+  forward(inputs.view(), false);
   // Loss forward
   std::visit(Utils::overloaded{
                  [&layers = m_layers, &correct,
@@ -433,10 +433,15 @@ FeedForwardModel::predict(const Math::VectorBase<float> &inputs) const {
 
 std::shared_ptr<Math::MatrixBase<float>>
 FeedForwardModel::predict(const Math::MatrixBase<float> &inputs) const {
-  std::shared_ptr<Math::Matrix<float>> output{};
-  for (size_t i{}; i < m_layers.size(); ++i)
-    output = m_layers[i]->predict(
-        (i == 0) ? std::make_shared<Math::Matrix<float>>(inputs) : output);
+  std::shared_ptr<Math::Matrix<float>> output{
+      std::make_shared<Math::Matrix<float>>(inputs)};
+  for (size_t i{}; i < m_layers.size(); ++i) {
+    // Skip dropout layers
+    if (m_layers[i]->type() == Layer::Type::Dropout)
+      continue;
+
+    output = m_layers[i]->predict(output);
+  }
 
   if (auto loss = std::get_if<Loss::CategoricalSoftmax>(m_loss.get()))
     return loss->predictSoftmax(output);
@@ -551,10 +556,14 @@ FeedForwardModel::createBatchSequence(size_t stepNum) const {
 }
 
 void FeedForwardModel::forward(
-    std::shared_ptr<const Math::MatrixBase<float>> batchData) {
+    std::shared_ptr<const Math::MatrixBase<float>> batchData, bool training) {
+  auto layerInputs{batchData};
   for (size_t i{}; i < m_layers.size(); ++i) {
-    auto layerInputs{(i == 0) ? batchData : m_layers[i - 1]->output()};
-    m_layers[i]->forward(layerInputs);
+    // If not training, skip dropout layers
+    if (!training && m_layers[i]->type() == Layer::Type::Dropout)
+      continue;
+
+    layerInputs = m_layers[i]->forward(layerInputs);
   }
 }
 
