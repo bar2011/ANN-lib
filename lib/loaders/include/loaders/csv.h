@@ -3,7 +3,6 @@
 #include "math/matrix.h"
 
 #include <fstream>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -22,20 +21,15 @@ public:
 
   // Returns a pair of <data, labels> of the given batch
   // Throws if reached EOF before got to corresponding batch
-  std::pair<std::unique_ptr<Math::Matrix<float>>,
-            std::unique_ptr<Math::Matrix<float>>>
+  std::pair<Math::Matrix<float>, Math::Matrix<float>>
   getTrainBatch(size_t batchNum);
 
   // Returns a pair of <data, labels> of all the training
   // Throws if reached EOF before got to data end
-  std::pair<std::unique_ptr<Math::Matrix<float>>,
-            std::unique_ptr<Math::Matrix<float>>>
-  getTrainData();
+  std::pair<Math::Matrix<float>, Math::Matrix<float>> getTrainData();
 
   // Returns a pair of <data, labels> of all test data
-  std::pair<std::unique_ptr<Math::Matrix<float>>,
-            std::unique_ptr<Math::Matrix<float>>>
-  getTest();
+  std::pair<Math::Matrix<float>, Math::Matrix<float>> getTest();
 
 private:
   std::ifstream m_trainDataFile{};

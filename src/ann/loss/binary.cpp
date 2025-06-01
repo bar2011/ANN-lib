@@ -21,66 +21,64 @@ Binary &Binary::operator=(Binary &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Vector<float>> Binary::forward(
-    const std::shared_ptr<const Math::MatrixBase<float>> &predictions,
-    const std::shared_ptr<const Math::MatrixBase<float>> &correct) {
+const Math::Vector<float> &
+Binary::forward(const Math::MatrixBase<float> &predictions,
+                const Math::MatrixBase<float> &correct) {
   // Store arguments for later use by backpropagation
-  m_predictions = predictions;
-  m_correct = correct;
+  m_predictions = predictions.view();
+  m_correct = correct.view();
 
   // If m_dinput's size doesn't match inputs' size, resize all matrices
-  if (m_dinputs->rows() != predictions->rows() ||
-      m_dinputs->cols() != predictions->cols()) {
-    m_output = std::make_shared<Math::Vector<float>>(predictions->rows());
-    m_dinputs = std::make_shared<Math::Matrix<float>>(predictions->rows(),
-                                                      predictions->cols());
+  if (m_dinputs.rows() != predictions.rows() ||
+      m_dinputs.cols() != predictions.cols()) {
+    m_output = Math::Vector<float>{predictions.rows()};
+    m_dinputs = Math::Matrix<float>{predictions.rows(), predictions.cols()};
   }
 
   // An estimation of the cost of each iteration in terms of integer addition
-  const size_t cost{100 * predictions->cols()};
+  const size_t cost{100 * predictions.cols()};
 
   constexpr float epsilon{1e-7};
 
-  auto calculateBatch{[predictions, correct, output = m_output,
-                       epsilon](size_t batch) {
-    float lossSum{};
-    for (size_t i{}; i < predictions->cols(); ++i) {
-      float predictionClamped{
-          std::clamp((*predictions)[batch, i], epsilon, 1 - epsilon)};
-      // Sum loss for both correct and incorrect options
-      lossSum += -(*correct)[batch, i] * std::log(predictionClamped) -
-                 (1 - (*correct)[batch, i]) * std::log(1 - predictionClamped);
-    }
-    (*output)[batch] = lossSum / predictions->cols();
-  }};
+  auto calculateBatch{
+      [&predictions, &correct, &output = m_output, epsilon](size_t batch) {
+        float lossSum{};
+        for (size_t i{}; i < predictions.cols(); ++i) {
+          float predictionClamped{
+              std::clamp(predictions[batch, i], epsilon, 1 - epsilon)};
+          // Sum loss for both correct and incorrect options
+          lossSum += -correct[batch, i] * std::log(predictionClamped) -
+                     (1 - correct[batch, i]) * std::log(1 - predictionClamped);
+        }
+        output[batch] = lossSum / predictions.cols();
+      }};
 
-  Utils::Parallel::dynamicParallelFor(cost, predictions->rows(),
-                                      calculateBatch);
+  Utils::Parallel::dynamicParallelFor(cost, predictions.rows(), calculateBatch);
 
   return m_output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> Binary::backward() {
-  const size_t cost{5 * m_predictions->cols()};
+const Math::Matrix<float> &Binary::backward() {
+  const size_t cost{5 * m_predictions.cols()};
 
   constexpr float epsilon{1e-7};
 
   // Add cols() to account for average, add rows() to normalize sum
-  const size_t normalization{m_predictions->rows() * m_predictions->cols()};
+  const size_t normalization{m_predictions.rows() * m_predictions.cols()};
 
   auto calculateBatch{[this, normalization, epsilon](size_t batch) {
-    for (size_t i{}; i < m_predictions->cols(); ++i) {
+    for (size_t i{}; i < m_predictions.cols(); ++i) {
       float predictionClamped{
-          std::clamp((*m_predictions)[batch, i], epsilon, 1 - epsilon)};
+          std::clamp(m_predictions[batch, i], epsilon, 1 - epsilon)};
       // Calculate gradient according to derivative
-      (*m_dinputs)[batch, i] =
-          -((*m_correct)[batch, i] / predictionClamped -
-            (1 - (*m_correct)[batch, i]) / (1 - predictionClamped)) /
+      m_dinputs[batch, i] =
+          -(m_correct[batch, i] / predictionClamped -
+            (1 - m_correct[batch, i]) / (1 - predictionClamped)) /
           normalization;
     }
   }};
 
-  Utils::Parallel::dynamicParallelFor(cost, m_predictions->rows(),
+  Utils::Parallel::dynamicParallelFor(cost, m_predictions.rows(),
                                       calculateBatch);
 
   return m_dinputs;
@@ -88,13 +86,13 @@ std::shared_ptr<const Math::Matrix<float>> Binary::backward() {
 
 float Binary::accuracy() const {
   float correctPredictions{};
-  for (size_t batch{}; batch < m_predictions->rows(); ++batch)
-    for (size_t i{}; i < m_predictions->cols(); ++i) {
-      bool prediction{(*m_predictions)[batch, i] >= 0.5};
-      if (prediction == (*m_correct)[batch, i])
+  for (size_t batch{}; batch < m_predictions.rows(); ++batch)
+    for (size_t i{}; i < m_predictions.cols(); ++i) {
+      bool prediction{m_predictions[batch, i] >= 0.5};
+      if (prediction == m_correct[batch, i])
         ++correctPredictions;
     }
-  return correctPredictions / (m_predictions->rows() * m_predictions->cols());
+  return correctPredictions / (m_predictions.rows() * m_predictions.cols());
 }
 } // namespace Loss
 } // namespace ANN

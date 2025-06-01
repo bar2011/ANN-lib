@@ -5,7 +5,6 @@
 
 #include <array>
 #include <fstream>
-#include <memory>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -14,8 +13,7 @@ namespace Loaders {
 class MNist {
 public:
   // a type which contains a vector of labels and a matching vector of images
-  using DataPair = std::tuple<std::shared_ptr<Math::Vector<float>>,
-                              std::shared_ptr<Math::Matrix<float>>>;
+  using DataPair = std::tuple<Math::Vector<float>, Math::Matrix<float>>;
 
   MNist(std::string_view trainingLabelsPath,
         std::string_view trainingImagesPath, std::string_view testingLabelsPath,
@@ -43,11 +41,9 @@ private:
   static DataPair loadImages(const std::string &labelsPath,
                              const std::string &imagesPath);
 
-  static std::shared_ptr<Math::Vector<float>>
-  loadLabelsFile(const std::string &labelsPath);
+  static Math::Vector<float> loadLabelsFile(const std::string &labelsPath);
 
-  static std::shared_ptr<Math::Matrix<float>>
-  loadImagesFile(const std::string &imagesPath);
+  static Math::Matrix<float> loadImagesFile(const std::string &imagesPath);
 
   static unsigned int readU32(std::ifstream &file,
                               const std::string &filename = "");

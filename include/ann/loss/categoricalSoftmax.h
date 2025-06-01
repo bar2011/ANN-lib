@@ -25,31 +25,28 @@ public:
   // Move assignment
   CategoricalSoftmax &operator=(CategoricalSoftmax &&other) noexcept;
 
-  // perform forward pass with give batch
-  // saves inputs and outputs in member variables
-  // inputs = inputs to softmax
-  // correct = vector of correct indices, one for each batch
-  // returns loss average for each batch
-  std::shared_ptr<const Math::Vector<float>>
-  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
-          const std::shared_ptr<const Math::VectorBase<float>> &correct);
+  // Forward pass: stores and returns layer output (average batch loss)
+  // inputs = inputs to softmax layer
+  // correct = indicies correct matrix
+  const Math::Vector<float> &forward(const Math::MatrixBase<float> &inputs,
+                                     const Math::VectorBase<float> &correct);
 
-  // perform forward pass with give batch
-  // saves inputs and outputs in member variables
-  // inputs = inputs to softmax
-  // correct = one-hot encoded matrix
-  // Note: optimally, use the other forward function. It's more optimized
-  // returns loss average for each batch
-  virtual std::shared_ptr<const Math::Vector<float>>
-  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs,
-          const std::shared_ptr<const Math::MatrixBase<float>> &correct);
+  // Forward pass: stores and returns layer output (average batch loss)
+  // inputs = input to softmax layer
+  // correct = one-hot encoded correct matrix
+  // Note: other forward function is more optimized. Optimally, it's the one
+  //       which should be used.
+  virtual const Math::Vector<float> &
+  forward(const Math::MatrixBase<float> &inputs,
+          const Math::MatrixBase<float> &correct);
 
-  std::unique_ptr<Math::Matrix<float>> predictSoftmax(
-      const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const;
+  // Backward pass: stores and returns input gradients
+  virtual const Math::Matrix<float> &backward();
 
-  // perform backward pass based on the given inputs and correct values in
-  // forward pass
-  std::shared_ptr<const Math::Matrix<float>> backward();
+  // Forward pass without storing layer outputs
+  // inputs = input to softmax layer
+  Math::Matrix<float>
+  predictSoftmax(const Math::MatrixBase<float> &inputs) const;
 
   // Calculate average plain accuracy based on calculated
   float accuracy() const;
@@ -57,30 +54,16 @@ public:
   // Calculate average loss accross batches
   virtual float mean() const;
 
-  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
-    return m_dinputs;
-  }
-
-  std::shared_ptr<const Math::Matrix<float>> softmaxOutput() const {
-    return m_softmaxOutput;
-  }
-
-  std::shared_ptr<const Math::Vector<float>> lossOutput() const {
-    return m_lossOutput;
-  }
+  const Math::Matrix<float> &softmaxOutput() const { return m_softmaxOutput; }
 
 private:
   // No ownership of m_input by the class. Just a constant view.
-  std::shared_ptr<const Math::MatrixBase<float>> m_input{};
-  std::shared_ptr<const Math::VectorBase<float>> m_correct{};
+  Math::MatrixView<float> m_input{};
+  Math::VectorView<float> m_correct{};
 
-  std::shared_ptr<Math::Matrix<float>> m_softmaxOutput{
-      std::make_shared<Math::Matrix<float>>()};
-  std::shared_ptr<Math::Vector<float>> m_lossOutput{
-      std::make_shared<Math::Vector<float>>()};
+  Math::Matrix<float> m_softmaxOutput{};
 
-  std::shared_ptr<Math::Matrix<float>> m_dinputs{
-      std::make_shared<Math::Matrix<float>>()};
+  Math::Matrix<float> m_dinputs{};
 };
 } // namespace Loss
 } // namespace ANN

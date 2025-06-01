@@ -2,7 +2,6 @@
 
 #include "math/matrix.h"
 
-#include <memory>
 #include <string_view>
 
 namespace ANN {
@@ -13,33 +12,29 @@ public:
 
   virtual ~Layer() = default;
 
-  // Function which forwards the given inputs, and returns the outputs
+  // Forward pass: stores and returns layer outputs
   // inputs dimensions - (batch_num, input_num)
   // outputs dimensions - (batch_num, neuron_num)
-  // Side effects: saves inputs and outputs for use with backpropagation
-  virtual std::shared_ptr<const Math::Matrix<float>>
-  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) = 0;
+  virtual const Math::Matrix<float> &
+  forward(const Math::MatrixBase<float> &inputs) = 0;
 
-  // Function which forwards the given inputs, and returns the outputs
+  // Forward pass without storing layer outputs
   // inputs dimensions - (batch_num, input_num)
   // outputs dimensions - (batch_num, neuron_num)
-  // Doesn't save inputs and outputs for backprop
-  virtual std::unique_ptr<Math::Matrix<float>> predict(
-      const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const = 0;
+  virtual Math::Matrix<float>
+  predict(const Math::MatrixBase<float> &inputs) const = 0;
 
-  // Function which runs backprop on the given dvalues, and returns the
-  // gradients in terms of its inputs
+  // Backward pass: stores parameters gradients and returns input gradients
   // dvalues dimensions - (batch_num, neuron_num)
   // outputs dimensions - (batch_num, input_num)
-  virtual std::shared_ptr<const Math::Matrix<float>>
-  backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) = 0;
+  virtual const Math::Matrix<float> &
+  backward(const Math::MatrixBase<float> &dvalues) = 0;
 
-  virtual std::shared_ptr<const Math::Matrix<float>> output() const = 0;
 
-  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const = 0;
+  virtual const Math::Matrix<float> &output() const = 0;
+  virtual const Math::Matrix<float> &dinputs() const = 0;
 
-  // If outputs `true`, layer is passable to an optimizer
-  // If outputs `false`, layer isn't passable to an optimizer
+  // Determines if layer is passable to an optimizer
   virtual bool isTrainable() const = 0;
 
   // Returns name of the layer (e.g. "Dense")

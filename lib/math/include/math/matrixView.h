@@ -13,7 +13,14 @@ template <typename T> class Matrix;
 // instead of the data itself. Hence, it has no ownership of the data it holds.
 template <typename T> class MatrixView : public MatrixBase<T> {
 public:
-  MatrixView() = delete;
+  // Create MatrixView which points at nothing
+  MatrixView() = default;
+
+  MatrixView(const MatrixView &other) = default;
+  MatrixView(MatrixView &&other) = default;
+
+  MatrixView &operator=(const MatrixView &other) = default;
+  MatrixView &operator=(MatrixView &&other) = default;
 
   // Single item access - NO BOUNDS CHECKING
   const T &operator[](const size_t row, const size_t col) const;
@@ -29,42 +36,40 @@ public:
   size_t cols() const { return m_cols; }
 
   // Return entire underlying data. Not necessarily from the start of MatrixView
-  const std::vector<T> &data() const { return m_data; };
+  const std::vector<T> &data() const { return *m_data; };
 
   // Returns the index of the biggest value in the matrix
   // format: (row, col)
   std::pair<size_t, size_t> argmax() const;
 
   // Returns a vector containing the index of the biggest value in each row
-  std::unique_ptr<Math::Vector<size_t>> argmaxRow() const;
+  Math::Vector<size_t> argmaxRow() const;
 
   // Returns a vector containing the index of the biggest value in each column
-  std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
+  Math::Vector<size_t> argmaxCol() const;
 
   // Returns a view of the entire matrix
-  std::shared_ptr<Math::MatrixView<T>> view() const;
+  const Math::MatrixView<T> view() const;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
-  std::shared_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
+  const MatrixView<T> view(size_t startRow, size_t endRow) const;
 
-  // Transposes the matrix. Returns the transposed one.
-  // Note: the returned matrix has complete ownership on its values
-  std::shared_ptr<Matrix<T>>
-  transpose(size_t chunkSize = 4,
-            std::optional<bool> parallelize = std::nullopt) const;
+  // Creates a new transposed matrix. Returns the transposed one.
+  Matrix<T> transpose(size_t chunkSize = 4,
+                      std::optional<bool> parallelize = std::nullopt) const;
 
-  virtual std::unique_ptr<Math::VectorView<T>> asVector();
+  virtual Math::VectorView<T> asVector();
 
   friend Matrix<T>;
 
 private:
   MatrixView(size_t start, size_t rows, size_t cols, const std::vector<T> &data)
-      : m_data{data}, m_start{start}, m_rows{rows}, m_cols{cols} {}
+      : m_data{&data}, m_start{start}, m_rows{rows}, m_cols{cols} {}
 
-  const std::vector<T> &m_data{};
+  const std::vector<T> *m_data{nullptr};
   size_t m_start{};
   size_t m_rows{};
   size_t m_cols{};

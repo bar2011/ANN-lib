@@ -11,22 +11,22 @@ void SGD::updateParams(Layers::Dense &layer) const {
   auto learningRate{m_learningRate};
   auto momentum{m_momentum};
 
-  // update weight/bias update member variables to account for momentum
-  layer.m_weightMomentums->transform(
-      *layer.m_dweights, [learningRate, momentum](float *w, const float *d) {
+  // update weight/bias momentum member variables
+  layer.m_weightMomentums.transform(
+      layer.m_dweights, [learningRate, momentum](float *w, const float *d) {
         *w = momentum * *w - learningRate * *d;
       });
-  layer.m_biasMomentums->transform(
-      *layer.m_dbiases, [learningRate, momentum](float *b, const float *d) {
+  layer.m_biasMomentums.transform(
+      layer.m_dbiases, [learningRate, momentum](float *b, const float *d) {
         *b = momentum * *b - learningRate * *d;
       });
 
-  // use weight/bias update to update weights/biases
-  layer.m_weights->transform(
-      *layer.m_weightMomentums,
+  // use weight/bias momentum to update weights/biases
+  layer.m_weights.transform(
+      layer.m_weightMomentums,
       [learningRate](float *w, const float *u) { *w += *u; });
-  layer.m_biases->transform(
-      *layer.m_biasMomentums,
+  layer.m_biases.transform(
+      layer.m_biasMomentums,
       [learningRate](float *b, const float *u) { *b += *u; });
 }
 

@@ -42,6 +42,11 @@ Matrix<T>::Matrix(const MatrixBase<T> &other)
     : m_data(other.data().size()), m_rows{other.rows()}, m_cols{other.cols()} {
   std::copy_n(other.data().begin(), m_rows * m_cols, m_data.begin());
 }
+template <typename T>
+Matrix<T>::Matrix(const Matrix<T> &other)
+    : m_data(other.data().size()), m_rows{other.rows()}, m_cols{other.cols()} {
+  std::copy_n(other.data().begin(), m_rows * m_cols, m_data.begin());
+}
 
 template <typename T>
 Matrix<T>::Matrix(Matrix &&other) noexcept
@@ -115,12 +120,12 @@ template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
 }
 
 template <typename T>
-std::shared_ptr<Matrix<T>>
-Matrix<T>::transpose(size_t chunkSize, std::optional<bool> parallelize) const {
-  auto result{std::make_shared<Matrix<T>>(cols(), rows())};
+Matrix<T> Matrix<T>::transpose(size_t chunkSize,
+                               std::optional<bool> parallelize) const {
+  Matrix<T> result{cols(), rows()};
 
   auto srcData{m_data.begin()};
-  auto resultData{result->m_data.begin()};
+  auto resultData{result.data().begin()};
   const size_t cost{cols() * chunkSize * chunkSize};
 
   Utils::Parallel::dynamicParallelFor(
@@ -177,34 +182,30 @@ const T &Matrix<T>::at(const size_t row, const size_t col) const {
   return m_data[row * m_cols + col];
 }
 
-template <typename T>
-const std::shared_ptr<VectorView<T>> Matrix<T>::operator[](const size_t row) {
-  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+template <typename T> VectorView<T> Matrix<T>::operator[](const size_t row) {
+  return VectorView<T>{row * m_cols, m_rows, m_data};
 }
 
 template <typename T>
-const std::shared_ptr<const VectorView<T>>
-Matrix<T>::operator[](const size_t row) const {
-  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+const VectorView<T> Matrix<T>::operator[](const size_t row) const {
+  return VectorView<T>{row * m_cols, m_rows, m_data};
 }
 
-template <typename T>
-const std::shared_ptr<VectorView<T>> Matrix<T>::at(const size_t row) {
+template <typename T> VectorView<T> Matrix<T>::at(const size_t row) {
   if (row >= m_rows)
     throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid row number: out of bounds"};
 
-  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+  return VectorView<T>{row * m_cols, m_rows, m_data};
 }
 
 template <typename T>
-const std::shared_ptr<const VectorView<T>>
-Matrix<T>::at(const size_t row) const {
+const VectorView<T> Matrix<T>::at(const size_t row) const {
   if (row >= m_rows)
     throw Math::Exception{CURRENT_FUNCTION,
                           "Invalid row number: out of bounds"};
 
-  return std::make_shared<VectorView<T>>(row * m_cols, m_rows, m_data);
+  return VectorView<T>{row * m_cols, m_rows, m_data};
 }
 
 template <typename T>
@@ -218,14 +219,12 @@ Matrix<T> &Matrix<T>::reshape(const size_t rows, const size_t cols) {
   return *this;
 };
 
-template <typename T> std::shared_ptr<MatrixView<T>> Matrix<T>::view() const {
-  return std::shared_ptr<MatrixView<T>>(
-      new MatrixView<T>{0, m_rows, m_cols, m_data});
+template <typename T> const MatrixView<T> Matrix<T>::view() const {
+  return MatrixView<T>{0, m_rows, m_cols, m_data};
 }
 
 template <typename T>
-std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
-                                               size_t endRow) const {
+const MatrixView<T> Matrix<T>::view(size_t startRow, size_t endRow) const {
   if (startRow >= endRow)
     throw Math::Exception{CURRENT_FUNCTION, "Start row ahead of the end row"};
   if (endRow > m_rows)
@@ -233,8 +232,7 @@ std::shared_ptr<MatrixView<T>> Matrix<T>::view(size_t startRow,
                           "End row is outside the matrix's bound"};
 
   // Can't use make_shared because the constructor is private
-  return std::shared_ptr<MatrixView<T>>{
-      new MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data}};
+  return MatrixView<T>{startRow * m_cols, endRow - startRow, m_cols, m_data};
 }
 
 template <typename T> std::pair<size_t, size_t> Matrix<T>::argmax() const {
@@ -253,41 +251,37 @@ template <typename T> std::pair<size_t, size_t> Matrix<T>::argmax() const {
   return maxIndex;
 }
 
-template <typename T>
-std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxRow() const {
+template <typename T> Math::Vector<size_t> Matrix<T>::argmaxRow() const {
   if (rows() == 0 || cols() == 0)
     throw Math::Exception{CURRENT_FUNCTION,
                           "Can't get the maximum of an empty matrix"};
 
-  auto maxRow{std::make_unique<Math::Vector<size_t>>(rows())};
+  Math::Vector<size_t> maxRow{rows()};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)
-      if (operator[](i, (*maxRow)[i]) < operator[](i, j))
-        (*maxRow)[i] = j;
+      if (operator[](i, maxRow[i]) < operator[](i, j))
+        maxRow[i] = j;
 
   return maxRow;
 }
 
-template <typename T>
-std::unique_ptr<Math::Vector<size_t>> Matrix<T>::argmaxCol() const {
+template <typename T> Math::Vector<size_t> Matrix<T>::argmaxCol() const {
   if (rows() == 0 || cols() == 0)
     throw Math::Exception{CURRENT_FUNCTION,
                           "Can't get the maximum of an empty matrix"};
 
-  auto maxCol{std::make_unique<Math::Vector<size_t>>(cols())};
+  Math::Vector<size_t> maxCol{cols()};
 
   for (size_t i{}; i < rows(); ++i)
     for (size_t j{}; j < cols(); ++j)
-      if (operator[]((*maxCol)[j], j) < operator[](i, j))
-        (*maxCol)[j] = i;
+      if (operator[](maxCol[j], j) < operator[](i, j))
+        maxCol[j] = i;
 
   return maxCol;
 }
 
-template <typename T>
-std::unique_ptr<Math::VectorView<T>> Matrix<T>::asVector() {
-  return std::unique_ptr<Math::VectorView<T>>{
-      new Math::VectorView<T>{0, m_rows * m_cols, m_data}};
+template <typename T> Math::VectorView<T> Matrix<T>::asVector() {
+  return Math::VectorView<T>{0, m_rows * m_cols, m_data};
 }
 }; // namespace Math

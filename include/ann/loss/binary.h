@@ -24,34 +24,23 @@ public:
   // Move assignment
   Binary &operator=(Binary &&other) noexcept;
 
-  // perform forward pass with give batch
-  // saves inputs and outputs in member variables
-  // prediction = output of ANN
-  // correct = matrix filled with the correct values for each prediction, where:
-  //    true - 1, false - 0
-  // returns average loss in each batch
-  virtual std::shared_ptr<const Math::Vector<float>>
-  forward(const std::shared_ptr<const Math::MatrixBase<float>> &prediction,
-          const std::shared_ptr<const Math::MatrixBase<float>> &correct);
+  // Forward pass: stores and returns layer output (average batch loss)
+  // prediction = batch output of ANN
+  // correct = "wanted" values of prediction
+  virtual const Math::Vector<float> &
+  forward(const Math::MatrixBase<float> &prediction,
+          const Math::MatrixBase<float> &correct);
 
-  // perform backward pass based on the given inputs and correct values in
-  // forward pass
-  virtual std::shared_ptr<const Math::Matrix<float>> backward();
+  // Backward pass: stores and returns input gradients
+  virtual const Math::Matrix<float> &backward();
 
   // Calculate average plain accuracy based on calculated
   float accuracy() const;
 
-  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
-    return m_dinputs;
-  }
-
 private:
   // No ownership of m_input and m_correct by the class. Just a constant view.
-  std::shared_ptr<const Math::MatrixBase<float>> m_predictions{};
-  std::shared_ptr<const Math::MatrixBase<float>> m_correct{};
-
-  std::shared_ptr<Math::Matrix<float>> m_dinputs{
-      std::make_shared<Math::Matrix<float>>()};
+  Math::MatrixView<float> m_predictions{};
+  Math::MatrixView<float> m_correct{};
 };
 } // namespace Loss
 } // namespace ANN

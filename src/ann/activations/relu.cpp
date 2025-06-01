@@ -6,54 +6,47 @@ namespace ANN {
 namespace Activation {
 
 ReLU::ReLU(ReLU &&other) noexcept
-    : m_input{std::move(other.m_input)}, m_output{std::move(other.m_output)},
+    : m_output{std::move(other.m_output)},
       m_dinputs{std::move(other.m_dinputs)} {}
 
 ReLU &ReLU::operator=(ReLU &&other) noexcept {
   if (&other != this) {
     // Move other's pointers
-    m_input = std::move(other.m_input);
     m_output = std::move(other.m_output);
     m_dinputs = std::move(other.m_dinputs);
   }
   return *this;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-ReLU::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
-  m_input = inputs; // Store input for later use by backward pass
-
+const Math::Matrix<float> &
+ReLU::forward(const Math::MatrixBase<float> &inputs) {
   // If m_output's size doesn't match inputs' size, resize all matrices
-  if (m_output->rows() != inputs->rows() ||
-      m_output->cols() != inputs->cols()) {
-    m_output =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
-    m_dinputs =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  if (m_output.rows() != inputs.rows() || m_output.cols() != inputs.cols()) {
+    m_output = Math::Matrix<float>{inputs.rows(), inputs.cols()};
+    m_dinputs = Math::Matrix<float>{inputs.rows(), inputs.cols()};
   }
 
-  m_output->transform(
-      *inputs, [](float *out, const float *in) { *out = std::max(0.0f, *in); },
+  m_output.transform(
+      inputs, [](float *out, const float *in) { *out = std::max(0.0f, *in); },
       std::nullopt, 1);
 
   return m_output;
 }
 
-std::unique_ptr<Math::Matrix<float>> ReLU::predict(
-    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
-  auto output{
-      std::make_unique<Math::Matrix<float>>(inputs->rows(), inputs->cols())};
-  output->transform(
-      *inputs, [](float *out, const float *in) { *out = std::max(0.0f, *in); },
+Math::Matrix<float> ReLU::predict(const Math::MatrixBase<float> &inputs) const {
+  Math::Matrix<float> output{inputs.rows(), inputs.cols()};
+
+  output.transform(
+      inputs, [](float *out, const float *in) { *out = std::max(0.0f, *in); },
       std::nullopt, 1);
 
   return output;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-ReLU::backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
-  m_dinputs->transform(
-      *dvalues, *m_output,
+const Math::Matrix<float> &
+ReLU::backward(const Math::MatrixBase<float> &dvalues) {
+  m_dinputs.transform(
+      dvalues, m_output,
       [](float *din, const float *dval, const float *out) {
         *din = *dval * ((*out > 0) ? 1 : 0);
       },

@@ -7,8 +7,6 @@
 #include "math/matrixBase.h"
 #include "math/vector.h"
 
-#include <memory>
-
 // Forward declarations
 
 namespace ANN {
@@ -49,50 +47,37 @@ public:
   // Move assignment
   Dense &operator=(Dense &&other);
 
-  // perform forward pass with given batch
-  // saves inputs and outputs in member variables
-  // Returns output
-  virtual std::shared_ptr<const Math::Matrix<float>>
-  forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs);
+  // Forward pass: stores and returns layer outputs
+  // inputs dimensions - (batch_num, input_num)
+  // outputs dimensions - (batch_num, neuron_num)
+  virtual const Math::Matrix<float> &
+  forward(const Math::MatrixBase<float> &inputs);
 
-  // perform forward pass with given batch
-  // saves inputs and outputs in member variables
-  // Returns output
-  virtual std::unique_ptr<Math::Matrix<float>>
-  predict(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const;
+  // Forward pass without storing layer outputs
+  // inputs dimensions - (batch_num, input_num)
+  // outputs dimensions - (batch_num, neuron_num)
+  virtual Math::Matrix<float>
+  predict(const Math::MatrixBase<float> &inputs) const;
 
-  // perform backward pass with given dvalues
-  // dvalues = matrix of how each input of each batch impacts the output of the
-  // network
-  // saves gradients as member variables
-  virtual std::shared_ptr<const Math::Matrix<float>>
-  backward(const std::shared_ptr<const Math::MatrixBase<float>> &dvalues);
+  // Backward pass: stores parameters gradients and returns input gradients
+  // dvalues dimensions - (batch_num, neuron_num)
+  // outputs dimensions - (batch_num, input_num)
+  virtual const Math::Matrix<float> &
+  backward(const Math::MatrixBase<float> &dvalues);
 
   // Loads weights/biases into layer.
   // Given parameters will be invalid after the function is called
-  void loadWeights(std::shared_ptr<Math::Matrix<float>> weights);
-  void loadBiases(std::shared_ptr<Math::Vector<float>> biases);
+  void loadWeights(Math::Matrix<float> &weights);
+  void loadBiases(Math::Vector<float> &biases);
 
-  std::shared_ptr<Math::MatrixView<float>> weights() const {
-    return m_weights->view();
-  }
 
-  std::shared_ptr<Math::VectorView<float>> biases() const {
-    return m_biases->view();
-  }
-
-  virtual std::shared_ptr<const Math::Matrix<float>> output() const {
-    return m_output;
-  }
-
-  virtual std::shared_ptr<const Math::Matrix<float>> dinputs() const {
-    return m_dinputs;
-  }
+  const Math::Matrix<float> &weights() const { return m_weights; }
+  const Math::Vector<float> &biases() const { return m_biases; }
+  virtual const Math::Matrix<float> &output() const { return m_output; }
+  virtual const Math::Matrix<float> &dinputs() const { return m_dinputs; }
 
   virtual bool isTrainable() const { return true; }
-
   virtual std::string_view name() const { return "Dense"; }
-
   virtual Layer::Type type() const { return Layer::Type::Dense; }
 
   friend class Optimizers::Optimizer;
@@ -104,30 +89,19 @@ public:
   friend class Loss::Loss;
 
 private:
-  // No ownership of m_input by the class. Only a view.
-  std::shared_ptr<const Math::MatrixBase<float>> m_input{};
-  std::unique_ptr<Math::Matrix<float>> m_weights{
-      std::make_unique<Math::Matrix<float>>()};
-  std::unique_ptr<Math::Vector<float>> m_biases{
-      std::make_unique<Math::Vector<float>>()};
-  std::shared_ptr<Math::Matrix<float>> m_output{
-      std::make_shared<Math::Matrix<float>>()};
+  Math::MatrixView<float> m_input{};
+  Math::Matrix<float> m_weights{};
+  Math::Vector<float> m_biases{};
+  Math::Matrix<float> m_output{};
 
-  std::unique_ptr<Math::Matrix<float>> m_dweights{
-      std::make_unique<Math::Matrix<float>>()};
-  std::shared_ptr<Math::Matrix<float>> m_dinputs{
-      std::make_shared<Math::Matrix<float>>()};
-  std::unique_ptr<Math::Vector<float>> m_dbiases{
-      std::make_unique<Math::Vector<float>>()};
+  Math::Matrix<float> m_dweights{};
+  Math::Matrix<float> m_dinputs{};
+  Math::Vector<float> m_dbiases{};
 
-  std::unique_ptr<Math::Matrix<float>> m_weightCache{
-      std::make_unique<Math::Matrix<float>>()};
-  std::unique_ptr<Math::Matrix<float>> m_weightMomentums{
-      std::make_unique<Math::Matrix<float>>()};
-  std::unique_ptr<Math::Vector<float>> m_biasCache{
-      std::make_unique<Math::Vector<float>>()};
-  std::unique_ptr<Math::Vector<float>> m_biasMomentums{
-      std::make_unique<Math::Vector<float>>()};
+  Math::Matrix<float> m_weightCache{};
+  Math::Matrix<float> m_weightMomentums{};
+  Math::Vector<float> m_biasCache{};
+  Math::Vector<float> m_biasMomentums{};
 
   float m_l1Weight{};
   float m_l1Bias{};

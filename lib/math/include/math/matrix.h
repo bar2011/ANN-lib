@@ -6,7 +6,6 @@
 #include "vectorView.h"
 
 #include <functional>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -35,6 +34,7 @@ public:
 
   // Copy constructor
   Matrix(const MatrixBase<T> &other);
+  Matrix(const Matrix<T> &other);
 
   // Move constructor
   Matrix(Matrix &&other) noexcept;
@@ -74,9 +74,8 @@ public:
 
   // Transposes the matrix. Returns the transposed one.
   // Note: the returned matrix has complete ownership on its values
-  std::shared_ptr<Matrix<T>>
-  transpose(size_t chunkSize = 4,
-            std::optional<bool> parallelize = std::nullopt) const;
+  Matrix<T> transpose(size_t chunkSize = 4,
+                      std::optional<bool> parallelize = std::nullopt) const;
 
   // Single item access - NO BOUNDS CHECKING
   T &operator[](const size_t row, const size_t col);
@@ -86,38 +85,38 @@ public:
   const T &at(const size_t row, const size_t col) const;
 
   // Single row access - NO BOUNDS CHECKING
-  const std::shared_ptr<VectorView<T>> operator[](const size_t row);
-  const std::shared_ptr<const VectorView<T>> operator[](const size_t row) const;
+  VectorView<T> operator[](const size_t row);
+  const VectorView<T> operator[](const size_t row) const;
   // Single row access - WITH BOUNDS CHECKING
-  const std::shared_ptr<VectorView<T>> at(const size_t row);
-  const std::shared_ptr<const VectorView<T>> at(const size_t row) const;
+  VectorView<T> at(const size_t row);
+  const VectorView<T> at(const size_t row) const;
 
   // Reshapes matrix to given dimensions. Returns *this.
   // Throws if given (rows * cols) is not equal to current (rows * cols).
   Matrix &reshape(const size_t rows, const size_t cols);
 
   // Get view of the entire matrix.
-  std::shared_ptr<MatrixView<T>> view() const;
+  const MatrixView<T> view() const;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
-  std::shared_ptr<MatrixView<T>> view(size_t startRow, size_t endRow) const;
+  const MatrixView<T> view(size_t startRow, size_t endRow) const;
 
   // Returns the index of the biggest value in the matrix
   // format: (row, col)
   std::pair<size_t, size_t> argmax() const;
 
   // Returns a vector containing the index of the biggest value in each row
-  std::unique_ptr<Math::Vector<size_t>> argmaxRow() const;
+  Math::Vector<size_t> argmaxRow() const;
 
   // Returns a vector containing the index of the biggest value in each column
-  std::unique_ptr<Math::Vector<size_t>> argmaxCol() const;
+  Math::Vector<size_t> argmaxCol() const;
 
   // Returns a vector which contains the same data as the matrix (same pointer),
   // so that when the vector is changed, the matrix is changed
-  std::unique_ptr<Math::VectorView<T>> asVector();
+  Math::VectorView<T> asVector();
 
   // Getters
   size_t rows() const { return m_rows; }

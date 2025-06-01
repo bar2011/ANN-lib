@@ -58,7 +58,7 @@ public:
 
   // Loads trainable parameters (weights, biases, etc.) from given file
   // Note: Expects format to be the same format as saveParams()
-  void loadParams(const std::string &path) const;
+  void loadParams(const std::string &path);
 
   // Train network based on given inputs
   // inputs dims - (X, input_num)
@@ -85,9 +85,8 @@ public:
   // Returns average loss per batch
   // For more information, mean loss and accuracy (if supported) can be acquired
   // via corresponding member functions
-  std::shared_ptr<const Math::Vector<float>>
-  evaluate(const Math::MatrixBase<float> &inputs,
-           const Math::MatrixBase<float> &correct);
+  Math::Vector<float> evaluate(const Math::MatrixBase<float> &inputs,
+                               const Math::MatrixBase<float> &correct);
 
   // Evaluate input batch for categorical loss
   // correct - vector of correct indices for each batch output
@@ -95,15 +94,14 @@ public:
   // For more information, mean loss and accuracy (if supported) can be acquired
   // via corresponding member functions
   // throws if loss isn't categorical / categoricalSoftmax
-  std::shared_ptr<const Math::Vector<float>>
-  evaluate(const Math::MatrixBase<float> &inputs,
-           const Math::VectorBase<float> &correct);
+  Math::Vector<float> evaluate(const Math::MatrixBase<float> &inputs,
+                               const Math::VectorBase<float> &correct);
 
   // Predict single input
-  [[nodiscard]] std::unique_ptr<Math::Vector<float>>
+  [[nodiscard]] Math::Vector<float>
   predict(const Math::VectorBase<float> &inputs) const;
   // Predict input batch
-  [[nodiscard]] std::shared_ptr<Math::MatrixBase<float>>
+  [[nodiscard]] Math::Matrix<float>
   predict(const Math::MatrixBase<float> &inputs) const;
 
   // Gives current saved loss in the model. Puts it into given pointers.
@@ -143,11 +141,10 @@ private:
   std::vector<size_t> createBatchSequence(size_t stepNum) const;
   // Forwards batchData through layers (not loss)
   // If training = false, doesn't go through dropout layers
-  void forward(std::shared_ptr<const Math::MatrixBase<float>> batchData,
-               bool training = true);
+  void forward(const Math::MatrixBase<float> &batchData, bool training = true);
   // Performs backward pass accross all layers, and optimizes trainable layers
   // Inputs - matrix of gradients for the final layer in the network
-  void optimize(std::shared_ptr<const Math::MatrixBase<float>> outputGradients);
+  void optimize(const Math::MatrixBase<float> &outputGradients);
 
   // Returns info about current network progression
   std::stringstream getUpdateMsg(double epochTime, size_t currentBatch,
@@ -157,13 +154,13 @@ private:
   static std::string formatTime(double seconds);
 
   // Transforms given float one-hot encoded matrix into index matrix
-  std::shared_ptr<Math::Vector<float>>
-  argmaxFloat(const Math::MatrixBase<float> &m);
+  Math::Vector<float> argmaxFloat(const Math::MatrixBase<float> &m);
 
   unsigned int m_inputs{};
+  // Layer is abstract, so unique_ptr is needed
   std::vector<std::unique_ptr<Layer>> m_layers{};
 
-  std::unique_ptr<LossVariant> m_loss{};
+  LossVariant m_loss{};
   std::unique_ptr<Optimizers::Optimizer> m_optimizer{};
   size_t m_batchSize{};
   size_t m_epochs{};

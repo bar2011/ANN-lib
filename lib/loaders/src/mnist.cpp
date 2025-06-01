@@ -24,8 +24,7 @@ MNist::DataPair MNist::loadImages(const std::string &labelsPath,
   return std::make_tuple(std::move(labels), std::move(images));
 }
 
-std::shared_ptr<Math::Vector<float>>
-MNist::loadLabelsFile(const std::string &labelsPath) {
+Math::Vector<float> MNist::loadLabelsFile(const std::string &labelsPath) {
   std::ifstream labelsFile{labelsPath, std::ios::binary | std::ios::in};
 
   // testing number which should always be 2049
@@ -40,9 +39,9 @@ MNist::loadLabelsFile(const std::string &labelsPath) {
   // file)
   unsigned int size{readU32(labelsFile, labelsPath)};
 
-  auto labels{std::make_shared<Math::Vector<float>>(size)};
+  Math::Vector<float> labels{size};
 
-  labels->fill(
+  labels.fill(
       [&labelsFile, &labelsPath](float *item) {
         unsigned char byte{};
         if (!labelsFile.read(reinterpret_cast<char *>(&byte), 1))
@@ -57,8 +56,7 @@ MNist::loadLabelsFile(const std::string &labelsPath) {
   return labels;
 }
 
-std::shared_ptr<Math::Matrix<float>>
-MNist::loadImagesFile(const std::string &imagesPath) {
+Math::Matrix<float> MNist::loadImagesFile(const std::string &imagesPath) {
   std::ifstream imagesFile{imagesPath, std::ios::binary | std::ios::in};
 
   // testing number which should always be 2051
@@ -77,9 +75,9 @@ MNist::loadImagesFile(const std::string &imagesPath) {
   // Number of columns in each image
   unsigned int cols{readU32(imagesFile, imagesPath)};
 
-  auto images{std::make_unique<Math::Matrix<float>>(size, rows * cols)};
+  Math::Matrix<float> images{size, rows * cols};
 
-  images->fill(
+  images.fill(
       [&imagesFile, &imagesPath](float *item) {
         unsigned char byte{};
         if (!imagesFile.read(reinterpret_cast<char *>(&byte), 1))

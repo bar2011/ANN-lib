@@ -15,8 +15,7 @@ CSV::CSV(const std::string &trainDataPath, const std::string &trainLabelPath,
       m_batchSize{batchSize}, m_trainSize{trainSize}, m_testSize{testSize},
       m_features{features}, m_targets{targets} {}
 
-std::pair<std::unique_ptr<Math::Matrix<float>>,
-          std::unique_ptr<Math::Matrix<float>>>
+std::pair<Math::Matrix<float>, Math::Matrix<float>>
 CSV::getTrainBatch(size_t batchNum) {
   std::string line{};
 
@@ -57,11 +56,10 @@ CSV::getTrainBatch(size_t batchNum) {
     }
   }
 
-  auto batchData{std::make_unique<Math::Matrix<float>>(m_batchSize, m_features,
-                                                       std::move(dataVector))};
+  Math::Matrix<float> batchData{m_batchSize, m_features, std::move(dataVector)};
 
-  auto batchLabels{std::make_unique<Math::Matrix<float>>(
-      m_batchSize, m_targets, std::move(labelsVector))};
+  Math::Matrix<float> batchLabels{m_batchSize, m_targets,
+                                  std::move(labelsVector)};
 
   // Put fstreams back on the file start
   m_trainDataFile.clear();
@@ -72,9 +70,7 @@ CSV::getTrainBatch(size_t batchNum) {
   return std::pair{std::move(batchData), std::move(batchLabels)};
 }
 
-std::pair<std::unique_ptr<Math::Matrix<float>>,
-          std::unique_ptr<Math::Matrix<float>>>
-CSV::getTrainData() {
+std::pair<Math::Matrix<float>, Math::Matrix<float>> CSV::getTrainData() {
   std::string line{};
 
   std::vector<float> dataVector{};
@@ -108,11 +104,10 @@ CSV::getTrainData() {
     }
   }
 
-  auto trainData{std::make_unique<Math::Matrix<float>>(m_trainSize, m_features,
-                                                       std::move(dataVector))};
+  Math::Matrix<float> trainData{m_trainSize, m_features, std::move(dataVector)};
 
-  auto trainLabels{std::make_unique<Math::Matrix<float>>(
-      m_trainSize, m_targets, std::move(labelsVector))};
+  Math::Matrix<float> trainLabels{m_trainSize, m_targets,
+                                  std::move(labelsVector)};
 
   // Put fstreams back on the file start
   m_trainDataFile.clear();
@@ -123,10 +118,8 @@ CSV::getTrainData() {
   return std::pair{std::move(trainData), std::move(trainLabels)};
 }
 
-std::pair<std::unique_ptr<Math::Matrix<float>>,
-          std::unique_ptr<Math::Matrix<float>>>
-CSV::getTest() {
-  auto testData{std::make_unique<Math::Matrix<float>>(
+std::pair<Math::Matrix<float>, Math::Matrix<float>> CSV::getTest() {
+  Math::Matrix<float> testData{
       m_testSize, m_features, [&testDataFile = m_testDataFile]() {
         float f{};
         if (!(testDataFile >> f))
@@ -138,9 +131,9 @@ CSV::getTest() {
           testDataFile.clear();
 
         return f;
-      })};
+      }};
 
-  auto testLabels{std::make_unique<Math::Matrix<float>>(
+  Math::Matrix<float> testLabels{
       m_testSize, m_targets, [&testLabelsFile = m_testLabelsFile]() {
         float f{};
         if (!(testLabelsFile >> f))
@@ -152,7 +145,7 @@ CSV::getTest() {
           testLabelsFile.clear();
 
         return f;
-      })};
+      }};
 
   // Put fstreams back on the file start
   m_testDataFile.clear();

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <optional>
 #include <stddef.h>
 #include <vector>
@@ -35,28 +34,27 @@ public:
   virtual std::pair<size_t, size_t> argmax() const = 0;
 
   // Returns a vector containing the index of the biggest value in each row
-  virtual std::unique_ptr<Math::Vector<size_t>> argmaxRow() const = 0;
+  virtual Math::Vector<size_t> argmaxRow() const = 0;
 
   // Returns a vector containing the index of the biggest value in each column
-  virtual std::unique_ptr<Math::Vector<size_t>> argmaxCol() const = 0;
+  virtual Math::Vector<size_t> argmaxCol() const = 0;
 
   virtual const std::vector<T> &data() const = 0;
 
-  virtual std::unique_ptr<Math::VectorView<T>> asVector() = 0;
+  virtual Math::VectorView<T> asVector() = 0;
 
   // Returns a view of the entire matrix
-  virtual std::shared_ptr<Math::MatrixView<T>> view() const = 0;
+  virtual const Math::MatrixView<T> view() const = 0;
 
   // Returns a view of a range of rows from the matrix.
   // Includes rows in the range [startRow, endRow), i.e., startRow is inclusive,
   // endRow is exclusive. The view includes all columns in each row.
   // Throws if endRow > row count or startRow >= endRow.
-  virtual std::shared_ptr<MatrixView<T>> view(size_t startRow,
-                                              size_t endRow) const = 0;
+  virtual const MatrixView<T> view(size_t startRow, size_t endRow) const = 0;
 
   // Transposes the matrix. Returns the transposed one.
   // Note: the returned matrix has complete ownership on its values
-  virtual std::shared_ptr<Matrix<T>>
+  virtual Matrix<T>
   transpose(size_t chunkSize = 4,
             std::optional<bool> parallelize = std::nullopt) const = 0;
 };

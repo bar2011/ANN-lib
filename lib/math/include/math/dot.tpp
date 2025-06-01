@@ -88,7 +88,7 @@ Matrix<T> dot(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
   const size_t cost{2 * mb.cols() * ma.cols()};
 
   if (optimizeCache.value_or(ma.rows() * cost > PARALLEL_COST_MINIMUM))
-    return dotTB(ma, *mb.transpose(), parallelize);
+    return dotTB(ma, mb.transpose(), parallelize);
 
   Matrix<T> result{ma.rows(), mb.cols()};
 
@@ -121,7 +121,7 @@ Matrix<T> dotTA(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
   const size_t cost{2 * mb.cols() * ma.rows()};
 
   if (optimizeCache.value_or(ma.cols() * cost > PARALLEL_COST_MINIMUM))
-    return dotTB(*ma.transpose(4, parallelize), *mb.transpose(4, parallelize),
+    return dotTB(ma.transpose(4, parallelize), mb.transpose(4, parallelize),
                  parallelize);
 
   Matrix<T> result{ma.cols(), mb.cols()};

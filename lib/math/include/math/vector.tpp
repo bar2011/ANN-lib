@@ -98,12 +98,12 @@ template <typename T> const T &Vector<T>::at(size_t index) const {
   return m_data[index];
 }
 
-template <typename T> std::shared_ptr<VectorView<T>> Vector<T>::view() const {
-  return std::shared_ptr<VectorView<T>>(new VectorView<T>{0, size(), m_data});
+template <typename T> const VectorView<T> Vector<T>::view() const {
+  return VectorView<T>{0, size(), m_data};
 }
 
 template <typename T>
-std::shared_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
+const VectorView<T> Vector<T>::view(size_t start, size_t end) const {
   if (end > m_data.size())
     throw Math::Exception{
         CURRENT_FUNCTION,
@@ -116,7 +116,6 @@ std::shared_ptr<VectorView<T>> Vector<T>::view(size_t start, size_t end) const {
         "the given end."};
 
   // Can't use make_shared because it uses a private constructor
-  return std::shared_ptr<VectorView<T>>{
-      new VectorView<T>{start, end - start, m_data}};
+  return VectorView<T>{start, end - start, m_data};
 }
 } // namespace Math

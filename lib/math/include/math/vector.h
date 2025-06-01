@@ -4,7 +4,6 @@
 #include "vectorView.h"
 
 #include <functional>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -69,12 +68,12 @@ public:
   const T &at(size_t index) const;
 
   // Get view of the entire vector
-  std::shared_ptr<VectorView<T>> view() const;
+  const VectorView<T> view() const;
 
   // Returns a view of a range of indices from the vector
   // Included values are in the range of [start, end)
   // Throws if end > size or start >= end
-  std::shared_ptr<VectorView<T>> view(size_t start, size_t end) const;
+  const VectorView<T> view(size_t start, size_t end) const;
 
   // Getters
   size_t size() const { return m_data.size(); }

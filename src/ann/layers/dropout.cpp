@@ -23,60 +23,55 @@ Dropout &Dropout::operator=(Dropout &&other) noexcept {
   return *this;
 }
 
-std::shared_ptr<const Math::Matrix<float>>
-Dropout::forward(const std::shared_ptr<const Math::MatrixBase<float>> &inputs) {
+const Math::Matrix<float> &
+Dropout::forward(const Math::MatrixBase<float> &inputs) {
   // If mask's size doesn't match, resize (via recreation) all the matrices
-  if (m_mask->rows() != inputs->rows() || m_mask->cols() != inputs->cols()) {
-    m_mask =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
-    m_output =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
-    m_dinputs =
-        std::make_shared<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+  if (m_mask.rows() != inputs.rows() || m_mask.cols() != inputs.cols()) {
+    m_mask = Math::Matrix<float>(inputs.rows(), inputs.cols());
+    m_output = Math::Matrix<float>(inputs.rows(), inputs.cols());
+    m_dinputs = Math::Matrix<float>(inputs.rows(), inputs.cols());
   }
 
   auto dropoutBatch{[&inputs, &output = m_output, &mask = m_mask,
                      dropout = m_dropout](size_t batch) {
-    for (size_t i{}; i < inputs->cols(); ++i) {
+    for (size_t i{}; i < inputs.cols(); ++i) {
       // Mask is normalized bernoulli output (to control mean output sum)
-      (*mask)[batch, i] =
-          Math::Random::getBernoulli(1 - dropout) / (1 - dropout);
-      (*output)[batch, i] = (*inputs)[batch, i] * (*mask)[batch, i];
+      mask[batch, i] = Math::Random::getBernoulli(1 - dropout) / (1 - dropout);
+      output[batch, i] = inputs[batch, i] * mask[batch, i];
     }
   }};
 
-  Utils::Parallel::dynamicParallelFor(inputs->cols() * 7, inputs->rows(),
+  Utils::Parallel::dynamicParallelFor(inputs.cols() * 7, inputs.rows(),
                                       dropoutBatch);
 
   return m_output;
 }
 
-std::unique_ptr<Math::Matrix<float>> Dropout::predict(
-    const std::shared_ptr<const Math::MatrixBase<float>> &inputs) const {
-  auto output =
-      std::make_unique<Math::Matrix<float>>(inputs->rows(), inputs->cols());
+Math::Matrix<float>
+Dropout::predict(const Math::MatrixBase<float> &inputs) const {
+  Math::Matrix<float> output{inputs.rows(), inputs.cols()};
 
   auto dropoutBatch{
       [&inputs, &output, &mask = m_mask, dropout = m_dropout](size_t batch) {
-        for (size_t i{}; i < inputs->cols(); ++i) {
+        for (size_t i{}; i < inputs.cols(); ++i) {
           // Mask is normalized bernoulli output (to control mean output sum)
           float mask{Math::Random::getBernoulli(1 - dropout) / (1 - dropout)};
-          (*output)[batch, i] = (*inputs)[batch, i] * mask;
+          output[batch, i] = inputs[batch, i] * mask;
         }
       }};
 
-  Utils::Parallel::dynamicParallelFor(inputs->cols() * 7, inputs->rows(),
+  Utils::Parallel::dynamicParallelFor(inputs.cols() * 7, inputs.rows(),
                                       dropoutBatch);
 
   return output;
 }
 
-std::shared_ptr<const Math::Matrix<float>> Dropout::backward(
-    const std::shared_ptr<const Math::MatrixBase<float>> &dvalues) {
-  m_dinputs->transform(*dvalues, *m_mask,
-                       [](float *din, const float *dval, const float *mask) {
-                         *din = *dval * *mask;
-                       });
+const Math::Matrix<float> &
+Dropout::backward(const Math::MatrixBase<float> &dvalues) {
+  m_dinputs.transform(dvalues, m_mask,
+                      [](float *din, const float *dval, const float *mask) {
+                        *din = *dval * *mask;
+                      });
 
   return m_dinputs;
 }
