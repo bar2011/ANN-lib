@@ -128,7 +128,7 @@ void trainMNist() {
   //
   // std::cout << "Loaded parameters successfully.\n";
 
-  model->train(*trainingImages, *trainingLabels);
+  model->train(*trainingImages, *trainingLabels, "mnist.log");
 
   model->evaluate(*testingImages, *testingLabels);
   float dataLoss{};

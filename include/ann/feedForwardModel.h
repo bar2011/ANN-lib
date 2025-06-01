@@ -63,19 +63,23 @@ public:
   // Train network based on given inputs
   // inputs dims - (X, input_num)
   // correct dims - (X, output_num)
+  // logPath - path to log file to be created
   // X / batch_size = steps per epoch
   // For categorical cross-entropy loss, `correct` should be one-hot encoded
   void train(const Math::MatrixBase<float> &inputs,
-             const Math::MatrixBase<float> &correct);
+             const Math::MatrixBase<float> &correct,
+             const std::string &logPath = "");
 
   // Train network based on given inputs
   // correct - vector of correct output index for the corresponding inputs
   // inputs dims - (X, input_num)
   // correct dims - (X)
+  // logPath - path to log file to be created
   // X / batch_size = steps per epoch
   // throws if loss isn't categorical cross-entropy
   void train(const Math::MatrixBase<float> &inputs,
-             const Math::VectorBase<float> &correct);
+             const Math::VectorBase<float> &correct,
+             const std::string &logPath = "");
 
   // Evaluate input batch
   // Returns average loss per batch
@@ -145,9 +149,9 @@ private:
   // Inputs - matrix of gradients for the final layer in the network
   void optimize(std::shared_ptr<const Math::MatrixBase<float>> outputGradients);
 
-  // Shows info about current network progression
-  void printUpdate(double displayTime, double epochTime, size_t currentBatch,
-                   size_t stepNum) const;
+  // Returns info about current network progression
+  std::stringstream getUpdateMsg(double epochTime, size_t currentBatch,
+                                 size_t stepNum) const;
 
   // Formats given time into string with units - ns, us, ms, or s
   static std::string formatTime(double seconds);

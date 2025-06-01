@@ -163,7 +163,14 @@ void FeedForwardModel::loadParams(const std::string &path) const {
 }
 
 void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
-                             const Math::MatrixBase<float> &correct) {
+                             const Math::MatrixBase<float> &correct,
+                             const std::string &logPath) {
+  std::ofstream logFile{logPath};
+  if (!logFile && logPath != "") {
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Unable to open provided log file in " + logPath};
+  }
+
   // If loss is categorical, use more efficient route of converting correct from
   // begin 1-hot encoded to a vector of indices, and training on them
   if (std::holds_alternative<Loss::Categorical>(*m_loss) ||
@@ -184,16 +191,11 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
 
   const size_t stepNum{inputsTraining->rows() / m_batchSize};
 
-  // Save std::cout config to later restore it
-  const auto coutFlags{std::cout.flags()};
-  const auto coutPrecision{std::cout.precision()};
-
-  // Set up floating point printing for training updates
-  std::cout << std::fixed << std::setprecision(4);
-
   for (size_t epoch{}; epoch < m_epochs; ++epoch) {
     if (m_verbose)
       std::cout << "\nEpoch " << epoch + 1 << ":\n";
+    if (logFile.is_open())
+      logFile << "\nEPOCH " << epoch + 1 << ":\n";
 
     // Set up batch sequence
     std::vector<size_t> batchSequence{createBatchSequence(stepNum)};
@@ -225,12 +227,20 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       // batch, only if verbose is true
       if (m_verbose && (displayTime.elapsed() >= 0.5 || batch + 1 == stepNum ||
                         batch == 0)) {
-        printUpdate(displayTime.elapsed(), epochTime.elapsed(), batch, stepNum);
+        std::cout << '\r'
+                  << getUpdateMsg(epochTime.elapsed(), batch, stepNum).str()
+                  << std::flush;
         displayTime.reset();
       }
+
+      // If log file is defined, write to it every update message
+      if (logFile.is_open())
+        logFile << getUpdateMsg(epochTime.elapsed(), batch, stepNum).str()
+                << '\n';
     }
 
-    if (m_trainValidationRate > 0) {
+    // Perform validation
+    if (m_trainValidationRate > 0 && (m_verbose || logFile.is_open())) {
       // forward validation
       auto valInputs{inputs.view(validationNum, inputs.rows())};
       auto valCorrect{correct.view(validationNum, inputs.rows())};
@@ -242,21 +252,33 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
             valLoss = loss.mean();
           },
           *m_loss);
-      std::cout << " - val loss: " << valLoss;
-      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
-        std::cout << " - val accuracy: " << valAccuracy;
+
+      if (m_verbose)
+        std::cout << " - val loss: " << valLoss;
+      if (logFile.is_open())
+        logFile << "Validation loss: " << valLoss << '\n';
+
+      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1) {
+        if (m_verbose)
+          std::cout << " - val accuracy: " << valAccuracy;
+        if (logFile.is_open())
+          logFile << "Validation accuracy: " << valAccuracy << '\n';
+      }
     }
 
     std::cout << '\n';
   }
-
-  // Restore previous std::cout config
-  std::cout.flags(coutFlags);
-  std::cout.precision(coutPrecision);
 }
 
 void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
-                             const Math::VectorBase<float> &correct) {
+                             const Math::VectorBase<float> &correct,
+                             const std::string &logPath) {
+  std::ofstream logFile{logPath};
+  if (!logFile && logPath != "") {
+    throw ANN::Exception{CURRENT_FUNCTION,
+                         "Unable to open provided log file in " + logPath};
+  }
+
   // If loss isn't categorical, throw exception
   if (!std::holds_alternative<Loss::Categorical>(*m_loss) &&
       !std::holds_alternative<Loss::CategoricalSoftmax>(*m_loss))
@@ -274,16 +296,11 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
 
   const size_t stepNum{inputsTraining->rows() / m_batchSize};
 
-  // Save std::cout config to later restore it
-  const auto coutFlags{std::cout.flags()};
-  const auto coutPrecision{std::cout.precision()};
-
-  // Set up floating point printing for training updates
-  std::cout << std::fixed << std::setprecision(4);
-
   for (size_t epoch{}; epoch < m_epochs; ++epoch) {
     if (m_verbose)
       std::cout << "\nEpoch " << epoch + 1 << ":\n";
+    if (logFile.is_open())
+      logFile << "\nEPOCH " << epoch + 1 << ":\n";
 
     // Set up batch sequence
     std::vector<size_t> batchSequence{createBatchSequence(stepNum)};
@@ -322,14 +339,20 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
       // batch, only if verbose is true
       if (m_verbose && (displayTime.elapsed() >= 0.5 || batch + 1 == stepNum ||
                         batch == 0)) {
-        printUpdate(displayTime.elapsed(), epochTime.elapsed(), batch, stepNum);
+        std::cout << '\r'
+                  << getUpdateMsg(epochTime.elapsed(), batch, stepNum).str()
+                  << std::flush;
         displayTime.reset();
       }
+
+      // If log file is defined, write to it every update message
+      if (logFile.is_open())
+        logFile << getUpdateMsg(epochTime.elapsed(), batch, stepNum).str()
+                << '\n';
     }
 
-    // Perform validation even if verbose is false
-    // TODO: save output to log file, so that always validating will make sense
-    if (m_trainValidationRate > 0) {
+    // Perform validation
+    if (m_trainValidationRate > 0 && (m_verbose || logFile.is_open())) {
       // forward validation
       auto valInputs{inputs.view(validationNum, inputs.rows())};
       auto valCorrect{correct.view(validationNum, inputs.rows())};
@@ -349,18 +372,22 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
               },
               [](auto &loss) { assert(false); }},
           *m_loss);
-      if (m_verbose) {
+
+      if (m_verbose)
         std::cout << " - val loss: " << valLoss;
-        if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1)
+      if (logFile.is_open())
+        logFile << "Validation loss: " << valLoss << '\n';
+
+      if (float valAccuracy{calculateAccuracy()}; valAccuracy != -1) {
+        if (m_verbose)
           std::cout << " - val accuracy: " << valAccuracy;
+        if (logFile.is_open())
+          logFile << "Validation accuracy: " << valAccuracy << '\n';
       }
     }
+
     std::cout << '\n';
   }
-
-  // Restore previous std::cout config
-  std::cout.flags(coutFlags);
-  std::cout.precision(coutPrecision);
 }
 
 std::shared_ptr<const Math::Vector<float>>
@@ -575,8 +602,14 @@ void FeedForwardModel::optimize(
   m_optimizer->postUpdate();
 }
 
-void FeedForwardModel::printUpdate(double displayTime, double epochTime,
-                                   size_t currentBatch, size_t stepNum) const {
+std::stringstream FeedForwardModel::getUpdateMsg(double epochTime,
+                                                 size_t currentBatch,
+                                                 size_t stepNum) const {
+  std::stringstream out{};
+  out << std::fixed << std::setprecision(4) << currentBatch + 1 << '/'
+      << stepNum << '\t' << static_cast<size_t>(epochTime) << "s "
+      << formatTime(epochTime / (currentBatch + 1)) << "/step \t";
+
   // Calculate loss to be displayed (only if verbose is true)
   float dataLoss{};
   float regularizationLoss{};
@@ -585,16 +618,13 @@ void FeedForwardModel::printUpdate(double displayTime, double epochTime,
   // Get accuracy only for classification losses (no regression accuracy)
   std::stringstream accuracy{};
   if (float val{calculateAccuracy()}; val != -1)
-    accuracy << std::fixed << std::setprecision(4) << "accuracy: " << val
-             << " - ";
+    out << "accuracy: " << val << " - ";
 
-  std::cout << '\r' << currentBatch + 1 << '/' << stepNum << '\t'
-            << static_cast<size_t>(epochTime) << "s "
-            << formatTime(epochTime / (currentBatch + 1)) << "/step \t"
-            << accuracy.str() << "loss: " << dataLoss + regularizationLoss
-            << " (data loss: " << dataLoss
-            << ", reg loss: " << regularizationLoss
-            << ") - lr: " << m_optimizer->learningRate() << std::flush;
+  out << "loss: " << dataLoss + regularizationLoss
+      << " (data loss: " << dataLoss << ", reg loss: " << regularizationLoss
+      << ") - lr: " << m_optimizer->learningRate();
+
+  return out;
 }
 
 std::shared_ptr<Math::Vector<float>>
