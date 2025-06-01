@@ -12,8 +12,7 @@
 #include <variant>
 
 namespace ANN {
-std::unique_ptr<FeedForwardModel>
-ModelLoader::loadFeedForward(const std::string &path) {
+FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
   std::ifstream file{path};
   if (!file.is_open())
     throw ANN::Exception{CURRENT_FUNCTION, "Unable to open file " + path};
@@ -285,7 +284,7 @@ ModelLoader::loadFeedForward(const std::string &path) {
         CURRENT_FUNCTION,
         "Required model configuration 'inputs' has not been set."};
 
-  return std::make_unique<FeedForwardModel>(modelDesc, trainDesc);
+  return FeedForwardModel{modelDesc, trainDesc};
 }
 
 void ModelLoader::configLayer(Dense &layer, const std::string &config,

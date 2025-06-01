@@ -2,14 +2,13 @@
 
 #include "ann/feedForwardModel.h"
 #include "ann/modelDescriptors.h"
-#include <memory>
 #include <string>
 #include <string_view>
 
 namespace ANN {
 class ModelLoader {
 public:
-  [[nodiscard]] static std::unique_ptr<FeedForwardModel>
+  [[nodiscard]] static FeedForwardModel
   loadFeedForward(const std::string &path);
 
 private:
