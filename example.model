@@ -1,10 +1,13 @@
-[MODEL] # This is the start of the layer configuration
+# This is an example model configuration file.
+# All configuration is case sensitive
+
+[MODEL] # This is the start of the model structure configuration
 
 inputs = 100 # Number of inputs to the first layer. needs to be > 0
 
 # When settings a layer, you first declare its type, and the type cannot change afterwards.
 # You declare a type with the format "layer.[layer num].type = [type]"
-# With [layer num] starting at 0 and incrementing.
+# With [layer num] starting at 1 and incrementing.
 # You have to declare a layer's type before its configuration.
 # [type] can be one of the following (case sensitive):
 # dense, dropout, step, sigmoid, relu, leaky_relu, softmax.
@@ -45,22 +48,22 @@ loss.type = categorical_cross_entropy # required
 
 # optimizer.type can be one of the following:
 # sgd, adagrad, rmsprop, adam
-# all optimizer configurations are floating point values.
-# possible configuration
-# sgd:
+# The following are their optional parameters (all float):
+#
+# SGD:
 #     learning_rate - default 1e-2
 #     decay - default 0
 #     momentum - default 0
-# adagrad:
+# AdaGrad:
 #     learning_rate - default 1e-2
 #     decay - default 0
 #     epsilon - default 1e-7
-# rmsprop:
+# RMSProp:
 #     learning_rate - default 1e-3
 #     decay - default 0
 #     epsilon - default 1e-7
 #     rho - default 0.9
-# adam:
+# Adam:
 #     learning_rate - default 1e-3
 #     decay - default 0
 #     epsilon - default 1e-7
