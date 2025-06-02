@@ -63,6 +63,12 @@ export MallocNanoZone='0'
 - Save/Load trainable parameters
 - Loading full model configuration from a custom configuration (for format guidelines, see [example.model](example.model))
 
+## Roadmap
+
+[ ] - Better exception handling (for each layer class separately)
+[ ] - Implement Convolutions
+[ ] - Explore *maybe* implementing RNNs
+
 ## Demo
 
 For usage demo, see [main.cpp](src/main.cpp)
