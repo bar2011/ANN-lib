@@ -12,6 +12,8 @@ class MSE : public Loss {
 public:
   MSE() = default;
 
+  virtual ~MSE() = default;
+
   // Copy constructor deleted
   MSE(const MSE &other) = delete;
 

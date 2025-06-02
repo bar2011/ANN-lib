@@ -31,9 +31,9 @@ public:
   backward(const Math::MatrixBase<float> &dvalues) = 0;
 
   // Saves learnable parameters of the layers into file in its current position
-  virtual void saveParams(std::ofstream &file) const {}
+  virtual void saveParams(std::ofstream &) const {}
   // Loads learnable parameters of the layers from file in its current position
-  virtual void loadParams(std::ifstream &file) {}
+  virtual void loadParams(std::ifstream &) {}
 
   virtual const Math::Matrix<float> &output() const = 0;
   virtual const Math::Matrix<float> &dinputs() const = 0;

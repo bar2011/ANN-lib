@@ -36,7 +36,7 @@ Categorical::forward(const Math::MatrixBase<float> &predictions,
   // An estimation of the cost of each iteration in terms of integer addition
   const size_t cost{50};
 
-  constexpr float epsilon{1e-7};
+  constexpr float epsilon{1e-7f};
 
   auto calculateBatch{
       [&predictions, &correct, &output = m_output, epsilon](size_t batch) {
@@ -58,8 +58,8 @@ Categorical::forward(const Math::MatrixBase<float> &predictions,
 
   for (size_t i{}; i < correct.rows(); ++i)
     for (size_t j{}; j < correct.cols(); ++j)
-      if (correct[i, correctVector[i]] < correct[i, j])
-        correctVector[i] = j;
+      if (correct[i, static_cast<size_t>(correctVector[i])] < correct[i, j])
+        correctVector[i] = static_cast<float>(j);
 
   return forward(predictions, correctVector);
 }
@@ -67,13 +67,14 @@ Categorical::forward(const Math::MatrixBase<float> &predictions,
 const Math::Matrix<float> &Categorical::backward() {
   for (size_t i{}; i < m_predictions.rows(); ++i)
     for (size_t j{}; j < m_predictions.cols(); ++j) {
-      if (m_correct[i] != j)
+      if (m_correct[i] != static_cast<float>(j))
         m_dinputs[i, j] = 0;
       else
         // Set the corresponding value to the derivative of the loss function
         // Divided by number or rows (which is number of batches) for some sort
         // of normalization (useful while optimizing)
-        m_dinputs[i, j] = -1 / m_predictions[i, j] / m_predictions.rows();
+        m_dinputs[i, j] =
+            -1 / m_predictions[i, j] / static_cast<float>(m_predictions.rows());
     }
 
   return m_dinputs;
@@ -85,10 +86,10 @@ float Categorical::accuracy() const {
 
   float correctPredictions{};
   for (size_t i{}; i < prediction.size(); ++i)
-    if (prediction[i] == m_correct[i])
+    if (static_cast<float>(prediction[i]) == m_correct[i])
       ++correctPredictions;
 
-  return correctPredictions / prediction.size();
+  return correctPredictions / static_cast<float>(prediction.size());
 }
 } // namespace Loss
 } // namespace ANN

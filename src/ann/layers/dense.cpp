@@ -24,19 +24,21 @@ Dense::Dense(unsigned int inputNum, unsigned int neuronNum,
   case WeightInit::Xavier:
     m_weights = Math::Matrix<float>{
         inputNum, neuronNum, [inputNum, neuronNum]() -> float {
-          return std::sqrt(2.0 / (inputNum + neuronNum)) *
-                 Math::Random::getNormal();
+          return static_cast<float>(std::sqrt(2.0 / (inputNum + neuronNum)) *
+                                    Math::Random::getNormal());
         }};
     break;
   case WeightInit::He:
-    m_weights = Math::Matrix<float>{
-        inputNum, neuronNum, [inputNum, neuronNum]() -> float {
-          return std::sqrt(2.0 / inputNum) * Math::Random::getNormal();
-        }};
+    m_weights = Math::Matrix<float>{inputNum, neuronNum, [inputNum]() -> float {
+                                      return static_cast<float>(
+                                          std::sqrt(2.0 / inputNum) *
+                                          Math::Random::getNormal());
+                                    }};
     break;
   case WeightInit::Random:
     m_weights = Math::Matrix<float>{inputNum, neuronNum, []() -> float {
-                                      return 0.01 * Math::Random::getNormal();
+                                      return static_cast<float>(
+                                          0.01 * Math::Random::getNormal());
                                     }};
     break;
   }

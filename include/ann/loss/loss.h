@@ -14,6 +14,8 @@ namespace Loss {
 // Base loss class - not instantiatable
 class Loss {
 public:
+  virtual ~Loss() = default;
+
   // Forward pass: stores and returns layer output (average batch loss)
   // prediction = batch output of ANN
   // correct = "wanted" values of prediction

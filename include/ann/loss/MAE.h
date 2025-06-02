@@ -12,6 +12,8 @@ class MAE : public Loss {
 public:
   MAE() = default;
 
+  virtual ~MAE() = default;
+
   // Copy constructor deleted
   MAE(const MAE &other) = delete;
 

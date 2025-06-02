@@ -8,8 +8,9 @@ namespace ANN {
 namespace Loss {
 
 CategoricalSoftmax::CategoricalSoftmax(CategoricalSoftmax &&other) noexcept
-    : m_softmaxOutput{std::move(other.m_softmaxOutput)}, m_input{other.m_input},
-      m_correct{other.m_correct}, m_dinputs{std::move(other.m_dinputs)} {}
+    : m_input{other.m_input}, m_correct{other.m_correct},
+      m_softmaxOutput{std::move(other.m_softmaxOutput)},
+      m_dinputs{std::move(other.m_dinputs)} {}
 
 CategoricalSoftmax &
 CategoricalSoftmax::operator=(CategoricalSoftmax &&other) noexcept {
@@ -36,7 +37,7 @@ CategoricalSoftmax::forward(const Math::MatrixBase<float> &inputs,
     m_dinputs = Math::Matrix<float>{inputs.rows(), inputs.cols()};
   }
 
-  constexpr float epsilon{1e-7};
+  constexpr float epsilon{1e-7f};
 
   // Chose 70 as a rough summation of operations done in the loop in comparison
   // to a single addition
@@ -81,8 +82,8 @@ CategoricalSoftmax::forward(const Math::MatrixBase<float> &inputs,
 
   for (size_t i{}; i < correct.rows(); ++i)
     for (size_t j{}; j < correct.cols(); ++j)
-      if (correct[i, correctVector[i]] < correct[i, j])
-        correctVector[i] = j;
+      if (correct[i, static_cast<size_t>(correctVector[i])] < correct[i, j])
+        correctVector[i] = static_cast<float>(j);
 
   return forward(inputs, correctVector);
 }
@@ -135,7 +136,8 @@ const Math::Matrix<float> &CategoricalSoftmax::backward() {
         size_t correctIndex{static_cast<size_t>(correct[i])};
         for (size_t j{}; j < dinputs.cols(); ++j)
           dinputs[i, j] =
-              (softmaxOutput[i, j] - ((j == correctIndex) ? 1 : 0)) / batches;
+              (softmaxOutput[i, j] - ((j == correctIndex) ? 1 : 0)) /
+              static_cast<float>(batches);
       });
 
   return m_dinputs;
@@ -147,10 +149,10 @@ float CategoricalSoftmax::accuracy() const {
 
   float correctPredictions{};
   for (size_t i{}; i < prediction.size(); ++i)
-    if (prediction[i] == m_correct[i])
+    if (static_cast<float>(prediction[i]) == m_correct[i])
       ++correctPredictions;
 
-  return correctPredictions / prediction.size();
+  return correctPredictions / static_cast<float>(prediction.size());
 }
 
 float CategoricalSoftmax::mean() const {
@@ -159,7 +161,7 @@ float CategoricalSoftmax::mean() const {
   for (size_t i{}; i < m_output.size(); ++i)
     outputSum += m_output[i];
 
-  return outputSum / m_output.size();
+  return outputSum / static_cast<float>(m_output.size());
 }
 } // namespace Loss
 } // namespace ANN

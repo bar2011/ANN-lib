@@ -12,6 +12,8 @@ class Binary : public Loss {
 public:
   Binary() = default;
 
+  virtual ~Binary() = default;
+
   // Copy constructor deleted
   Binary(const Binary &other) = delete;
 

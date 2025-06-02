@@ -317,7 +317,7 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
                        loss.forward(layers.back()->output(), batchCorrect);
                        outputGradients = loss.backward().view();
                      },
-                     [](auto &loss) { assert(false); }},
+                     [](auto &) { assert(false); }},
                  m_loss);
 
       optimize(outputGradients);
@@ -356,7 +356,7 @@ void FeedForwardModel::train(const Math::MatrixBase<float> &inputs,
                               loss.forward(layers.back()->output(), valCorrect);
                               valLoss = loss.mean();
                             },
-                            [](auto &loss) { assert(false); }},
+                            [](auto &) { assert(false); }},
           m_loss);
 
       if (m_verbose)
@@ -415,7 +415,7 @@ FeedForwardModel::evaluate(const Math::MatrixBase<float> &inputs,
                                  averageLoss = loss.forward(
                                      layers.back()->output(), correct.view());
                                },
-                               [](auto &loss) { assert(false); }},
+                               [](auto &) { assert(false); }},
              m_loss);
 
   return averageLoss;
@@ -483,7 +483,7 @@ float FeedForwardModel::calculateAccuracy() const {
             accuracy = l.accuracy();
           },
           [&accuracy](const Loss::Binary &l) { accuracy = l.accuracy(); },
-          [&accuracy](const auto &) {}},
+          [](const auto &) {}},
       m_loss);
   return accuracy;
 }
@@ -592,7 +592,8 @@ std::stringstream FeedForwardModel::getUpdateMsg(double epochTime,
   std::stringstream out{};
   out << std::fixed << std::setprecision(4) << currentBatch + 1 << '/'
       << stepNum << '\t' << static_cast<size_t>(epochTime) << "s "
-      << formatTime(epochTime / (currentBatch + 1)) << "/step \t";
+      << formatTime(epochTime / (static_cast<double>(currentBatch + 1)))
+      << "/step \t";
 
   // Calculate loss to be displayed (only if verbose is true)
   float dataLoss{};
@@ -618,8 +619,8 @@ FeedForwardModel::argmaxFloat(const Math::MatrixBase<float> &m) {
 
   for (size_t i{}; i < m.rows(); ++i)
     for (size_t j{}; j < m.cols(); ++j)
-      if (m[i, max[i]] < m[i, j])
-        max[i] = j;
+      if (m[i, static_cast<size_t>(max[i])] < m[i, j])
+        max[i] = static_cast<float>(j);
 
   return max;
 }

@@ -15,7 +15,7 @@ namespace Math {
 // T = the data type the matrix holds
 template <typename T> class Matrix : public MatrixBase<T> {
 public:
-  Matrix() : m_rows{0}, m_cols{0}, m_data(0) {}
+  Matrix() : m_data(0), m_rows{}, m_cols{} {}
 
   // Create 0-filled matrix of given size
   Matrix(const size_t rows, const size_t cols);

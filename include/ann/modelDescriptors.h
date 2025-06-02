@@ -96,7 +96,7 @@ struct FeedForwardTrainingDescriptor {
   size_t batchSize{32};
   size_t epochs{10};
   // How much of the training data will be reserved to validation
-  float trainValidationRate{0.05};
+  float trainValidationRate{0.05f};
   bool shuffleBatches{true};
   // If true, prints update messages every ~0.5s
   bool verbose{true};

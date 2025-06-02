@@ -25,7 +25,7 @@ Step::forward(const Math::MatrixBase<float> &inputs) {
 Math::Matrix<float> Step::predict(const Math::MatrixBase<float> &inputs) const {
   Math::Matrix<float> output{inputs.rows(), inputs.cols()};
   output.transform(
-      inputs, [](float *out, const float *in) { *out = ((*out > 0) ? 1 : 0); },
+      inputs, [](float *out, const float *in) { *out = ((*in > 0) ? 1 : 0); },
       std::nullopt, 1);
 
   return output;

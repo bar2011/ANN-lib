@@ -9,7 +9,7 @@ namespace Layers {
 Dropout::Dropout(float dropout) : m_dropout{dropout} {};
 
 Dropout::Dropout(Dropout &&other) noexcept
-    : m_mask{std::move(other.m_mask)}, m_output{std::move(other.m_output)},
+    : m_output{std::move(other.m_output)}, m_mask{std::move(other.m_mask)},
       m_dinputs{std::move(other.m_dinputs)} {}
 
 Dropout &Dropout::operator=(Dropout &&other) noexcept {
@@ -52,7 +52,7 @@ Dropout::predict(const Math::MatrixBase<float> &inputs) const {
   Math::Matrix<float> output{inputs.rows(), inputs.cols()};
 
   auto dropoutBatch{
-      [&inputs, &output, &mask = m_mask, dropout = m_dropout](size_t batch) {
+      [&inputs, &output, dropout = m_dropout](size_t batch) {
         for (size_t i{}; i < inputs.cols(); ++i) {
           // Mask is normalized bernoulli output (to control mean output sum)
           float mask{Math::Random::getBernoulli(1 - dropout) / (1 - dropout)};

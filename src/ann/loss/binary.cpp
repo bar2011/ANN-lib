@@ -38,7 +38,7 @@ Binary::forward(const Math::MatrixBase<float> &predictions,
   // An estimation of the cost of each iteration in terms of integer addition
   const size_t cost{100 * predictions.cols()};
 
-  constexpr float epsilon{1e-7};
+  constexpr float epsilon{1e-7f};
 
   auto calculateBatch{
       [&predictions, &correct, &output = m_output, epsilon](size_t batch) {
@@ -50,7 +50,7 @@ Binary::forward(const Math::MatrixBase<float> &predictions,
           lossSum += -correct[batch, i] * std::log(predictionClamped) -
                      (1 - correct[batch, i]) * std::log(1 - predictionClamped);
         }
-        output[batch] = lossSum / predictions.cols();
+        output[batch] = lossSum / static_cast<float>(predictions.cols());
       }};
 
   Utils::Parallel::dynamicParallelFor(cost, predictions.rows(), calculateBatch);
@@ -61,7 +61,7 @@ Binary::forward(const Math::MatrixBase<float> &predictions,
 const Math::Matrix<float> &Binary::backward() {
   const size_t cost{5 * m_predictions.cols()};
 
-  constexpr float epsilon{1e-7};
+  constexpr float epsilon{1e-7f};
 
   // Add cols() to account for average, add rows() to normalize sum
   const size_t normalization{m_predictions.rows() * m_predictions.cols()};
@@ -74,7 +74,7 @@ const Math::Matrix<float> &Binary::backward() {
       m_dinputs[batch, i] =
           -(m_correct[batch, i] / predictionClamped -
             (1 - m_correct[batch, i]) / (1 - predictionClamped)) /
-          normalization;
+          static_cast<float>(normalization);
     }
   }};
 
@@ -92,7 +92,8 @@ float Binary::accuracy() const {
       if (prediction == m_correct[batch, i])
         ++correctPredictions;
     }
-  return correctPredictions / (m_predictions.rows() * m_predictions.cols());
+  return correctPredictions /
+         static_cast<float>(m_predictions.rows() * m_predictions.cols());
 }
 } // namespace Loss
 } // namespace ANN

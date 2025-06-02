@@ -45,7 +45,7 @@ MAE::forward(const Math::MatrixBase<float> &predictions,
           lossSum += std::abs(correct[batch, i] - predictions[batch, i]);
         }
 
-        output[batch] = lossSum / predictions.cols();
+        output[batch] = lossSum / static_cast<float>(predictions.cols());
       }};
 
   Utils::Parallel::dynamicParallelFor(cost, predictions.rows(), calculateBatch);
@@ -63,7 +63,8 @@ const Math::Matrix<float> &MAE::backward() {
     for (size_t i{}; i < m_predictions.cols(); ++i) {
       float diff{m_predictions[batch, i] - m_correct[batch, i]};
       // Calculate gradient according to derivative
-      m_dinputs[batch, i] = ((diff >= 0) ? 1.0f : -1.0f) / normalization;
+      m_dinputs[batch, i] =
+          ((diff >= 0) ? 1.0f : -1.0f) / static_cast<float>(normalization);
     }
   }};
 

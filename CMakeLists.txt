@@ -5,19 +5,58 @@ project(NeuralNetworks VERSION 0.0.1)
 # Compiler settings
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_EXTENSIONS False)		# Disable compiler extensions
+set(CMAKE_CXX_EXTENSIONS False) # Disable compiler extensions
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
-# Optimization settings
-# How many iterations of a loop would require parallelization for the simplest worker (e.g. single addition in each loop)
-set(PARALLEL_COST_MINIMUM 10000 CACHE STRING "Minimum estimated work units to parallelize")
+# Optimization settings How many iterations of a loop would require
+# parallelization for the simplest worker (e.g. single addition in each loop)
+set(PARALLEL_COST_MINIMUM
+    10000
+    CACHE STRING "Minimum estimated work units to parallelize")
 add_compile_definitions(PARALLEL_COST_MINIMUM=${PARALLEL_COST_MINIMUM})
 
 # Ensure correct flags for clang/libc++
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    message(STATUS "Using Clang, setting flags for libc++")
-    add_compile_options(-stdlib=libc++)
-    add_link_options(-stdlib=libc++)
+  message(STATUS "Using Clang, setting flags for libc++")
+  add_compile_options(-stdlib=libc++)
+  add_link_options(-stdlib=libc++)
+endif()
+
+# Ensure correct standard if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+
+# Enable experimental features (e.g. jthread)
+add_compile_options(-fexperimental-library)
+
+# Configure build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      Release
+      CACHE
+        STRING
+        "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
+  )
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  message(STATUS "Applying debug configuration")
+  add_compile_options(
+    -g3
+    -Wpedantic
+    -pedantic-errors
+    -Wall
+    -Weffc++
+    -Wextra
+    -Wconversion
+    -Wsign-conversion
+    -Werror
+    -fsanitize=leak
+    -fno-omit-frame-pointer
+    -std=c++23)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(STATUS "Applying release configuration")
+  add_compile_options(-O2 -DNDEBUG -flto -march=native -std=c++23)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # These only work on Linux/GNU ld
+    add_link_options(-s -Wl,--strip-all)
+  endif()
 endif()
 
 # Helper libraries subdirectories
@@ -27,17 +66,3 @@ add_subdirectory(lib/loaders)
 
 # Main program
 add_subdirectory(src)
-
-# Enable experimental features (e.g. jthread)
-add_compile_options(-fexperimental-library)
-
-# Configure build type
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel.")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message(STATUS "Applying debug configuration")
-  add_compile_options(-g3 -Wpedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -fsanitize=address,undefined,leak -fno-omit-frame-pointer)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-  message(STATUS "Applying release configuration")
-  add_compile_options(-O2 -DNDEBUG -flto -march=native -s -Wl,-strip-all)
-endif()

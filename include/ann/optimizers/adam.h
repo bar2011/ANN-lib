@@ -7,8 +7,8 @@ namespace ANN {
 namespace Optimizers {
 class Adam : public Optimizer {
 public:
-  Adam(float learningRate = 1e-3f, float decay = 0.0, float epsilon = 1e-7,
-       float beta1 = 0.9f, float beta2 = 0.999)
+  Adam(float learningRate = 1e-3f, float decay = 0, float epsilon = 1e-7f,
+       float beta1 = 0.9f, float beta2 = 0.999f)
       : m_startingLearningRate{learningRate}, m_learningRate{learningRate},
         m_decay{decay}, m_epsilon{epsilon}, m_beta1{beta1}, m_beta2{beta2} {};
 

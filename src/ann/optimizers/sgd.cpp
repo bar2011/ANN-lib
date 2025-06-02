@@ -24,10 +24,10 @@ void SGD::updateParams(Layers::Dense &layer) const {
   // use weight/bias momentum to update weights/biases
   layer.m_weights.transform(
       layer.m_weightMomentums,
-      [learningRate](float *w, const float *u) { *w += *u; });
+      [](float *w, const float *u) { *w += *u; });
   layer.m_biases.transform(
       layer.m_biasMomentums,
-      [learningRate](float *b, const float *u) { *b += *u; });
+      [](float *b, const float *u) { *b += *u; });
 }
 
 void SGD::postUpdate() { ++m_iteration; }

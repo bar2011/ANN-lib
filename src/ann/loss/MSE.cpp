@@ -46,7 +46,7 @@ MSE::forward(const Math::MatrixBase<float> &predictions,
           lossSum += diff * diff;
         }
 
-        output[batch] = lossSum / predictions.cols();
+        output[batch] = lossSum / static_cast<float>(predictions.cols());
       }};
 
   Utils::Parallel::dynamicParallelFor(cost, predictions.rows(), calculateBatch);
@@ -63,8 +63,9 @@ const Math::Matrix<float> &MSE::backward() {
   auto calculateBatch{[this, normalization](size_t batch) {
     for (size_t i{}; i < m_predictions.cols(); ++i) {
       // Calculate gradient according to derivative
-      m_dinputs[batch, i] =
-          2 * (m_predictions[batch, i] - m_correct[batch, i]) / normalization;
+      m_dinputs[batch, i] = 2 *
+                            (m_predictions[batch, i] - m_correct[batch, i]) /
+                            static_cast<float>(normalization);
     }
   }};
 

@@ -13,6 +13,8 @@ class Categorical : public Loss {
 public:
   Categorical() = default;
 
+  virtual ~Categorical() = default;
+
   // Copy constructor deleted
   Categorical(const Categorical &other) = delete;
 

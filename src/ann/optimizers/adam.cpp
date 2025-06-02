@@ -20,13 +20,11 @@ void Adam::updateParams(Layers::Dense &layer) const {
 
   // Calculate weight/bias update momentums
   layer.m_weightMomentums.transform(
-      layer.m_dweights,
-      [learningRate, beta1](float *weightMomentums, const float *gradient) {
+      layer.m_dweights, [beta1](float *weightMomentums, const float *gradient) {
         *weightMomentums = beta1 * *weightMomentums + (1 - beta1) * *gradient;
       });
   layer.m_biasMomentums.transform(
-      layer.m_dbiases,
-      [learningRate, beta1](float *biasMomentums, const float *gradient) {
+      layer.m_dbiases, [beta1](float *biasMomentums, const float *gradient) {
         *biasMomentums = beta1 * *biasMomentums + (1 - beta1) * *gradient;
       });
 
@@ -44,7 +42,7 @@ void Adam::updateParams(Layers::Dense &layer) const {
   // use weight/bias update to update weights/biases
   layer.m_weights.transform(
       layer.m_weightMomentums, layer.m_weightCache,
-      [momentumCorrection, cacheCorrection, epsilon, iteration,
+      [momentumCorrection, cacheCorrection, epsilon,
        learningRate](float *weight, const float *weightMomentum,
                      const float *weightCache) {
         float correctWeightMomentum{*weightMomentum / momentumCorrection};
@@ -54,7 +52,7 @@ void Adam::updateParams(Layers::Dense &layer) const {
       });
   layer.m_biases.transform(
       layer.m_biasMomentums, layer.m_biasCache,
-      [momentumCorrection, cacheCorrection, epsilon, iteration, learningRate](
+      [momentumCorrection, cacheCorrection, epsilon, learningRate](
           float *bias, const float *biasMomentum, const float *biasCache) {
         float correctBiasMomentum{*biasMomentum / momentumCorrection};
         float correctBiasCache{*biasCache / cacheCorrection};

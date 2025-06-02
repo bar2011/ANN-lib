@@ -94,7 +94,8 @@ void Matrix<T>::transform(const MatrixBase<T> &m,
                           "Can't transform matrices with different dimensions"};
   Utils::Parallel::dynamicParallelFor(
       cost, m_data.size(),
-      [&gen, &data = m_data, &m](size_t i) { gen(&data[i], &m.data()[i]); });
+      [&gen, &data = m_data, &m](size_t i) { gen(&data[i], &m.data()[i]); },
+      parallelize);
 }
 
 template <typename T>
@@ -106,9 +107,11 @@ void Matrix<T>::transform(const MatrixBase<T> &ma, const MatrixBase<T> &mb,
     throw Math::Exception{CURRENT_FUNCTION,
                           "Can't transform matrices with different dimensions"};
   Utils::Parallel::dynamicParallelFor(
-      cost, m_data.size(), [&gen, &data = m_data, &ma, &mb](size_t i) {
+      cost, m_data.size(),
+      [&gen, &data = m_data, &ma, &mb](size_t i) {
         gen(&data[i], &ma.data()[i], &mb.data()[i]);
-      });
+      },
+      parallelize);
 }
 
 template <typename T> void Matrix<T>::insertRow(const Vector<T> &v) {
@@ -124,13 +127,14 @@ Matrix<T> Matrix<T>::transpose(size_t chunkSize,
                                std::optional<bool> parallelize) const {
   Matrix<T> result{cols(), rows()};
 
-  auto srcData{m_data.begin()};
-  auto resultData{result.data().begin()};
+  auto srcData{m_data};
+  auto resultData{result.m_data};
   const size_t cost{cols() * chunkSize * chunkSize};
 
   Utils::Parallel::dynamicParallelFor(
       cost, (rows() + chunkSize - 1) / chunkSize,
-      [srcData, resultData, cols = m_cols, rows = m_rows, chunkSize](size_t i) {
+      [&srcData, &resultData, cols = m_cols, rows = m_rows,
+       chunkSize](size_t i) {
         size_t ciStart{i * chunkSize};
         size_t ciEnd{std::min(ciStart + chunkSize, rows)};
 

@@ -100,7 +100,8 @@ Softmax::backward(const Math::MatrixBase<float> &dvalues) {
     for (size_t j{}; j < dvalues.cols(); ++j) {
       float sum{};
       for (size_t k{}; k < dvalues.cols(); ++k)
-        sum += dvalues[batch, k] * (((j == k) ? 1.0 : 0.0) - output[batch, k]);
+        sum += static_cast<float>(dvalues[batch, k] *
+                                  (((j == k) ? 1.0 : 0.0) - output[batch, k]));
       dinputs[batch, j] = output[batch, j] * sum;
     }
   }};

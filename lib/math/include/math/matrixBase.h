@@ -18,6 +18,8 @@ template <typename T> class MatrixView;
 // inherit for other classes
 template <typename T> class MatrixBase {
 public:
+  virtual ~MatrixBase() = default;
+
   // Single item access - NO BOUNDS CHECKING
   virtual const T &operator[](const size_t row, const size_t col) const = 0;
   // Single item access - WITH BOUNDS CHECKING

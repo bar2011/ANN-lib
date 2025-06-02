@@ -11,6 +11,8 @@ template <typename T> class VectorView;
 // inherit for other classes
 template <typename T> class VectorBase {
 public:
+  virtual ~VectorBase() = default;
+
   // Single item access - NO BOUNDS CHECKING
   virtual const T &operator[](size_t index) const = 0;
   // Single item access - WITH BOUNDS CHECKING

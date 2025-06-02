@@ -13,6 +13,8 @@ class CategoricalSoftmax : public Loss {
 public:
   CategoricalSoftmax() = default;
 
+  virtual ~CategoricalSoftmax() = default;
+
   // Copy constructor deleted
   CategoricalSoftmax(const CategoricalSoftmax &other) = delete;
 

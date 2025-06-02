@@ -59,7 +59,7 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
           throw ANN::Exception{CURRENT_FUNCTION,
                                "Input number needs to be > 0. From line " +
                                    lineNumStr};
-        modelDesc.inputs = inputs;
+        modelDesc.inputs = static_cast<unsigned int>(inputs);
         continue;
       }
 
@@ -74,7 +74,7 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
         int layerNum{parseStrictInt(layerNumStr, lineNumStr)};
 
         // Throw if layerNum is bigger by at least two then current layer number
-        if (layerNum > modelDesc.layers.size() + 1)
+        if (layerNum > static_cast<std::ptrdiff_t>(modelDesc.layers.size() + 1))
           throw ANN::Exception{CURRENT_FUNCTION,
                                "Can't define layer " + layerNumStr +
                                    " when there has been " +
@@ -82,14 +82,16 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
                                    " layers defined. From line " + lineNumStr};
 
         // Throw if the first occurance of a layer number isn't with "type"
-        if (layerNum == modelDesc.layers.size() + 1 && config != "type")
+        if (layerNum == static_cast<std::ptrdiff_t>(
+                            modelDesc.layers.size() + 1 && config != "type"))
           throw ANN::Exception{CURRENT_FUNCTION,
                                "Unknown layer type. Please declare it before "
                                "any other configuration. From line " +
                                    lineNumStr};
 
         // Throw if an already existing layer's type has been changed
-        if (layerNum <= modelDesc.layers.size() && config == "type")
+        if (layerNum <= static_cast<std::ptrdiff_t>(modelDesc.layers.size()) &&
+            config == "type")
           throw ANN::Exception{CURRENT_FUNCTION,
                                "A layer's type cannot be changed after its "
                                "initial setting. From line " +
@@ -128,7 +130,7 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
                                        configLayer(layer, config, val,
                                                    lineNumStr);
                                      }},
-                   modelDesc.layers[layerNum - 1]);
+                   modelDesc.layers[static_cast<size_t>(layerNum - 1)]);
 
         continue;
       }
@@ -209,20 +211,22 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
         continue;
       }
       if (key == "batch_size") {
-        trainDesc.batchSize = parseStrictInt(val, lineNumStr);
-        if (trainDesc.batchSize <= 0)
+        int batchSize{parseStrictInt(val, lineNumStr)};
+        if (batchSize <= 0)
           throw ANN::Exception{CURRENT_FUNCTION,
                                "Batch size must be a natural number "
                                "(integer greater then 0). From line " +
                                    lineNumStr};
+        trainDesc.batchSize = static_cast<size_t>(batchSize);
         continue;
       }
       if (key == "epochs") {
-        trainDesc.epochs = parseStrictInt(val, lineNumStr);
-        if (trainDesc.epochs < 0)
+        int epochs{parseStrictInt(val, lineNumStr)};
+        if (epochs < 0)
           throw ANN::Exception{
               CURRENT_FUNCTION,
               "Epochs must be a non-negative integer. From line " + lineNumStr};
+        trainDesc.epochs = static_cast<size_t>(epochs);
         continue;
       }
       if (key == "train_validation_rate") {
@@ -297,7 +301,7 @@ void ModelLoader::configLayer(Dense &layer, const std::string &config,
                            "Dense layer neuron num must be a natual number "
                            "(integer greater then 0). From line " +
                                lineNumStr};
-    layer.neurons = neurons;
+    layer.neurons = static_cast<unsigned int>(neurons);
     return;
   } else if (config == "init_method") {
     if (value == "random")
@@ -351,22 +355,22 @@ void ModelLoader::configLayer(Dropout &layer, const std::string &config,
           "'. Allowed configurations are: 'drop_rate'. From line " +
           lineNumStr};
 }
-void ModelLoader::configLayer(Step &layer, const std::string &config,
-                              const std::string &value,
+void ModelLoader::configLayer(Step &, const std::string &,
+                              const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No step configuration supported. From line " +
                            lineNumStr};
 }
-void ModelLoader::configLayer(Sigmoid &layer, const std::string &config,
-                              const std::string &value,
+void ModelLoader::configLayer(Sigmoid &, const std::string &,
+                              const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No sigmoid configuration supported. From line " +
                            lineNumStr};
 }
-void ModelLoader::configLayer(ReLU &layer, const std::string &config,
-                              const std::string &value,
+void ModelLoader::configLayer(ReLU &, const std::string &,
+                              const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No relu configuration supported. From line " +
@@ -384,8 +388,8 @@ void ModelLoader::configLayer(LeakyReLU &layer, const std::string &config,
       "Unknown leaky relu configuration provided '" + config +
           "'. Allowed configurations are: 'alpha'. From line " + lineNumStr};
 }
-void ModelLoader::configLayer(Softmax &layer, const std::string &config,
-                              const std::string &value,
+void ModelLoader::configLayer(Softmax &, const std::string &,
+                              const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No softmax configuration supported. From line " +
