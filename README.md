@@ -65,9 +65,9 @@ export MallocNanoZone='0'
 
 ## Roadmap
 
-[ ] - Better exception handling (for each layer class separately)
-[ ] - Implement Convolutions
-[ ] - Explore *maybe* implementing RNNs
+- [ ] Better exception handling (for each layer class separately)
+- [ ] Implement Convolutions
+- [ ] Explore *maybe* implementing RNNs
 
 ## Demo
 
