@@ -49,7 +49,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   message(STATUS "Applying debug configuration")
 
   if(MSVC)
-    add_compile_options(/Zi /W4 /permissive- /WX /EHsc /std:c++23)
+    # Use c++latest (c++23 isn't yet available formally)
+    add_compile_options(/Zi /W4 /permissive- /WX /EHsc /std:c++latest)
   else()
     add_compile_options(
       -g3
@@ -68,8 +69,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   message(STATUS "Applying release configuration")
+  # Unset all default debug configuration
+  unset(CMAKE_CXX_FLAGS_DEBUG)
+  unset(CMAKE_C_FLAGS_DEBUG)
+
   if(MSVC)
-    add_compile_options(/O2 /DNDEBUG /GL /std:c++23)
+    # Use c++latest (c++23 isn't yet available formally)
+    add_compile_options(/O2 /DNDEBUG /GL /std:c++latest)
   else()
     add_compile_options(-O2 -DNDEBUG -flto -march=native -std=c++23)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
