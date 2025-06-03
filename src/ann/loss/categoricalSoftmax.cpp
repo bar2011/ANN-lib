@@ -149,7 +149,7 @@ float CategoricalSoftmax::accuracy() const {
 
   float correctPredictions{};
   for (size_t i{}; i < prediction.size(); ++i)
-    if (static_cast<float>(prediction[i]) == m_correct[i])
+    if (prediction[i] == static_cast<size_t>(m_correct[i]))
       ++correctPredictions;
 
   return correctPredictions / static_cast<float>(prediction.size());
