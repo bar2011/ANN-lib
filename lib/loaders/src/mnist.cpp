@@ -94,7 +94,7 @@ Math::Matrix<float> MNist::loadImagesFile(const std::string &imagesPath) {
 
 unsigned int MNist::readU32(std::ifstream &file, const std::string &filename) {
   std::array<char, 4> bytes{};
-  if (!file.read(bytes.begin(), 4))
+  if (!file.read(bytes.data(), 4))
     throw Loaders::Exception{CURRENT_FUNCTION,
                              "Can't read file " + filename + ": reached end"};
   unsigned int value{

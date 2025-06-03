@@ -36,7 +36,8 @@ Dropout::forward(const Math::MatrixBase<float> &inputs) {
                      dropout = m_dropout](size_t batch) {
     for (size_t i{}; i < inputs.cols(); ++i) {
       // Mask is normalized bernoulli output (to control mean output sum)
-      mask[batch, i] = Math::Random::getBernoulli(1 - dropout) / (1 - dropout);
+      mask[batch, i] =
+          (Math::Random::getBernoulli(1 - dropout) ? 1 : 0) / (1 - dropout);
       output[batch, i] = inputs[batch, i] * mask[batch, i];
     }
   }};
@@ -51,14 +52,14 @@ Math::Matrix<float>
 Dropout::predict(const Math::MatrixBase<float> &inputs) const {
   Math::Matrix<float> output{inputs.rows(), inputs.cols()};
 
-  auto dropoutBatch{
-      [&inputs, &output, dropout = m_dropout](size_t batch) {
-        for (size_t i{}; i < inputs.cols(); ++i) {
-          // Mask is normalized bernoulli output (to control mean output sum)
-          float mask{Math::Random::getBernoulli(1 - dropout) / (1 - dropout)};
-          output[batch, i] = inputs[batch, i] * mask;
-        }
-      }};
+  auto dropoutBatch{[&inputs, &output, dropout = m_dropout](size_t batch) {
+    for (size_t i{}; i < inputs.cols(); ++i) {
+      // Mask is normalized bernoulli output (to control mean output sum)
+      float mask{(Math::Random::getBernoulli(1 - dropout) ? 1 : 0) /
+                 (1 - dropout)};
+      output[batch, i] = inputs[batch, i] * mask;
+    }
+  }};
 
   Utils::Parallel::dynamicParallelFor(inputs.cols() * 7, inputs.rows(),
                                       dropoutBatch);

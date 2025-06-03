@@ -1,5 +1,6 @@
 # Compile main library
-add_library(ANN SHARED
+add_library(
+  ANN STATIC
   "ann/ann.cpp"
   "ann/feedForwardModel.cpp"
   "ann/modelLoader.cpp"
@@ -19,21 +20,16 @@ add_library(ANN SHARED
   "ann/optimizers/sgd.cpp"
   "ann/optimizers/adagrad.cpp"
   "ann/optimizers/rmsprop.cpp"
-  "ann/optimizers/adam.cpp"
-)
+  "ann/optimizers/adam.cpp")
 
-target_include_directories(ANN PUBLIC
-          "${CMAKE_CURRENT_SOURCE_DIR}/ann"
-          "${CMAKE_SOURCE_DIR}/include"
-)
+target_include_directories(ANN PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/ann"
+                                      "${CMAKE_SOURCE_DIR}/include")
 
 # Make .tpp files not exposed to users
-set_source_files_properties(
-  PROPERTIES HEADER_FILE_ONLY True
-)
+set_source_files_properties(PROPERTIES HEADER_FILE_ONLY True)
 
 target_link_libraries(ANN PRIVATE MathHelpers Utils)
 
 # Add executable
 add_executable(NeuralNetwork_exec main.cpp)
-target_link_libraries(NeuralNetwork_exec ANN Loaders)
+target_link_libraries(NeuralNetwork_exec PRIVATE ANN Loaders)

@@ -89,7 +89,7 @@ float Binary::accuracy() const {
   for (size_t batch{}; batch < m_predictions.rows(); ++batch)
     for (size_t i{}; i < m_predictions.cols(); ++i) {
       bool prediction{m_predictions[batch, i] >= 0.5};
-      if (prediction == m_correct[batch, i])
+      if (prediction == ((m_correct[batch, i] == 1) ? true : false))
         ++correctPredictions;
     }
   return correctPredictions /
