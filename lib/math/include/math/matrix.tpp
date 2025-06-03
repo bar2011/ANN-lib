@@ -127,13 +127,11 @@ Matrix<T> Matrix<T>::transpose(size_t chunkSize,
                                std::optional<bool> parallelize) const {
   Matrix<T> result{cols(), rows()};
 
-  auto srcData{m_data};
-  auto resultData{result.m_data};
   const size_t cost{cols() * chunkSize * chunkSize};
 
   Utils::Parallel::dynamicParallelFor(
       cost, (rows() + chunkSize - 1) / chunkSize,
-      [&srcData, &resultData, cols = m_cols, rows = m_rows,
+      [&data = m_data, &result, cols = m_cols, rows = m_rows,
        chunkSize](size_t i) {
         size_t ciStart{i * chunkSize};
         size_t ciEnd{std::min(ciStart + chunkSize, rows)};
@@ -145,7 +143,7 @@ Matrix<T> Matrix<T>::transpose(size_t chunkSize,
           // Process a single block of chunkSize x chunkSize
           for (size_t ci{ciStart}; ci < ciEnd; ++ci)
             for (size_t cj{cjStart}; cj < cjEnd; ++cj)
-              resultData[cj * rows + ci] = srcData[ci * cols + cj];
+              result[cj, ci] = data[ci * cols + cj];
         }
       },
       parallelize);

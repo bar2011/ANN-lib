@@ -82,11 +82,12 @@ FeedForwardModel ModelLoader::loadFeedForward(const std::string &path) {
                                    " layers defined. From line " + lineNumStr};
 
         // Throw if the first occurance of a layer number isn't with "type"
-        if (layerNum == static_cast<std::ptrdiff_t>(
-                            modelDesc.layers.size() + 1 && config != "type"))
+        if (layerNum ==
+                static_cast<std::ptrdiff_t>(modelDesc.layers.size() + 1) &&
+            config != "type")
           throw ANN::Exception{CURRENT_FUNCTION,
-                               "Unknown layer type. Please declare it before "
-                               "any other configuration. From line " +
+                               "Please declare layer.n.type before "
+                               "any other layer configuration. From line " +
                                    lineNumStr};
 
         // Throw if an already existing layer's type has been changed
@@ -355,8 +356,7 @@ void ModelLoader::configLayer(Dropout &layer, const std::string &config,
           "'. Allowed configurations are: 'drop_rate'. From line " +
           lineNumStr};
 }
-void ModelLoader::configLayer(Step &, const std::string &,
-                              const std::string &,
+void ModelLoader::configLayer(Step &, const std::string &, const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No step configuration supported. From line " +
@@ -369,8 +369,7 @@ void ModelLoader::configLayer(Sigmoid &, const std::string &,
                        "No sigmoid configuration supported. From line " +
                            lineNumStr};
 }
-void ModelLoader::configLayer(ReLU &, const std::string &,
-                              const std::string &,
+void ModelLoader::configLayer(ReLU &, const std::string &, const std::string &,
                               const std::string &lineNumStr) {
   throw ANN::Exception{CURRENT_FUNCTION,
                        "No relu configuration supported. From line " +
